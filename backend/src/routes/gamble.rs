@@ -1,13 +1,13 @@
 use axum::{response::{IntoResponse, Response}, Json};
 use axum_extra::extract::cookie::CookieJar;
 use axum::http::StatusCode;
-
+use utoipa::openapi::security::{SecurityScheme, HttpAuthScheme};
 
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
 
-use crate::{rng, validation::validate_token};
+use crate::{rng,};
 
 // SCHEMAS
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -35,23 +35,14 @@ pub struct GambleResults{
 #[utoipa::path(
     post,
     path = "/gamble",
+    security(("bearerAuth" = [])),
     responses(
-        (status = 200, description = "generates a list of numbers from 1 to 7", body = GambleResults),
-        (status = 401, description = "Not authorized")
+        (status = 200, description = "Generates a list of numbers from 1 to 7", body = GambleResults),
+        (status = 401, description = "Unauthorized - missing or invalid token")
     )
 )]
-pub async fn gamble(jar: CookieJar, Json(input): Json<Gamble>) -> Response {
-    // Extract access_token cookie
-    dbg!(&jar);
-    let access_token = match jar.get("access_token") {
-        Some(cookie) => cookie.value().to_string(),
-        None => return (StatusCode::UNAUTHORIZED, "Missing access token").into_response(),
-    };
+pub async fn gamble( Json(input): Json<Gamble>) -> Response {
 
-    // Validate the token
-    if let Err(_) = validate_token(&access_token).await {
-        return (StatusCode::UNAUTHORIZED, "Invalid token").into_response();
-    }
 
     // Proceed with the gamble
     let result = match input.gamble_type {

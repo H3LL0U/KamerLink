@@ -31,7 +31,7 @@ async fn main() {
     }
     //ALLOWED ORIGINS
     let origins = [
-        "http://localhost:3000".parse::<HeaderValue>().unwrap(), //local url
+        "http://localhost:5173".parse::<HeaderValue>().unwrap(), //local url
         "https://infrastem.vercel.app/".parse::<HeaderValue>().unwrap(), // production url
     ];
 
@@ -43,8 +43,6 @@ async fn main() {
     // Build router
     let app = Router::new()
         .route("/gamble", post(gamble))
-        .route("/auth/get_token", post(get_token))
-        .route("/auth/login", get(auth_login))
         .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", openapi))
         .layer(cors);
 

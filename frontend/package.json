@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && openapi-typescript ../backend/openapi.json -o src/types/api.d.ts",
+    "dev": "npm run apigen && vite",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.4.0",
+    "openapi-typescript": "^7.9.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.8.0"
