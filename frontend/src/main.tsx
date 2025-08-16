@@ -4,7 +4,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { AUTH0CLIENT_ID,AUTH0DOMAIN } from './api/api.tsx';
+import { AUTH0CLIENT_ID, AUTH0DOMAIN } from './api/api.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

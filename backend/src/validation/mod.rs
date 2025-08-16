@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use axum::{extract::{Request, State}, middleware::Next, response::{self, IntoResponse, Response}};
 use http::{HeaderValue, StatusCode};
-use jsonwebtoken::{self, decode, decode_header, jwk::JwkSet, DecodingKey, Validation};
+use jsonwebtoken::{self, decode, decode_header, jwk::JwkSet, DecodingKey, TokenData, Validation};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{env, sync::Arc};
@@ -17,7 +17,7 @@ struct Claims {
 }
 
 
-fn validate_token(token: &HeaderValue, jwks: Arc<JwkSet>) -> Result<()>{
+fn validate_token(token: &HeaderValue, jwks: Arc<JwkSet>) -> Result<TokenData<Value>>{
     
     let token_str = token.to_str().with_context( || "error decoding header")?.trim_start_matches("Bearer ");
     let header = decode_header(&token_str).with_context(|| "Error decoding header")?;
@@ -33,22 +33,35 @@ fn validate_token(token: &HeaderValue, jwks: Arc<JwkSet>) -> Result<()>{
     // optional leeway for clock skew:
     validation.leeway = 30;
 
-    let _data = decode::<Value>(&token_str, &decoding_key, &validation)?;
+    let data = decode::<Value>(&token_str, &decoding_key, &validation)?;
     
-    Ok(())
+    Ok(data)
 }
 
-pub async fn token_validation_middleware(State(state): State<AppState>, request: Request, next: Next, ) -> Response {
+pub async fn token_validation_middleware(
+    State(state): State<AppState>,
+    mut request: Request,
+    next: Next,
+) -> Response {
     match request.headers().get("Authorization") {
         Some(token) => {
-            match validate_token(token, state.jwks) {
-                Ok(_) => {},
+            match validate_token(token, state.jwks.clone()) {
+                Ok(data) => {
+                    // Extract "sub" from claims
+                    if let Some(sub) = data.claims.get("sub").and_then(|v| v.as_str()) {
+                        request.extensions_mut().insert(sub.to_string());
+                    } else {
+                        return StatusCode::FORBIDDEN.into_response();
+                    }
+                }
                 Err(e) => {
                     dbg!(format!("{}", e));
-                    return StatusCode::FORBIDDEN.into_response()},
+                    return StatusCode::FORBIDDEN.into_response();
+                }
             };
+
             next.run(request).await.into_response()
-        },
-        None  => StatusCode::FORBIDDEN.into_response()
+        }
+        None => StatusCode::FORBIDDEN.into_response(),
     }
 }

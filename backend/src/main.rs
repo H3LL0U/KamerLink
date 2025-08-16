@@ -1,10 +1,11 @@
 use anyhow::{Result, Context};
-use axum::middleware;
+use axum::{middleware, Extension};
 use axum::routing::{get, Route};
 use axum::{ routing::post, Router, };
 use axum::extract::State;
 use http::HeaderValue;
 use jsonwebtoken::jwk::JwkSet;
+use mongodb::options::ClientOptions;
 use std::fs;
 use std::env;
 use std::sync::Arc;
@@ -15,6 +16,7 @@ use dotenv::dotenv;
 pub mod rng;
 pub mod routes;
 pub mod validation;
+pub mod database;
 use routes::*;
 use routes::ApiDoc;
 use validation::token_validation_middleware;
@@ -23,7 +25,11 @@ use axum::{
     response::{IntoResponse, Response},
     middleware::{ Next},
     extract::{Request},
+
 };
+use mongodb::{self, Client, Database};
+use tower_http::limit::RequestBodyLimitLayer;
+use crate::routes::api::post::create_post;
 // /gamble
 
 
@@ -46,6 +52,7 @@ pub async fn get_jwks() -> Result<JwkSet> {
 #[derive(Clone)]
 pub struct AppState {
     jwks: Arc<JwkSet>,
+    db: Arc<Database>
     }
 
 
@@ -65,11 +72,16 @@ async fn main() {
         println!("The backend server is not run");
         return;
     }
-    //ALLOWED ORIGINS
+    // ALLOWED ORIGINS
     let origins = [
         "http://localhost:5173".parse::<HeaderValue>().unwrap(), //local url
         "https://infrastem.vercel.app/".parse::<HeaderValue>().unwrap(), // production url
+    
     ];
+
+    // MONGODB CONNECTION
+    
+    let db = Arc::new(Client::with_uri_str(env::var("MONGO_DB").expect("No MONGO_DB set")).await.expect("Error connecting to db").database("infrastem"));
 
     let cors = CorsLayer::new()
         .allow_origin(origins)
@@ -79,7 +91,8 @@ async fn main() {
 
 
     let state = AppState {
-            jwks: Arc::new(get_jwks().await.expect("Error setting app state"))
+            jwks: Arc::new(get_jwks().await.expect("Error setting app state")),
+            db: db
         };    
 
 
@@ -87,35 +100,27 @@ async fn main() {
 
     let protected_routes: Router = Router::new()
         .route("/gamble", post(gamble))
+        .route("/post", post(create_post))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,
-        ));
+        ))
+        .layer(Extension(state.clone())); // <-- shared state for all routes
+
 
     // Public routes (empty for now)
     let public_routes: Router = Router::new();
 
-    // Combine everything
     let app = Router::new()
         .nest("/api", protected_routes) // all /api/* routes are protected
         .merge(public_routes)           // all public routes here
         .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", openapi)) // Swagger
         .layer(cors)
-        .with_state(());
+        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024)); // 25 MB max
+        
 
 
         
-    // Build router
-    /* 
-    let protected_route:Router = Router::new()
-        .route("/gamble", post(gamble)
-        .route_layer(middleware::from_fn_with_state(state.clone(),token_validation_middleware))
-    )        
-        .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", openapi))
-        .layer(cors)
-
-        .with_state(state);
-    */
     // Run server
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5000")
         .await

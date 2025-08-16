@@ -1,27 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { HashRouter, Routes, Route } from 'react-router-dom'
-import Home from './pages/home'
+import { useState } from 'react';
+import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/home';
+import Profile from './pages/user/profile';
+import TitledNavbar from './components/TiltedNavBar/TiltedNavBar';
+import PostPage from './pages/user/PostPage';
+
 function App() {
-  const [count, setCount] = useState(0)
-
-
-
-
-
-
+  
+  
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
-        <Route path='/' element ={<Home/>} />
 
-
-
+        <Route path="/" element={<Home />} />
+        <Route path="/user/profile" element={<Profile/>} />
+        <Route path='user/new_post' element = { <PostPage/>} />
       </Routes>
-    </HashRouter>
-  )
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
