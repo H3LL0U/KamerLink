@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/gamble": {
+    "api/gamble": {
         parameters: {
             query?: never;
             header?: never;

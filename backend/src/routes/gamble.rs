@@ -1,4 +1,4 @@
-use axum::{response::{IntoResponse, Response}, Json};
+use axum::{extract::State, response::{IntoResponse, Response}, Json};
 use axum_extra::extract::cookie::CookieJar;
 use axum::http::StatusCode;
 use utoipa::openapi::security::{SecurityScheme, HttpAuthScheme};
@@ -34,14 +34,14 @@ pub struct GambleResults{
 // /gamble
 #[utoipa::path(
     post,
-    path = "/gamble",
+    path = "api/gamble",
     security(("bearerAuth" = [])),
     responses(
         (status = 200, description = "Generates a list of numbers from 1 to 7", body = GambleResults),
         (status = 401, description = "Unauthorized - missing or invalid token")
     )
 )]
-pub async fn gamble( Json(input): Json<Gamble>) -> Response {
+pub async fn gamble( Json(input): Json<Gamble>, ) -> Response {
 
 
     // Proceed with the gamble

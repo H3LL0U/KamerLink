@@ -18,7 +18,7 @@ interface Gamble {
 }
 
 export async function gamble(input: components["schemas"]["Gamble"], access_token: string): Promise<components["schemas"]["GambleResults"]> {
-  const response = await fetch(API_BASE_URL + '/gamble', {
+  const response = await fetch(API_BASE_URL + '/api/gamble', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${access_token}`
