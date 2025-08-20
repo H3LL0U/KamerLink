@@ -2,10 +2,11 @@ use anyhow::{anyhow, Context, Result};
 use axum::{extract::{Request, State}, middleware::Next, response::{self, IntoResponse, Response}};
 use http::{HeaderValue, StatusCode};
 use jsonwebtoken::{self, decode, decode_header, jwk::JwkSet, DecodingKey, TokenData, Validation};
+use mongodb::{bson::{self, doc}, Database};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{env, sync::Arc};
-
+use crate::database::schemas::user::*;
 use crate::AppState;
 
 
@@ -14,6 +15,125 @@ struct Claims {
     sub: String,
     company: String,
     exp: usize,
+}
+
+
+///
+/// Validates the token and adds a new user to the database if he doesnt exist
+///
+pub async fn check_user(
+    token: &HeaderValue,
+    db: Arc<Database>,
+    jwks: Arc<JwkSet>
+) -> Result<TokenData<Value>> {
+
+    // get the user sub
+    let parts: Vec<&str>;
+    let token_data = validate_token(token, jwks)?;
+    
+    if let Some(sub) = token_data.claims.get("sub").and_then(|v| v.as_str()){
+        parts = sub.split('|').collect();
+        if parts.len() != 2 {
+            return Err(anyhow!("invalid sub format"));
+    }
+    }
+    else{
+        return Err(anyhow!("Bad request"));
+    }
+    // Split the sub into type|sub
+
+    
+    let user_sub = UserSub {
+        r#type: parts[0].to_string(),
+        sub: parts[1].to_string(),
+    };
+    let collection = db.collection::<User>("users");
+
+    // Build the query using $elemMatch
+    // Checking for an existing user sub
+    let filter = doc! {
+        "user_subs": {
+            "$elemMatch": {
+                "type": &user_sub.r#type,
+                "sub": &user_sub.sub
+            }
+        }
+    };
+
+    // Count matching documents
+    let count = collection.count_documents(filter).await?;
+
+    // if no user with the sub exists get the email and add to the database
+    
+    if count == 0 {
+        // Extract the 'aud' claim array
+        let aud_array = token_data
+            .claims
+            .get("aud")
+            .ok_or(anyhow!("aud claim missing"))?
+            .as_array()
+            .ok_or(anyhow!("aud claim is not an array"))?;
+
+        
+        let userinfo_url = aud_array
+            .get(1)
+            .ok_or(anyhow!("aud array does not have 2nd element"))?
+            .as_str()
+            .ok_or(anyhow!("2nd aud element is not a string"))?;
+            
+        // Fetch the user info from Auth0
+        let client = reqwest::Client::new();
+        let user_info:reqwest::Response = client
+            .get(userinfo_url)
+            .bearer_auth(
+                token
+                .to_str()
+                .with_context(|| "error decoding header")
+                .map(|raw| raw.strip_prefix("Bearer ").unwrap_or(raw))?
+            )
+            .send()
+            .await?; // error decoding response body
+
+        let response_json:Value =             user_info.json().await?;
+
+        let email = response_json
+            .get("email")
+            .and_then(|v| v.as_str())
+            .ok_or(anyhow!("email not found in user info"))?;
+        
+        
+        // checking for already existing email
+        
+
+        let filter = doc! { "email": email };
+
+
+        let count = collection.count_documents(filter.clone()).await?;
+
+        if count == 0{
+            db.collection::<User>("users")
+    .insert_one(User::new(email.to_string(), "New user".to_string(), vec![user_sub]))//.with_options(User::get_validation_options())
+    .await?;
+        }
+    else {
+        let update = doc! {
+            "$push": {
+                "user_subs": bson::to_document(&user_sub)?
+            }
+        };
+        collection.update_one(filter, update).await?;
+    }
+
+
+
+        //dbg!("New user email: {}", email);
+
+
+        
+
+    }
+
+    Ok(token_data)
 }
 
 
@@ -45,11 +165,18 @@ pub async fn token_validation_middleware(
 ) -> Response {
     match request.headers().get("Authorization") {
         Some(token) => {
-            match validate_token(token, state.jwks.clone()) {
+            match check_user(token, state.db, state.jwks.clone()).await {
                 Ok(data) => {
                     // Extract "sub" from claims
+                    
                     if let Some(sub) = data.claims.get("sub").and_then(|v| v.as_str()) {
                         request.extensions_mut().insert(sub.to_string());
+                        
+
+                        //adding a new user to the db if doesnt exist
+
+
+
                     } else {
                         return StatusCode::FORBIDDEN.into_response();
                     }

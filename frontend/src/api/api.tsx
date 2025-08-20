@@ -1,4 +1,4 @@
-import type { components } from '../types/api';
+import type { components } from './types/api';
 export const API_BASE_URL =
   import.meta.env.MODE === 'production'
     ? 'https://infrastem-backend.onrender.com'

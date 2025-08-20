@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# Axum required/useful crates
 utoipa = "5.4.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] } 
 axum = { version = "0.8.4", features = [ "multipart", "macros"] }
@@ -11,12 +12,21 @@ axum-extra = { version = "0.10.1", features = ["cookie"] }
 tokio = { version = "1.37", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-rand = "0.9.2"
 tower-http = { version = "0.6.6", features = ["cors", "limit"] }
 http = "1.3.1"
+dotenv = "0.15" # for .env
+
+#Database
 mongodb = "3.2.4"
-dotenv = "0.15"
+
+#Web crates
 jsonwebtoken = "9.3.1"
 reqwest = { version = "0.12.22", features = ["json", "rustls-tls"] }
+
+#Developer helper crates
 anyhow = "1.0.98"
+
+# The rest
+rand = "0.9.2" # Random
+chrono = "0.4.41" # Date and time
 

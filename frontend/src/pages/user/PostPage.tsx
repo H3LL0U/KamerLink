@@ -1,50 +1,43 @@
 import { useState, type DragEvent, type FormEvent } from "react";
-import { createPost, type PostDraft} from "../../api/post";
+import { createPost, type PostDraft } from "../../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
+import { LocationPicker } from "../../components/LocationPicker/LocationPicker";
 
-
-//Helper function to convert images into base64 format strings
-
+// Helper function to convert images into base64 format strings
 export async function filesToBase64(files: File[]): Promise<string[]> {
   const readFile = (file: File) =>
     new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
-      reader.readAsDataURL(file); 
+      reader.readAsDataURL(file);
     });
 
   return Promise.all(files.map(readFile));
 }
-
-
 
 function PostPage() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const {getAccessTokenSilently } = useAuth0();
+  const [goal, setGoal] = useState<number | undefined>(undefined); // <-- new goal state
+  const { getAccessTokenSilently } = useAuth0();
+  const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
+
   // Handle dropped files
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const files = e.dataTransfer.files;
-    if (!files) return;
-
-    const filesArray = Array.from(files).filter((file) =>
+    const filesArray = Array.from(e.dataTransfer.files).filter((file) =>
       file.type.startsWith("image/")
     );
-
-    if (filesArray.length === 0) return;
+    if (!filesArray.length) return;
 
     setPhotos((prev) => [...prev, ...filesArray]);
-    const previews = filesArray.map((file) => URL.createObjectURL(file));
-    setPhotoPreviews((prev) => [...prev, ...previews]);
+    setPhotoPreviews((prev) => [...prev, ...filesArray.map((f) => URL.createObjectURL(f))]);
   };
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); 
-  };
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => e.preventDefault();
 
   const handleRemovePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
@@ -53,49 +46,45 @@ function PostPage() {
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-
-    const filesArray = Array.from(e.target.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
-    if (filesArray.length === 0) return;
+    const filesArray = Array.from(e.target.files).filter((file) => file.type.startsWith("image/"));
+    if (!filesArray.length) return;
 
     setPhotos((prev) => [...prev, ...filesArray]);
-    const previews = filesArray.map((f) => URL.createObjectURL(f));
-    setPhotoPreviews((prev) => [...prev, ...previews]);
+    setPhotoPreviews((prev) => [...prev, ...filesArray.map((f) => URL.createObjectURL(f))]);
   };
 
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
 
-  
-  const images: string[] = await filesToBase64(photos);
+  // SUBMIT FUNCTION
 
-  
-  createPost({
-    title: title,
-    message: message,
-    images: images,
-    
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
 
-  },
+    const images: string[] = await filesToBase64(photos);
 
-  await getAccessTokenSilently()
-);
+    const location = coordinates
+      ? { type: "Point", coordinates }
+      : null;
 
-  console.log({ title, message, photos, images });
-  alert("Post submitted!");
-};
+    // if goal is 0 or undefined, send null
+    const goalValue = goal !== undefined ? goal : null;
 
+    await createPost(
+      {
+        title,
+        message,
+        images,
+        location,
+        goal: goalValue,
+      } as PostDraft,
+      await getAccessTokenSilently()
+    );
 
-
+    alert("Post submitted!");
+  };
 
   return (
     <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        padding: 20,
-      }}
+      style={{ width: "100vw", minHeight: "100vh", padding: 20 }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
@@ -119,65 +108,55 @@ const handleSubmit = async (e: FormEvent) => {
         />
 
         <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileInputChange}
+          type="number"
+          placeholder="Goal (optional)"
+          value={goal ?? ""}
+          min={0}
+          onChange={(e) => setGoal(e.target.value === "" ? undefined : Number(e.target.value))}
+          style={{ width: "100%", marginBottom: 10, padding: 8 }}
         />
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            marginTop: 10,
-          }}
-        >
+        <input type="file" accept="image/*" multiple onChange={handleFileInputChange} />
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
           {photoPreviews.map((src, idx) => (
             <div key={idx} style={{ position: "relative" }}>
               <img
                 src={src}
                 alt={`preview-${idx}`}
-                style={{
-                  width: 100,
-                  height: 100,
-                  objectFit: "cover",
-                  borderRadius: 8,
-                }}
+                style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8 }}
               />
-            <button
-              type="button"
-              onClick={() => handleRemovePhoto(idx)}
-              style={{
-                position: "absolute",
-                top: 2,          // move inside the corner
-                right: 2,        // move inside the corner
-                background: "black",
-                color: "white",
-                border: "none",
-                borderRadius: "50%", // perfect circle
-                width: "20px",
-                height: "20px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "14px",
-                cursor: "pointer",
-                padding: 0,
-                lineHeight: 1,
-              }}
-            >
-              ×
-            </button>
+              <button
+                type="button"
+                onClick={() => handleRemovePhoto(idx)}
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  right: 2,
+                  background: "black",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
             </div>
           ))}
         </div>
 
-        <button
-          type="submit"
+        <LocationPicker onChange={setCoordinates} />
 
-          style={{ marginTop: 15, padding: "10px 20px" }}
-        >
+        <button type="submit" style={{ marginTop: 15, padding: "10px 20px" }}>
           Submit
         </button>
       </form>

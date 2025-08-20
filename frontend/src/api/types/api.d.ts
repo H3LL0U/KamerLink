@@ -48,14 +48,24 @@ export interface components {
         };
         /** @enum {string} */
         GambleTypes: "Slots";
+        Location: {
+            coordinates: number[];
+            type: string;
+        };
+        /** @description
+         *
+         *     Post request (creating a post)
+         *
+         *      */
         PostDraft: {
+            goal?: number | null;
             images: string[];
+            location?: null | components["schemas"]["Location"];
             message: string;
             title: string;
         };
         PostResponse: {
-            /** Format: int64 */
-            post_id: number;
+            post_id: string;
         };
     };
     responses: never;

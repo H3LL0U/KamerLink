@@ -1,4 +1,4 @@
-import type { paths,  components, operations} from "../types/api";
+import type { paths,  components, operations} from "./types/api";
 import { API_BASE_URL } from "./api";
 export type PostDraft = components["schemas"]["PostDraft"];
 export type PostResponse = paths["api/post"]["post"]["responses"]["200"]["content"]["application/json"];
@@ -11,6 +11,12 @@ export async function createPost(
   const formData = new FormData();
   formData.append("title", draft.title);
   formData.append("message", draft.message);
+  if (draft.location) {
+    formData.append("location", JSON.stringify(draft.location));
+  }
+  if (draft.goal) {
+    formData.append("goal", JSON.stringify(draft.goal));
+  }
 
   
   draft.images.forEach((img, i) => {
