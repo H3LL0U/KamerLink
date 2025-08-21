@@ -1,16 +1,19 @@
 use anyhow::Context;
 use axum::{
-    extract::{Extension, Multipart},
+    extract::{Extension, Multipart, Query},
     response::{IntoResponse, Response},
     Json,
 };
+use futures::TryStreamExt;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use crate::database::schemas::post::Location;
+use crate::database::schemas::{post::Location, user};
 use crate::AppState;
 use chrono::Utc;
 use crate::database::schemas::post::Comment;
+use crate::database::schemas::user::User;
+
 ///
 /// 
 /// Post request (creating a post)
@@ -32,14 +35,14 @@ pub struct PostResponse {
     post_id: String,
 }
 
-use mongodb;
+use mongodb::{self, bson::{doc, oid::ObjectId}, options::{FindOptions, InsertOneOptions}};
 use crate::database::schemas::post::InfraStemPost;
 
 
 
 #[utoipa::path(
     post,
-    path = "api/post",
+    path = "/api/post",
     request_body(
         content_type = "multipart/formdata", 
         content = PostDraft,
@@ -101,11 +104,14 @@ pub async fn create_post(
         }
     }
 
-    
+    let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => {k},
+        Err(_) => {return  StatusCode::INTERNAL_SERVER_ERROR.into_response()},
+    };
 
     let post_schema = InfraStemPost {
 
-        user_sub: sub,
+        user_id: user_id,
         created_at: Utc::now().to_rfc3339(), 
         title,
         message,
@@ -113,7 +119,6 @@ pub async fn create_post(
         likes: 0,
         points: 0,
         goal,
-        comments: Vec::new(),
         location: location,
     };
 
@@ -145,31 +150,77 @@ pub async fn create_post(
 /// 
 /// 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-enum RetriveBy {
-    Id(String),
-    ClosestBy(Location)
-
+pub enum RetrieveBy {
+    PostId(String),
+    UserId(String),
+    MostLikes,
+    MostPoints,
+    MostRecent,
+    NewToUser
 
 
 }
-
+//
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct RetrievePost {
-    r#type: RetriveBy
-
+    r#type: RetrieveBy,
+    page: usize
 }
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
+pub struct Posts{
+    posts: Vec<InfraStemPost> // excluding comments
+}
+
+
 
 #[utoipa::path(
     get,
-    path = "api/post",
-    security(("bearerAuth" = [])),
+    path = "/api/post",
     responses(
-        (status = 200, description = "Retrieves posts", body = RetrievePost),
+        (status = 200, description = "Retrieves posts", body = Posts),
         (status = 401, description = "Unauthorized - missing or invalid token")
-    )
+    ),
+    params(
+        ("type" = RetrieveBy, Query, description = "Type of retrieval"),
+        ("page" = usize, Query, description = "Page number for pagination")
+    ),
+    description = "Retrieves 5 posts"
 )]
-pub async fn retrieve_post( Json(input): Json<RetrievePost>, ) -> Response {
+pub async fn retreve_posts(
+    Extension(state): Extension<AppState>,
+    Query(req): Query<RetrievePost>,
+) -> Response {
+    let collection = state.db.collection::<InfraStemPost>("posts");
 
+    let limit: i64 = 5;
+    let skip: i64 = (req.page as i64) * limit;
 
-    return StatusCode::NOT_IMPLEMENTED.into_response();
+    let find_options = FindOptions::builder()
+        .skip(Some(skip as u64))
+        .limit(limit)
+        .sort(match req.r#type {
+            RetrieveBy::MostLikes => doc! { "likes": -1 },
+            RetrieveBy::MostPoints => doc! { "points": -1 },
+            RetrieveBy::MostRecent => doc! { "created_at": -1 },
+            _ => doc! {},
+        })
+        .build();
+
+    let filter = match req.r#type {
+        RetrieveBy::PostId(ref id) => ObjectId::parse_str(id)
+            .map(|obj_id| doc! { "_id": obj_id })
+            .unwrap_or_else(|_| doc! { "_id": "invalid" }),
+        RetrieveBy::UserId(ref uid) => doc! { "user_id": uid },
+        RetrieveBy::NewToUser => doc! {}, // public route, skip `sub`
+        _ => doc! {},
+    };
+    let mut cursor = match collection.find(filter).
+    with_options(find_options).await 
+    { 
+        Ok(c) => c,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(), 
+    };
+    let mut posts = Vec::new();
+    while let Ok(Some(post)) = cursor.try_next().await { posts.push(post); };
+    axum::Json(Posts { posts }).into_response()
 }

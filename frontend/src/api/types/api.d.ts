@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieves 5 posts */
+        get: operations["retreve_posts"];
+        put?: never;
+        post: operations["create_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "api/gamble": {
         parameters: {
             query?: never;
@@ -14,22 +31,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["gamble"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "api/post": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["create_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -48,6 +49,17 @@ export interface components {
         };
         /** @enum {string} */
         GambleTypes: "Slots";
+        InfraStemPost: {
+            created_at: string;
+            goal?: number | null;
+            img_urls: string[];
+            likes: number;
+            location?: null | components["schemas"]["Location"];
+            message: string;
+            points: number;
+            title: string;
+            user_id: string;
+        };
         Location: {
             coordinates: number[];
             type: string;
@@ -67,6 +79,23 @@ export interface components {
         PostResponse: {
             post_id: string;
         };
+        Posts: {
+            posts: components["schemas"]["InfraStemPost"][];
+        };
+        /** @description
+         *
+         *     Get request (Getting a specific or multipple posts)
+         *
+         *      */
+        RetrieveBy: {
+            PostId: string;
+        } | {
+            UserId: string;
+        } | "MostLikes" | "MostPoints" | "MostRecent" | "NewToUser";
+        RetrievePost: {
+            page: number;
+            type: components["schemas"]["RetrieveBy"];
+        };
     };
     responses: never;
     parameters: never;
@@ -76,22 +105,27 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    gamble: {
+    retreve_posts: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description Type of retrieval */
+                type: components["schemas"]["RetrieveBy"];
+                /** @description Page number for pagination */
+                page: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Generates a list of numbers from 1 to 7 */
+            /** @description Retrieves posts */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GambleResults"];
+                    "application/json": components["schemas"]["Posts"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */
@@ -124,6 +158,33 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PostResponse"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    gamble: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Generates a list of numbers from 1 to 7 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GambleResults"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

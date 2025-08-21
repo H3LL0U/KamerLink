@@ -3,18 +3,18 @@ use mongodb::{
     options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
 };
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{ToSchema,};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct Comment {
-    user_sub: String,
+    user_id: String,
     message: String,
     replies: Vec<Comment>, // Threaded comments
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct InfraStemPost {
-    pub user_sub: String, // Who made the post
+    pub user_id: String, // Who made the post
     pub created_at: String, // when was the post created
     pub title: String,
     pub message: String,
@@ -22,24 +22,23 @@ pub struct InfraStemPost {
     pub likes: usize,
     pub points: usize,
     pub goal: Option<usize>,
-    pub comments: Vec<Comment>,
     pub location: Option<Location>,
 }
 
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct Location {
     pub r#type: String,        // typically "Point"
     pub coordinates: [f64; 2], // [longitude, latitude]
 }
-
+/* 
 impl InfraStemPost {
     pub fn get_validation_options() -> CreateCollectionOptions {
         let validator = doc! {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["user_sub", "title", "message", "img_urls", "likes", "points"],
+                "required": ["user_id", "title", "message", "img_urls", "likes", "points"],
                 "properties": {
-                    "user_sub": { "bsonType": "string" },
+                    "user_id": { "bsonType": "string" },
                     "created_at": { "bsonType": "string" },
                     "title": { "bsonType": "string", "maxLength": 100 },
                     "message": { "bsonType": "string", "maxLength": 1000 },
@@ -50,18 +49,6 @@ impl InfraStemPost {
                     "likes": { "bsonType": "long" },
                     "points": { "bsonType": "long" },
                     "goal": { "bsonType": ["int", "null"] },
-                    "comments": {
-                        "bsonType": "array",
-                        "items": {
-                            "bsonType": "object",
-                            "required": ["user_sub", "message"],
-                            "properties": {
-                                "user_sub": { "bsonType": "string" },
-                                "message": { "bsonType": "string", "maxLength": 500 },
-                                "replies": { "bsonType": "array" } 
-                            }
-                        }
-                    },
                     "location": {
                         "bsonType": ["object", "null"],
                         "properties": {
@@ -86,3 +73,4 @@ impl InfraStemPost {
             .build()
     }
 }
+*/

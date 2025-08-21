@@ -1,7 +1,8 @@
 import type { paths,  components, operations} from "./types/api";
 import { API_BASE_URL } from "./api";
+import { toQueryString } from "./api";
 export type PostDraft = components["schemas"]["PostDraft"];
-export type PostResponse = paths["api/post"]["post"]["responses"]["200"]["content"]["application/json"];
+export type PostResponse = paths["/api/post"]["post"]["responses"]["200"]["content"]["application/json"];
 
 
 export async function createPost(
@@ -46,3 +47,31 @@ export async function createPost(
 
   return res.json();
 }
+
+// Get request
+
+
+export type RetrievePost = components["schemas"]["RetrievePost"];
+export type Posts = paths["/api/post"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export async function retrievePosts(
+  request: RetrievePost,
+  access_token: string
+): Promise<Posts> {
+  // Convert request object into query parameters
+
+  const response = await fetch(`${API_BASE_URL}/api/post?${toQueryString(request)}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${access_token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch posts: ${response.status} ${response.statusText}`);
+  }
+
+  const data: Posts = await response.json();
+  return data;
+}
+

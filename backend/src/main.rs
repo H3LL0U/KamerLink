@@ -30,6 +30,7 @@ use axum::{
 use mongodb::{self, Client, Database};
 use tower_http::limit::RequestBodyLimitLayer;
 use crate::routes::api::post::create_post;
+use crate::routes::post::retreve_posts;
 // /gamble
 
 
@@ -61,7 +62,7 @@ pub struct AppState {
 async fn main() {
 
     dotenv().ok(); //auto set the .env
-    
+    dbg!("generate openapi");
     //Generate openapi.json for the frontend
     let openapi = ApiDoc::openapi();
     fs::write("openapi.json", openapi.to_json().unwrap())
@@ -101,11 +102,13 @@ async fn main() {
     let protected_routes: Router = Router::new()
         .route("/gamble", post(gamble))
         .route("/post", post(create_post))
+        .route("/post", get(retreve_posts))
+        
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,
-        ))
-        .layer(Extension(state.clone())); // <-- shared state for all routes
+        ));
+        //.layer(Extension(state.clone())); // 
 
 
     // Public routes (empty for now)
@@ -116,7 +119,8 @@ async fn main() {
         .merge(public_routes)           // all public routes here
         .merge(SwaggerUi::new("/docs").url("/api-doc/openapi.json", openapi)) // Swagger
         .layer(cors)
-        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024)); // 25 MB max
+        .layer(RequestBodyLimitLayer::new(25 * 1024 * 1024))
+        .layer(Extension(state.clone())); // <-- shared state for all routes;; // 25 MB max
         
 
 

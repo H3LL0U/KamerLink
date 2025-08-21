@@ -1,14 +1,33 @@
 
 
-use mongodb::{bson::doc, options::{CreateCollectionOptions, ValidationAction, ValidationLevel}};
+use std::sync::Arc;
+
+use mongodb::{bson::{doc, oid::ObjectId}, options::{CreateCollectionOptions, ValidationAction, ValidationLevel}, Database};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
-
+use anyhow::{anyhow, Context, Result};
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct UserSub{
     pub r#type: String,
     pub sub: String
 }
+
+impl TryFrom<&str> for UserSub {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let parts: Vec<&str> = value.split('|').collect();
+        if parts.len() != 2 {
+            return Err(anyhow!("invalid sub format: expected `type|sub`"));
+        }
+        Ok(UserSub {
+            r#type: parts[0].to_string(),
+            sub: parts[1].to_string(),
+        })
+    }
+}
+
+
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct PointsGivenTo{
     post_id: String,
@@ -22,10 +41,19 @@ pub struct User{
     user_subs: Vec<UserSub>, // Stores which user subs are associated with the user (from google etc...)
     likes: Vec<String>, // Stores which posts were liked by the user
     points_given_to: Vec<PointsGivenTo>,
-
+    seen: Vec<String>
 
 }
+
+#[derive(Debug, serde::Deserialize)]
+struct UserIdOnly {
+    #[serde(rename = "_id")]
+    id: ObjectId,
+}
+
+
 impl User {
+    /* 
     pub fn get_validation_options() -> CreateCollectionOptions {
         let validator = doc! {
             "$jsonSchema": {
@@ -71,15 +99,42 @@ impl User {
             
             .build()
     }
-
+    */
     pub fn new(email: String, nickname: String, user_subs:Vec<UserSub>) -> Self {
         Self { email: email, 
             nickname: nickname ,
-             user_subs: user_subs,
-              likes: Vec::new(),
-               points_given_to: Vec::new() }
+            user_subs: user_subs,
+            likes: Vec::new(),
+            points_given_to: Vec::new() ,
+            seen: Vec::new()}
+
     }
 
 
+    pub async fn get_user_id_by_sub(
+        db: &Arc<Database>,
+        user_sub: impl TryInto<UserSub, Error = anyhow::Error>,
+    ) -> Result<String> {
+        // Convert input into UserSub
+        let user_sub: UserSub = user_sub.try_into()?;
+
+        let collection = db.collection::<UserIdOnly>("users");
+
+        let filter = doc! {
+            "user_subs": {
+                "$elemMatch": {
+                    "type": &user_sub.r#type,
+                    "sub": &user_sub.sub
+                }
+            }
+        };
+
+        let user = collection
+            .find_one(filter,)
+            .await
+            .with_context(|| "Failed to query users collection")?;
+
+        Ok(user.map(|u| u.id.to_hex()).ok_or(anyhow!("No id"))?)
+    }
 
 }
