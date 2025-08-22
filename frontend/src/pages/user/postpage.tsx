@@ -25,7 +25,7 @@ function PostPage() {
   const { getAccessTokenSilently } = useAuth0();
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
 
-  // Handle dropped files
+  // Handle dropped files  
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const filesArray = Array.from(e.dataTransfer.files).filter((file) =>

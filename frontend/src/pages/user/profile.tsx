@@ -5,7 +5,7 @@ import LogoutButton from '../../components/LogoutButton/LogoutButton';
 import { useAuth0 } from '@auth0/auth0-react';
 import { gamble } from '../../api/api';
 import type { operations, components } from '../../api/types/api';
-const Profile = () => {
+const Profile = () => { 
   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
     const [result, setResult] = useState<components["schemas"]["GambleResults"] | null>(null);
   
