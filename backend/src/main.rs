@@ -54,7 +54,7 @@ pub async fn main() {
     // ALLOWED ORIGINS
     let origins = [
         "http://localhost:5173".parse::<HeaderValue>().unwrap(), //local url
-        "https://infrastem.vercel.app/".parse::<HeaderValue>().unwrap(), // production url
+        "https://kamerlink.vercel.app/".parse::<HeaderValue>().unwrap(), // production url
     
     ];
 

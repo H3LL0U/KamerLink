@@ -1,7 +1,7 @@
 import type { components } from './types/api';
 export const API_BASE_URL =
   import.meta.env.MODE === 'production'
-    ? 'https://infrastem-backend.onrender.com'
+    ? 'https://kamerlink.onrender.com'
     : 'http://localhost:5000'; //apply production url if set
 export const FRONTEND_BASE_URL =
   import.meta.env.MODE === 'production'
