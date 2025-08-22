@@ -3,6 +3,7 @@ use axum::{middleware, Extension};
 use axum::routing::{get, Route};
 use axum::{ routing::post, Router, };
 use axum::extract::State;
+use backend::{get_jwks, AppState};
 use http::HeaderValue;
 use jsonwebtoken::jwk::JwkSet;
 use mongodb::options::ClientOptions;
@@ -34,32 +35,9 @@ use crate::routes::post::retreve_posts;
 // /gamble
 
 
-pub async fn get_jwks() -> Result<JwkSet> {
-    let issuer = env::var("ISSUER")
-        .context("Environment variable ISSUER is not set")?;
-
-    let jwks_url = format!("{}/.well-known/jwks.json", issuer.trim_end_matches('/'));
-
-    let jwks: JwkSet = reqwest::get(&jwks_url)
-        .await
-        .context("Failed to fetch JWKS from Auth0")?
-        .json()
-        .await
-        .context("Failed to deserialize JWKS response")?;
-
-    Ok(jwks)
-}
-
-#[derive(Clone)]
-pub struct AppState {
-    jwks: Arc<JwkSet>,
-    db: Arc<Database>
-    }
-
-
 
 #[tokio::main]
-async fn main() {
+pub async fn main() {
 
     dotenv().ok(); //auto set the .env
     dbg!("generate openapi");
@@ -82,7 +60,7 @@ async fn main() {
 
     // MONGODB CONNECTION
     
-    let db = Arc::new(Client::with_uri_str(env::var("MONGO_DB").expect("No MONGO_DB set")).await.expect("Error connecting to db").database("infrastem"));
+    let db = Arc::new(Client::with_uri_str(env::var("MONGO_DB").expect("No MONGO_DB set")).await.expect("Error connecting to db").database("kamerlink"));
 
     let cors = CorsLayer::new()
         .allow_origin(origins)

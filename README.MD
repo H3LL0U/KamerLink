@@ -1,8 +1,8 @@
-# InfraStem
+# KamerLink
 
 
 ## Project Idea
-A service that lets citizens democratically decide on which Initiatives the infrastructure budget should be spent. It does it by using fictional money that gets distributed between every citizen that is using the site. Citizens then can select an initiative and "vote" using the fictional money to fund the initiative. Initiatives can be set up by the government and possibly by the users.
+A service that lets students vote on, create initiaves for their school, socialize and share news with each other.
 
 ## High level idea implementaion
 

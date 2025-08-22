@@ -6,8 +6,8 @@ use mongodb::{bson::{self, doc}, Database};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{env, sync::Arc};
-use crate::database::schemas::user::*;
-use crate::AppState;
+use crate::{database::schemas::user::*, AppState};
+
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,8 +19,12 @@ struct Claims {
 
 
 ///
-/// Validates the token and adds a new user to the database if he doesnt exist
+/// Validates the token, checks if the email of the user is veryfied and adds it to the database if it is.
 ///
+/// 
+/// The goal of this function is to only allow users with specific emails that are already specified in the database to enter while filtering all the remaining users.
+/// Also makes sure that the users that send the request always have their email validated
+/// 
 pub async fn check_user(
     token: &HeaderValue,
     db: Arc<Database>,
@@ -29,7 +33,7 @@ pub async fn check_user(
 
     // get the user sub
     let parts: Vec<&str>;
-    let token_data = validate_token(token, jwks)?;
+    let token_data: TokenData<Value> = validate_token(token, jwks)?;
     
     if let Some(sub) = token_data.claims.get("sub").and_then(|v| v.as_str()){
         parts = sub.split('|').collect();
@@ -50,8 +54,9 @@ pub async fn check_user(
     let collection = db.collection::<User>("users");
 
     // Build the query using $elemMatch
-    // Checking for an existing user sub
+    // Checking for an existing user sub (with validated email)
     let filter = doc! {
+        "is_validated":true,
         "user_subs": {
             "$elemMatch": {
                 "type": &user_sub.r#type,
@@ -63,7 +68,7 @@ pub async fn check_user(
     // Count matching documents
     let count = collection.count_documents(filter).await?;
 
-    // if no user with the sub exists get the email and add to the database
+    // if no user with the sub exists get the email to validate further
     
     if count == 0 {
         // Extract the 'aud' claim array
@@ -96,13 +101,23 @@ pub async fn check_user(
 
         let response_json:Value =             user_info.json().await?;
 
+        // Check if the email is already verified
+        let email_verified = response_json
+            .get("email_verified")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+
+        if !email_verified {
+            return Err(anyhow!("Email not verified"));
+        }
+        // checking for already existing email
         let email = response_json
             .get("email")
             .and_then(|v| v.as_str())
             .ok_or(anyhow!("email not found in user info"))?;
         
         
-        // checking for already existing email
+        
         
 
         let filter = doc! { "email": email };
@@ -110,25 +125,25 @@ pub async fn check_user(
 
         let count = collection.count_documents(filter.clone()).await?;
 
+
+        // If no email found raise an error since it is not allowed
+
         if count == 0{
-            db.collection::<User>("users")
-    .insert_one(User::new(email.to_string(), "New user".to_string(), vec![user_sub]))//.with_options(User::get_validation_options())
-    .await?;
+        
+        return  Err(anyhow!("Email not allowed"));
+        
         }
     else {
         let update = doc! {
+            "$set": {
+                "is_validated": true
+            },
             "$push": {
                 "user_subs": bson::to_document(&user_sub)?
             }
         };
         collection.update_one(filter, update).await?;
     }
-
-
-
-        //dbg!("New user email: {}", email);
-
-
         
 
     }

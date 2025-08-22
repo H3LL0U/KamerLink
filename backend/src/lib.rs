@@ -1,0 +1,40 @@
+use anyhow::{Result, Context};
+use jsonwebtoken::jwk::JwkSet;
+
+use std::env;
+use std::sync::Arc;
+
+pub mod rng;
+pub mod routes;
+pub mod validation;
+pub mod database;
+
+use mongodb::{self, Database};
+
+// /gamble
+
+
+pub async fn get_jwks() -> Result<JwkSet> {
+    let issuer = env::var("ISSUER")
+        .context("Environment variable ISSUER is not set")?;
+
+    let jwks_url = format!("{}/.well-known/jwks.json", issuer.trim_end_matches('/'));
+
+    let jwks: JwkSet = reqwest::get(&jwks_url)
+        .await
+        .context("Failed to fetch JWKS from Auth0")?
+        .json()
+        .await
+        .context("Failed to deserialize JWKS response")?;
+
+    Ok(jwks)
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub jwks: Arc<JwkSet>,
+    pub db: Arc<Database>
+    }
+
+
+
