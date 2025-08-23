@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import LoginButton from '../../components/LoginButton/LoginButton';
-import LogoutButton from '../../components/LogoutButton/LogoutButton';
+import LoginButton from '../../components/generic_components/LoginButton/LoginButton';
+import LogoutButton from '../../components/generic_components/LogoutButton/LogoutButton';
 import { useAuth0 } from '@auth0/auth0-react';
 import { gamble } from '../../api/api';
 import type { operations, components } from '../../api/types/api';

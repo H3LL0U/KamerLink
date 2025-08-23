@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { type Posts, type RetrievePost, retrievePosts } from '../api/post';
 import { useAuth0 } from '@auth0/auth0-react';
-import Card from '../components/Card/Card';
+import Card from '../components/generic_components/Card/Card';
 
 function PostViewPage() {
   const [posts, setPosts] = useState<Posts>({ posts: [] });

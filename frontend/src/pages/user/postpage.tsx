@@ -1,7 +1,7 @@
 import { useState, type DragEvent, type FormEvent } from "react";
 import { createPost, type PostDraft } from "../../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
-import { LocationPicker } from "../../components/LocationPicker/LocationPicker";
+import { LocationPicker } from "../../components/generic_components/LocationPicker/LocationPicker";
 
 // Helper function to convert images into base64 format strings
 export async function filesToBase64(files: File[]): Promise<string[]> {

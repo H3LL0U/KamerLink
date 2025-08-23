@@ -3,10 +3,9 @@ import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/home';
 import Profile from './pages/user/profile';
-import TitledNavbar from './components/TiltedNavBar/TiltedNavBar';
 import PostPage from './pages/user/postpage';
 import PostViewPage from './pages/posts';
-
+import TextImage from './components/generic_components/TextImage/TextImage';
 function App() {
   
   
