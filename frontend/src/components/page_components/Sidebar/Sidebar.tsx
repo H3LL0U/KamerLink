@@ -30,22 +30,23 @@ const SideBar: React.FC<SideBarProps> = ({ children, scheme = defaultScheme, sid
       <button
         onClick={() => setOpen(!open)}
         style={{
-          position:"relative",
-          zIndex: 21,
-          width: "5%", // size relative to parent
-          
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          float:"right",
-          justifyContent: "center",
-          alignItems: "center",
-          transition: "transform 0.3s ease-in-out", // animation for icon
-          userSelect: "none",
-          boxShadow: "0 0 5px rgba(0,0,0,0.3)",
-          backgroundColor: scheme.second,
-          borderRadius: "8px",
-        }}
+    position: "relative",
+    zIndex: 21,
+    height: "100%",        // button scales with 50% of parent height
+    aspectRatio: "1 / 1", // stays square
+    minHeight: "35px",    // prevents it from being too small
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    float: "right",
+    justifyContent: "center",
+    alignItems: "center",
+    transition: "transform 0.3s ease-in-out",
+    userSelect: "none",
+    boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+    backgroundColor: scheme.second,
+    borderRadius: "8px",
+  }}
         aria-label={open ? "Close settings menu" : "Open settings menu"}
         title={open ? "Close settings menu" : "Open settings menu"}
       >

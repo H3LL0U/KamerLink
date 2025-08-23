@@ -80,53 +80,57 @@ body {
 
 /* inline text component styles */
 p {
-  font-weight: 400; 
-  line-height: 1.6; 
-  margin: 0 0 1rem 0; 
-  font-size: clamp(0.875rem, 1.5vw + 0.5rem, 1rem); 
-  color: rgba(255, 255, 255, 0.87); 
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+  font-size: clamp(
+    1.3125rem,   
+    2.25vw + 0.75rem, 
+    2rem       
+  );
+  color: rgba(255, 255, 255, 0.87);
 }
 
 h1 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(2rem, 4vw + 1rem, 4rem);
+  font-size: clamp(3rem, 6vw + 1.5rem, 6rem); /* 2*1.5, 4*1.5, 4*1.5 */
 }
 
 h2 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.75rem, 3.5vw + 1rem, 3.5rem);
+  font-size: clamp(2.625rem, 5.25vw + 1.5rem, 5.25rem); /* 1.75*1.5, 3.5*1.5, 3.5*1.5 */
 }
 
 h3 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.5rem, 3vw + 0.8rem, 3rem);
+  font-size: clamp(2.25rem, 4.5vw + 1.2rem, 4.5rem); /* 1.5*1.5, 3*1.5, 3*1.5 */
 }
 
 h4 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.25rem, 2.5vw + 0.5rem, 2.5rem);
+  font-size: clamp(1.875rem, 3.75vw + 0.75rem, 3.75rem); /* 1.25*1.5, 2.5*1.5, 2.5*1.5 */
 }
 
 h5 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1rem, 2vw + 0.5rem, 2rem);
+  font-size: clamp(1.5rem, 3vw + 0.75rem, 3rem); /* 1*1.5, 2*1.5, 2*1.5 */
 }
 
 h6 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(0.875rem, 1.5vw + 0.5rem, 1.5rem);
+  font-size: clamp(1.3125rem, 2.25vw + 0.75rem, 2.25rem); /* 0.875*1.5, 1.5*1.5, 1.5*1.5 */
 }
 
 
@@ -150,15 +154,9 @@ button:focus-visible {
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #EEEEEE;
-  }
+
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }
 
