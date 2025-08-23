@@ -6,6 +6,7 @@ import Profile from './pages/user/profile';
 import PostPage from './pages/user/postpage';
 import PostViewPage from './pages/posts';
 import TextImage from './components/generic_components/TextImage/TextImage';
+import SecretPage from './pages/secret_page';
 function App() {
   
   
@@ -16,8 +17,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/posts" element={<PostViewPage />} />
         <Route path="/user/profile" element={<Profile/>} />
-        <Route path='user/new_post' element = { <PostPage/>} />
-
+        <Route path='/user/new_post' element = { <PostPage/>} />
+        <Route path='/secret' element = { <SecretPage/>} />
       </Routes>
     </BrowserRouter>
   );
