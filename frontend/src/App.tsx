@@ -6,7 +6,8 @@ import Profile from './pages/user/profile';
 import PostPage from './pages/user/postpage';
 import PostViewPage from './pages/posts';
 import TextImage from './components/generic_components/TextImage/TextImage';
-import SecretPage from './pages/secret_page';
+import SecretPage from './pages/secret';
+import Redirect from './pages/redirect';
 function App() {
   
   
@@ -19,6 +20,9 @@ function App() {
         <Route path="/user/profile" element={<Profile/>} />
         <Route path='/user/new_post' element = { <PostPage/>} />
         <Route path='/secret' element = { <SecretPage/>} />
+        
+        {/* Used for redirecting to the same page as where the login button was pressed */ }
+        <Route path='/redirect' element = {<Redirect/>}/>
       </Routes>
     </BrowserRouter>
   );

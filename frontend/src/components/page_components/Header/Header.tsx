@@ -77,11 +77,12 @@ function Header({ scheme = defaultScheme }: HeaderProps) {
       }}
     >
       {/* Header */}
+      <a href="/" style={{ margin: 0, textAlign: "center", flexGrow: 1 }}>
       <h1 style={{ margin: 0, textAlign: "center", flexGrow: 1 }}>
         <span style={{ color: scheme.third }}>Kamer</span>
         <span style={{ color: scheme.second }}>Link</span>
       </h1>
-
+      </a>
       {/* Sidebar */}
       <div>
         <Sidebar sidebar_offset={`${headerHeight}px`}>

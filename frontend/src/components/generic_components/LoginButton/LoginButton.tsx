@@ -29,6 +29,21 @@ const LoginButton = ({
 }: LoginButtonProps) => {
   const { loginWithRedirect, logout, isAuthenticated, isLoading } = useAuth0();
 
+  const handleClick = () => {
+    if (isLoading) return;
+
+    if (isAuthenticated) {
+      // Logout with returnTo as current page
+      logout({ logoutParams: { returnTo: window.location.href } });
+    } else {
+      // Save current page in cookie
+      document.cookie = `redirect_to=${window.location.pathname}; path=/;`;
+
+      // Trigger login redirect
+      loginWithRedirect();
+    }
+  };
+
   // Decide what text to show
   const buttonText = isLoading
     ? loading_text
@@ -39,12 +54,7 @@ const LoginButton = ({
   return (
     <button
       style={{ backgroundColor: scheme.second, ...style }}
-      onClick={() =>
-        !isLoading &&
-        (isAuthenticated
-          ? logout({ logoutParams: { returnTo: window.location.origin } })
-          : loginWithRedirect())
-      }
+      onClick={handleClick}
       disabled={isLoading} // optionally disable button while loading
     >
       <h6 style={text_style}>{buttonText}</h6>
