@@ -1,10 +1,11 @@
 use mongodb::{
-    bson::{doc, Document},
+    bson::{doc, oid::ObjectId, Document},
     options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
 };
 use serde::{Deserialize, Serialize};
-use utoipa::{ToSchema,};
+use utoipa::{openapi::Object, ToSchema};
 
+use crate::database::ObjectIdSchema;
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct Comment {
     user_id: String,
@@ -14,6 +15,9 @@ pub struct Comment {
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct InfraStemPost {
+
+    #[schema(value_type = ObjectIdSchema)]
+    pub _id: ObjectId,
     pub user_id: String, // Who made the post
     pub created_at: String, // when was the post created
     pub title: String,
@@ -24,6 +28,9 @@ pub struct InfraStemPost {
     pub goal: Option<usize>,
     pub location: Option<Location>,
 }
+
+
+
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct Location {

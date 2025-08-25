@@ -13,7 +13,7 @@ use crate::AppState;
 use chrono::Utc;
 use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
-
+pub mod like;
 ///
 /// 
 /// Post request (creating a post)
@@ -110,8 +110,8 @@ pub async fn create_post(
     };
 
     let post_schema = InfraStemPost {
-
-        user_id: user_id,
+        _id: ObjectId::new(),
+        user_id: user_id.to_string(),
         created_at: Utc::now().to_rfc3339(), 
         title,
         message,

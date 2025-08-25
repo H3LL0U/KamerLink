@@ -3,6 +3,7 @@ use axum::{middleware, Extension};
 use axum::routing::{get, Route};
 use axum::{ routing::post, Router, };
 use axum::extract::State;
+use backend::routes::post::like::like_post;
 use backend::{get_jwks, AppState};
 use http::HeaderValue;
 use jsonwebtoken::jwk::JwkSet;
@@ -81,7 +82,7 @@ pub async fn main() {
         .route("/gamble", post(gamble))
         .route("/post", post(create_post))
         .route("/post", get(retreve_posts))
-        
+        .route("/post/like", post(like_post))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,

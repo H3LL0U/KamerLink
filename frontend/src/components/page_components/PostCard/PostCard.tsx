@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import Card from "../../generic_components/Card/Card";
 import { type Posts } from "../../../api/post";
 import {type ColorScheme } from "../../../main";
 import { defaultScheme } from "../../../main";
+import { like_post } from "../../../api/like";
 interface PostCardProps {
   post: Posts["posts"][number];
-  scheme?: ColorScheme
+  scheme?: ColorScheme,
+  access_token?:string
 }
 
-function PostCard({ post, scheme = defaultScheme }: PostCardProps) {
+function PostCard({ post, scheme = defaultScheme, access_token = "" }: PostCardProps) {
+
+
+    const [likes, setLikes] = useState(post.likes);
+
   return (
     <Card
       style={{
@@ -65,8 +71,18 @@ function PostCard({ post, scheme = defaultScheme }: PostCardProps) {
             cursor: "pointer",
             fontSize: "0.95rem",
           }}
+          onClick={async () => {
+            let response = await like_post({post_id: post._id.$oid} ,access_token)
+            if (response.status == "Like"){
+              setLikes(likes+1)
+
+            }
+            else{
+              setLikes(likes -1)
+            }
+          }}
         >
-          ❤️ {post.likes}
+          ❤️ {likes}
         </button>
         <button
           style={{

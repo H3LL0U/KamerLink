@@ -50,6 +50,7 @@ export interface components {
         /** @enum {string} */
         GambleTypes: "Slots";
         InfraStemPost: {
+            _id: components["schemas"]["ObjectIdSchema"];
             created_at: string;
             goal?: number | null;
             img_urls: string[];
@@ -60,9 +61,17 @@ export interface components {
             title: string;
             user_id: string;
         };
+        LikePost: {
+            post_id: string;
+        };
+        /** @enum {string} */
+        LikeStatus: "Like" | "Unlike";
         Location: {
             coordinates: number[];
             type: string;
+        };
+        ObjectIdSchema: {
+            $oid: string;
         };
         /** @description
          *
@@ -81,6 +90,9 @@ export interface components {
         };
         Posts: {
             posts: components["schemas"]["InfraStemPost"][];
+        };
+        ResponseLikePost: {
+            status: components["schemas"]["LikeStatus"];
         };
         /** @description
          *

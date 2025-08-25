@@ -6,7 +6,7 @@ pub use api::*;
 
 use utoipa::{OpenApi};
 
-use crate::routes::post::{PostDraft, PostResponse, RetrievePost, Posts, RetrieveBy};
+use crate::routes::post::{like::{LikePost, ResponseLikePost}, PostDraft, PostResponse, Posts, RetrieveBy, RetrievePost};
 
 
 
@@ -15,13 +15,15 @@ use crate::routes::post::{PostDraft, PostResponse, RetrievePost, Posts, Retrieve
     paths(
         gamble,//gamble path
         post::create_post , // post path (post)
-        post::retreve_posts // post path (get)
+        post::retreve_posts, // post path (get)
+        post::like::like_post
     ),
     components(
     schemas(
         GambleResults, Gamble, // Gamble schemas
         PostDraft, PostResponse, // Post schemas (post)
-        RetrievePost, Posts , RetrieveBy // Post schemas (get)
+        RetrievePost, Posts , RetrieveBy, // Post schemas (get)
+        LikePost, ResponseLikePost
     )), 
     info(title = "InfraStemAPI", version = "1.0.0")
 )]

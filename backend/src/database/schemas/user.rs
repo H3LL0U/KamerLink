@@ -73,6 +73,10 @@ pub struct User {
 
     #[builder(default)]
     pub seen: Vec<String>,
+
+    #[builder(default = 100)]
+    pub points: i64
+
 }
 #[derive(Debug, serde::Deserialize)]
 struct UserIdOnly {
@@ -139,7 +143,9 @@ impl User {
             is_validated: false,
             likes: Vec::new(),
             points_given_to: Vec::new() ,
-            seen: Vec::new()}
+
+            seen: Vec::new(),
+        points:100}
             
 
     }
@@ -150,7 +156,7 @@ impl User {
     pub async fn get_user_id_by_sub(
         db: &Arc<Database>,
         user_sub: impl TryInto<UserSub, Error = anyhow::Error>,
-    ) -> Result<String> {
+    ) -> Result<ObjectId> {
         // Convert input into UserSub
         let user_sub: UserSub = user_sub.try_into()?;
 
@@ -170,7 +176,8 @@ impl User {
             .await
             .with_context(|| "Failed to query users collection")?;
 
-        Ok(user.map(|u| u.id.to_hex()).ok_or(anyhow!("No id"))?)
+        Ok(user.map(|u| u.id).ok_or(anyhow!("No id"))?)
     }
+
 
 }
