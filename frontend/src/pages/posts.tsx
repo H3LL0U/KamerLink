@@ -125,7 +125,7 @@ useEffect(() => {
     return <LoadingPage/>
   }
 
-  // 🔑 Only show NotLoggedIn if we are sure the user is not authenticated
+
   if (!isAuthenticated) {
     return <NotLoggedIn />;
   }
@@ -140,18 +140,20 @@ useEffect(() => {
       from={defaultScheme.fourth}
       to= {defaultScheme.second}
       ></ColorTransition>
-<div style={{ width: "100%" }}>
+<div style={{ width: "100%" , backgroundColor: defaultScheme.second,}}>
       {/* Filters Bar */}
       
       <div
         style={{
           width: "100%",
-          backgroundColor: defaultScheme.second,
+
           display: "flex",
           justifyContent: "space-evenly",
           alignItems: "center",
           padding: "0.5rem 1rem",
           gap: "1rem",
+          maxWidth:"1000px",
+          margin:"auto"
           
         }}
       >
