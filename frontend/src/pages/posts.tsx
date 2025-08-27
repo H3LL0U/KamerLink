@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { type Posts, type RetrievePost, retrievePosts } from "../api/post";
+import { type Posts, type RetrievePost,retrievePosts  } from "../api/post"; //
 import { useAuth0 } from "@auth0/auth0-react";
 import Card from "../components/generic_components/Card/Card";
 import Header from "../components/page_components/Header/Header";
@@ -10,7 +10,8 @@ import Dropdown from "../components/generic_components/Dropdowns/Dropdown";
 import MultiDropdown from "../components/generic_components/Dropdowns/MultiDropdown";
 import { defaultScheme } from "../main";
 import ColorTransition from "../components/generic_components/ColorTransition/ColorTransition";
-
+import { configureClient } from "../api/gen/clients";
+import type { components } from '../api/gen/api';
 type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
@@ -33,6 +34,7 @@ function PostViewPage() {
       try {
         const token = await getAccessTokenSilently();
         setAccessToken(token);
+        configureClient(token)
 
       } catch (err) {
         console.error("Failed to get access token:", err);
@@ -61,7 +63,7 @@ function PostViewPage() {
         type: filterToRetrieveBy[filter],
         page: page,
       };
-      const data = await retrievePosts(request, accessToken);
+      const data = (await retrievePosts(request)).data;
 
       if (data.posts.length === 0) {
         setHasMore(false);
@@ -82,7 +84,7 @@ function PostViewPage() {
     if (isAuthenticated && accessToken) {
       fetchPosts();
     }
-  }, [fetchPosts, isAuthenticated, accessToken]);
+  }, [fetchPosts, isAuthenticated]);
 
   // when filter changes, reset posts and fetch fresh
   useEffect(() => {
@@ -103,7 +105,7 @@ function PostViewPage() {
           page: 0,
         };
 
-        const data = await retrievePosts(request, accessToken);
+        const data = (await retrievePosts(request,)).data;
         setPosts({ posts: data.posts });
         setPage(1);
         setHasMore(data.posts.length > 0);
@@ -121,7 +123,7 @@ function PostViewPage() {
     setHasMore(true);
 
     fetchFilteredPosts();
-  }, [filter, accessToken, isAuthenticated]);
+  }, [filter, isAuthenticated]);
 
   if (isLoading) {
     return <LoadingPage />;

@@ -1,10 +1,10 @@
-import type { paths,  components, operations} from "./types/api";
+import type { paths,  components, operations} from "./gen/api";
 import { API_BASE_URL } from "./api";
-import { toQueryString } from "./api";
+import { client, useAuth0ClientConfig } from "./gen/clients";
 export type PostDraft = components["schemas"]["PostDraft"];
 export type PostResponse = paths["/api/post"]["post"]["responses"]["200"]["content"]["application/json"];
 
-
+/* The client created function (like ones bellow) doens't send the correct request. Couldn't figure out why so it will be written manually. */
 export async function createPost(
   draft: PostDraft,
   token: string
@@ -12,23 +12,12 @@ export async function createPost(
   const formData = new FormData();
   formData.append("title", draft.title);
   formData.append("message", draft.message);
-  if (draft.location) {
-    formData.append("location", JSON.stringify(draft.location));
-  }
-  if (draft.goal) {
-    formData.append("goal", JSON.stringify(draft.goal));
-  }
+
 
   
   draft.images.forEach((img, i) => {
 
-      // Convert base64 string to Blob
-      const byteString = atob(img.split(",")[1]);
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let j = 0; j < byteString.length; j++) ia[j] = byteString.charCodeAt(j);
-      const blob = new Blob([ab], { type: "image/png" });
-      formData.append("images", blob, `image${i}.png`);
+      formData.append("images",img.toString());
     
   });
 
@@ -54,24 +43,7 @@ export async function createPost(
 export type RetrievePost = components["schemas"]["RetrievePost"];
 export type Posts = paths["/api/post"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export async function retrievePosts(
-  request: RetrievePost,
-  access_token: string
-): Promise<Posts> {
-  // Convert request object into query parameters
+export const retrievePosts = client.path("/api/post").method("get").create()
 
-  const response = await fetch(`${API_BASE_URL}/api/post?${toQueryString(request)}`, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${access_token}`,
-    },
-  });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch posts: ${response.status} ${response.statusText}`);
-  }
-
-  const data: Posts = await response.json();
-  return data;
-}
-
+export const likePost = client.path("/api/post/like").method("post").create()

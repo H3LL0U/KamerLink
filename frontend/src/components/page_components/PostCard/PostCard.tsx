@@ -3,14 +3,14 @@ import Card from "../../generic_components/Card/Card";
 import { type Posts } from "../../../api/post";
 import {type ColorScheme } from "../../../main";
 import { defaultScheme } from "../../../main";
-import { like_post } from "../../../api/like";
+import { likePost } from "../../../api/post";
 interface PostCardProps {
   post: Posts["posts"][number];
   scheme?: ColorScheme,
   access_token?:string
 }
 
-function PostCard({ post, scheme = defaultScheme, access_token = "" }: PostCardProps) {
+function PostCard({ post, scheme = defaultScheme}: PostCardProps) {
 
 
     const [likes, setLikes] = useState(post.likes);
@@ -72,8 +72,8 @@ function PostCard({ post, scheme = defaultScheme, access_token = "" }: PostCardP
             fontSize: "0.95rem",
           }}
           onClick={async () => {
-            let response = await like_post({post_id: post._id.$oid} ,access_token)
-            if (response.status == "Like"){
+            let response = await likePost({post_id: post._id.$oid})
+            if (response.data.status == "Like"){
               setLikes(likes+1)
 
             }

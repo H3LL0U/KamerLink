@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import type { components } from "../api/types/api";
-import { gamble } from "../api/api";
-
+import type { components } from "../api/gen/api";
+import { gamble } from "../api/gamble";
+import { useAuth0ClientConfig } from "../api/gen/clients";
 const SecretPage: React.FC = () => {
   const [result, setResult] = useState<components["schemas"]["GambleResults"] | null>(null);
   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
-
+  useAuth0ClientConfig()
   async function handleSpin() {
     try {
       const token = await getAccessTokenSilently();
       const input: components["schemas"]["Gamble"] = {
         gamble_type: "Slots",
       };
-      const res = await gamble(input, token);
+      const res = (await gamble(input)).data;
       setResult(res);
     } catch (err) {
       console.error(err);

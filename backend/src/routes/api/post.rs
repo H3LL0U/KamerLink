@@ -14,6 +14,7 @@ use chrono::Utc;
 use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
 pub mod like;
+use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, OpenApi};
 ///
 /// 
 /// Post request (creating a post)
@@ -24,10 +25,9 @@ pub mod like;
 pub struct PostDraft {
     title: String,
     message: String,
-    #[schema(value_type = Vec<String>, format = "binary")]
-    images: Vec<String>,
-    location: Option<Location>,
-    goal: Option<usize>
+    #[schema(content_media_type = "application/octet-stream")]
+    images: Vec<Vec<u8>>,
+
 }
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -44,8 +44,8 @@ use crate::database::schemas::post::InfraStemPost;
     post,
     path = "/api/post",
     request_body(
-        content_type = "multipart/formdata", 
-        content = PostDraft,
+        content_type = "multipart/form-data",
+        content = inline(PostDraft),
         description = "Creates a post"
     ),
     security(("bearerAuth" = [])),
@@ -63,8 +63,6 @@ pub async fn create_post(
     let mut title = String::new();
     let mut message = String::new();
     let mut images: Vec<Vec<u8>> = vec![];
-    let mut location: Option<Location> = None;
-    let mut goal: Option<usize> = None;
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap_or_default();
         match name {
@@ -77,29 +75,7 @@ pub async fn create_post(
             "images" => {
                 images.push(field.bytes().await.unwrap().to_vec());
             }
-            "location" => {
-                if let Ok(text) = field.text().await {
-                    // Expecting: {"type":"Point","coordinates":[lon,lat]}
-                    match serde_json::from_str::<Location>(&text) {
-                        Ok(loc) => location = Some(loc),
-                        Err(e) => {
-                            dbg!(e);
-                            return StatusCode::BAD_REQUEST.into_response();
-                        }
-                    }
-                }
-            }
-            "goal" => {
-                if let Ok(text) = field.text().await {
-                    match text.trim().parse::<usize>() {
-                        Ok(val) => goal = Some(val),
-                        Err(_) => {
-                            // Invalid number sent
-                            return StatusCode::BAD_REQUEST.into_response();
-                        }
-                    }
-                }
-            }
+
             _ => {}
         }
     }
@@ -118,8 +94,6 @@ pub async fn create_post(
         img_urls: vec![], // TODO: replace with URLs after upload
         likes: 0,
         points: 0,
-        goal,
-        location: location,
     };
 
     let new_id = match state
@@ -184,6 +158,8 @@ pub struct Posts{
         ("type" = RetrieveBy, Query, description = "Type of retrieval"),
         ("page" = usize, Query, description = "Page number for pagination")
     ),
+
+
     description = "Retrieves 5 posts"
 )]
 pub async fn retreve_posts(

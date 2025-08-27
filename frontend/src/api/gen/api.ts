@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/gamble": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["gamble"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post": {
         parameters: {
             query?: never;
@@ -21,7 +37,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "api/gamble": {
+    "/api/post/like": {
         parameters: {
             query?: never;
             header?: never;
@@ -30,7 +46,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["gamble"];
+        post: operations["like_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -52,10 +68,8 @@ export interface components {
         InfraStemPost: {
             _id: components["schemas"]["ObjectIdSchema"];
             created_at: string;
-            goal?: number | null;
             img_urls: string[];
             likes: number;
-            location?: null | components["schemas"]["Location"];
             message: string;
             points: number;
             title: string;
@@ -66,10 +80,6 @@ export interface components {
         };
         /** @enum {string} */
         LikeStatus: "Like" | "Unlike";
-        Location: {
-            coordinates: number[];
-            type: string;
-        };
         ObjectIdSchema: {
             $oid: string;
         };
@@ -79,9 +89,7 @@ export interface components {
          *
          *      */
         PostDraft: {
-            goal?: number | null;
-            images: string[];
-            location?: null | components["schemas"]["Location"];
+            images: number[][];
             message: string;
             title: string;
         };
@@ -117,6 +125,38 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    gamble: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Type of gamble */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Gamble"];
+            };
+        };
+        responses: {
+            /** @description Generates a list of numbers from 1 to 7 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GambleResults"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     retreve_posts: {
         parameters: {
             query: {
@@ -159,7 +199,11 @@ export interface operations {
         /** @description Creates a post */
         requestBody: {
             content: {
-                "multipart/formdata": components["schemas"]["PostDraft"];
+                "multipart/form-data": {
+                    images: number[][];
+                    message: string;
+                    title: string;
+                };
             };
         };
         responses: {
@@ -181,22 +225,26 @@ export interface operations {
             };
         };
     };
-    gamble: {
+    like_post: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LikePost"];
+            };
+        };
         responses: {
-            /** @description Generates a list of numbers from 1 to 7 */
+            /** @description Toggles the like/unlike under a post */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["GambleResults"];
+                    "application/json": components["schemas"]["ResponseLikePost"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

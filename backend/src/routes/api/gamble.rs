@@ -34,17 +34,19 @@ pub struct GambleResults{
 // /gamble
 #[utoipa::path(
     post,
-    path = "api/gamble",
+    path = "/api/gamble",
+    request_body(
+        content_type = "application/json",
+        description = "Type of gamble",
+        content = Gamble
+    ),
     security(("bearerAuth" = [])),
     responses(
         (status = 200, description = "Generates a list of numbers from 1 to 7", body = GambleResults),
         (status = 401, description = "Unauthorized - missing or invalid token")
     )
 )]
-pub async fn gamble( Json(input): Json<Gamble>, ) -> Response {
-
-
-    // Proceed with the gamble
+pub async fn gamble(Json(input): Json<Gamble>) -> Response {
     let result = match input.gamble_type {
         GambleTypes::Slots => GambleResults {
             slots: Some(rng::generate_slots()),

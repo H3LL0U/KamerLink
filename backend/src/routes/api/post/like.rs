@@ -27,7 +27,7 @@ pub struct ResponseLikePost {
 
 #[utoipa::path(
     post,
-    path = "api/gamble",
+    path = "/api/post/like",
     security(("bearerAuth" = [])),
     responses(
         (status = 200, description = "Toggles the like/unlike under a post", body = ResponseLikePost),

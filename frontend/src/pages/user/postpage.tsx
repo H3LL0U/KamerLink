@@ -2,19 +2,24 @@ import { useState, type DragEvent, type FormEvent } from "react";
 import { createPost, type PostDraft } from "../../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
 import { LocationPicker } from "../../components/generic_components/LocationPicker/LocationPicker";
-
-// Helper function to convert images into base64 format strings
-export async function filesToBase64(files: File[]): Promise<string[]> {
+import Header from "../../components/page_components/Header/Header";
+// Helper function to convert files into arrays of numbers
+export async function filesToNumbers(files: File[]): Promise<number[][]> {
   const readFile = (file: File) =>
-    new Promise<string>((resolve, reject) => {
+    new Promise<number[]>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = () => {
+        const buffer = reader.result as ArrayBuffer;
+        const bytes = new Uint8Array(buffer);
+        resolve(Array.from(bytes)); // convert to number[]
+      };
       reader.onerror = reject;
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file); // read file as raw bytes
     });
 
   return Promise.all(files.map(readFile));
 }
+
 
 function PostPage() {
   const [title, setTitle] = useState("");
@@ -59,7 +64,7 @@ function PostPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const images: string[] = await filesToBase64(photos);
+    const images: number[][] = await filesToNumbers(photos);
 
     const location = coordinates
       ? { type: "Point", coordinates }
@@ -73,8 +78,7 @@ function PostPage() {
         title,
         message,
         images,
-        location,
-        goal: goalValue,
+
       } as PostDraft,
       await getAccessTokenSilently()
     );
@@ -83,11 +87,14 @@ function PostPage() {
   };
 
   return (
+    <>
+    <Header></Header>
     <div
-      style={{ width: "100vw", minHeight: "100vh", padding: 20 }}
+      style={{ width: "100vw", minHeight: "100vh", padding: 20,}}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
+      <div style={{margin:"auto", maxWidth:"1000px"}}>
       <h2>Maak een Post</h2>
       <form onSubmit={handleSubmit}>
         <input
@@ -96,7 +103,7 @@ function PostPage() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{ width: "100%", marginBottom: 10, padding: 8 ,color:"black"}}
         />
         <textarea
           placeholder="Message"
@@ -104,17 +111,11 @@ function PostPage() {
           onChange={(e) => setMessage(e.target.value)}
           required
           rows={5}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
+          style={{ width: "100%", marginBottom: 10, padding: 8, color:"black"
+
+          }}
         />
 
-        <input
-          type="number"
-          placeholder="Goal (optional)"
-          value={goal ?? ""}
-          min={0}
-          onChange={(e) => setGoal(e.target.value === "" ? undefined : Number(e.target.value))}
-          style={{ width: "100%", marginBottom: 10, padding: 8 }}
-        />
 
         <input type="file" accept="image/*" multiple onChange={handleFileInputChange} />
 
@@ -134,7 +135,7 @@ function PostPage() {
                   top: 2,
                   right: 2,
                   background: "black",
-                  color: "white",
+
                   border: "none",
                   borderRadius: "50%",
                   width: "20px",
@@ -152,15 +153,17 @@ function PostPage() {
               </button>
             </div>
           ))}
+          
         </div>
 
-        <LocationPicker onChange={setCoordinates} />
 
         <button type="submit" style={{ marginTop: 15, padding: "10px 20px" }}>
           Submit
         </button>
       </form>
+      </div>
     </div>
+    </>
   );
 }
 

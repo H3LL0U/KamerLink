@@ -25,8 +25,6 @@ pub struct InfraStemPost {
     pub img_urls: Vec<String>,
     pub likes: usize,
     pub points: usize,
-    pub goal: Option<usize>,
-    pub location: Option<Location>,
 }
 
 

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && openapi-typescript ../backend/openapi.json -o src/api/types/api.d.ts",
+    "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && openapi-typescript ../backend/openapi.json -o src/api/types/api.d.ts && npx openapi-typescript ../backend/openapi.json --output src/api/gen/api.ts",
     "dev": "npm run apigen && vite",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -13,6 +13,7 @@
     "@auth0/auth0-react": "^2.4.0",
     "leaflet": "^1.9.4",
     "openapi-typescript": "^7.9.1",
+    "openapi-typescript-fetch": "^2.2.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-leaflet": "^5.0.0",

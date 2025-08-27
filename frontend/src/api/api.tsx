@@ -1,4 +1,5 @@
-import type { components } from './types/api';
+import type { components } from './gen/api';
+import { client } from './gen/clients';
 export const API_BASE_URL =
   import.meta.env.MODE === 'production'
     ? 'https://kamerlink.onrender.com'
@@ -10,59 +11,4 @@ export const FRONTEND_BASE_URL =
 
 export const AUTH0DOMAIN ="dev-ptvxswasjjfxn7s4.us.auth0.com";
 export const AUTH0CLIENT_ID="DeboSk54X1Hg2f8hu3IIsxTntFhHri5a";
-
-type GambleTypes = "Slots";
-
-interface Gamble {
-  gamble_type: GambleTypes;
-}
-
-export async function gamble(input: components["schemas"]["Gamble"], access_token: string): Promise<components["schemas"]["GambleResults"]> {
-  const response = await fetch(API_BASE_URL + '/api/gamble', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${access_token}`
-     },
-    
-    body: JSON.stringify(input),
-  });
-
-  if (!response.ok) throw new Error('Failed to gamble');
-
-  const data = (await response.json()) as components["schemas"]["GambleResults"];
-  return data;
-}
-
-
-export function toQueryString(obj: Record<string, any>, prefix = ""): string {
-  const params = new URLSearchParams();
-
-  function appendParam(key: string, value: any) {
-    if (value == null) return;
-    params.append(key, String(value));
-  }
-
-  function build(o: any, parentKey = "") {
-    if (typeof o === "string" || typeof o === "number" || typeof o === "boolean") {
-      appendParam(parentKey, o);
-    } else if (Array.isArray(o)) {
-      o.forEach((v, i) => build(v, `${parentKey}[${i}]`));
-    } else if (typeof o === "object") {
-      const keys = Object.keys(o);
-      if (keys.length === 1 && typeof o[keys[0]] === "string") {
-        // handle single-key union like { PostId: "abc" }
-        appendParam("type", keys[0]);
-        appendParam(keys[0], o[keys[0]]);
-      } else {
-        for (const key of keys) {
-          build(o[key], parentKey ? `${parentKey}.${key}` : key);
-        }
-      }
-    }
-  }
-
-  build(obj, prefix);
-
-  return params.toString();
-}
 

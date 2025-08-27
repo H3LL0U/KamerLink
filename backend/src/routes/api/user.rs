@@ -3,7 +3,7 @@
 /* 
 #[utoipa::path(
     get,
-    path = "api/gamble",
+    path = "/api/gamble",
     security(("bearerAuth" = [])),
     responses(
         (status = 200, description = "Generates a list of numbers from 1 to 7", body = GambleResults),

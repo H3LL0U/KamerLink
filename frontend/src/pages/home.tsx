@@ -3,9 +3,10 @@ import { useState } from 'react';
 import LoginButton from '../components/generic_components/LoginButton/LoginButton';
 import LogoutButton from '../components/generic_components/LogoutButton/LogoutButton';
 import { useAuth0 } from '@auth0/auth0-react';
-import { gamble } from '../api/api';
+
 import Header from '../components/page_components/Header/Header';
-import type { operations, components } from '../api/types/api';
+
+import type { components } from '../../api/gen/api';
 import { type ColorScheme } from '../main';
 import ColorTransition from '../components/generic_components/ColorTransition/ColorTransition';
 import Card from '../components/generic_components/Card/Card';
@@ -38,21 +39,7 @@ const Home = () => {
   } 
 
 
-  async function handleSpin() {
 
-
-
-    try {
-      const input: components["schemas"]["Gamble"] = {
-          gamble_type: "Slots", 
-      };
-      const res = await gamble(input,await getAccessTokenSilently())
-      setResult(res);
-    } catch (err) {
-      console.error(err);
-      alert('Error spinning slots');
-    }
-  }
 
   return (
     <>
