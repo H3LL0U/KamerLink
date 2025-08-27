@@ -1,6 +1,6 @@
 import type { paths,  components, operations} from "./gen/api";
 import { API_BASE_URL } from "./api";
-import { client, useAuth0ClientConfig } from "./gen/clients";
+import { client } from "./gen/clients";
 export type PostDraft = components["schemas"]["PostDraft"];
 export type PostResponse = paths["/api/post"]["post"]["responses"]["200"]["content"]["application/json"];
 

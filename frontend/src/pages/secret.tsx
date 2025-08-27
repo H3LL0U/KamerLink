@@ -9,7 +9,7 @@ const SecretPage: React.FC = () => {
   useAuth0ClientConfig()
   async function handleSpin() {
     try {
-      const token = await getAccessTokenSilently();
+      
       const input: components["schemas"]["Gamble"] = {
         gamble_type: "Slots",
       };

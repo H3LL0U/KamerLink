@@ -5,12 +5,9 @@ import Home from './pages/home';
 import Profile from './pages/user/profile';
 import PostPage from './pages/user/postpage';
 import PostViewPage from './pages/posts';
-import TextImage from './components/generic_components/TextImage/TextImage';
 import SecretPage from './pages/secret';
 import Redirect from './pages/redirect';
-import { useEffect } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { client, configureClient } from './api/gen/clients';
+
 
 
 

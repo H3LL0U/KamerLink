@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && openapi-typescript ../backend/openapi.json -o src/api/types/api.d.ts && npx openapi-typescript ../backend/openapi.json --output src/api/gen/api.ts",
+    "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && npx openapi-typescript ../backend/openapi.json --output src/api/gen/api.ts",
     "dev": "npm run apigen && vite",
     "lint": "eslint .",
     "preview": "vite preview"

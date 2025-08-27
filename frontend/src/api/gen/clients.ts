@@ -6,8 +6,6 @@ import { API_BASE_URL } from "../api";
 import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-
-
 // Create the client
 export const client = Fetcher.for<paths>();
 
@@ -36,8 +34,6 @@ export function useAuth0ClientConfig() {
   }, [isAuthenticated, getAccessTokenSilently]);
 }
 
-
-
 // Default configuration without bearer token
 client.configure({
   baseUrl: API_BASE_URL,
@@ -46,9 +42,6 @@ client.configure({
     },
   },
 });
-
-
-
 
 export function configureClient(token:string) {
     client.configure({

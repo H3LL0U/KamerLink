@@ -1,5 +1,3 @@
-import type { components } from './gen/api';
-import { client } from './gen/clients';
 export const API_BASE_URL =
   import.meta.env.MODE === 'production'
     ? 'https://kamerlink.onrender.com'
