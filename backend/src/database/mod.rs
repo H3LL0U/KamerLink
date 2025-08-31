@@ -3,7 +3,6 @@ use utoipa::ToSchema;
 
 
 pub mod schemas;
-pub mod utils;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 struct ObjectIdSchema{

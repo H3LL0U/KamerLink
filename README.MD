@@ -6,25 +6,71 @@ A service that lets students vote on, create initiaves for their school, sociali
 
 ## High level idea implementaion
 
-The service will consist of 3 parts
+The service will consist of multipple parts
 
 ### Frontend
 Will be written in TypeScript+React and is going to be hosted on vercel (may change later on)
 
 ### Backend
-Will be written in Rust using Axum as backbone. Will be hosted separately on render (at the start) if the idea is successfully implemented will be hosted on fly.io
+Will be written in Rust using Axum as backbone. Will be hosted separately on render (at the start) if the idea is successfully implemented and there are more users than expected there will be two options:
+- Continue using render but without a free tier
+- Switch to a cheaper alternative
 
 ### Database
 Backend will communicate with the MongoDB database. It will mostly store the Initiatives and their locations
 
-## User authentication
-Preferably users should be able to login using their DigiD. However it will not be possible as you need the permission from signincat which probably might not be possible since it is a government service. For this reason the initial implementation will be using auth0 as the provider.
+512 MB mongoDB on free tier should be enough for the scale of the application.
 
+
+### Image storage
+Will be decided when upon successful implementation of the post API
+
+
+### User authorization
+Users will be able to login using their school email only. Auth0 will be used as the backbone for user authorization.
+
+
+
+## Documentation of the code structure
+
+The codebase is seperated into two parts:
+- Backend
+- Frontend
+
+Documentation for each of the parts is stored in ./frontend/README.MD and ./backend/README.MD respectively 
+
+
+### Frontend
+contains code for the site's frontend
+
+#### src/pages
+
+Stores components that are later used as pages in App.tsx using react-router-dom.
+The pages are stored in a hierarchical order where src/pages is the root.
+
+So for example for the new page at the root of the site (www.domain.com/new_path) a file should be created a file with the page component at the path src/pages/new_path.tsx (home.tsx is an exception. It is used as the root)
+
+For nested paths new directory/directories should be created that represent the nesting of the path: So (www.domain.com/path/new_path) should be stored in src/pages/path/new_path.tsx
+
+##### src/pages/REPLACEMENTS
+This folder is not part of the routing.
+Components stored within this directory are used to replace pages if they user does not meet certain requirements
+
+
+#### src/components
+Used for storing components that are (re)used in the pages
+
+#### src/api
+Used for storing openapi functions that are later used to call the backend API from the frontend
+
+- src/api/api.tsx is used for storing constants
+- src/api/* is used for storing functions used for calling the api that are generated using the client constant (see bellow)
+
+##### src/api/gen
+ Stores the generated api (src/api/gen/api.ts) and the configuration of the "client" constant (src/api/gen/clients.ts) that is used for creating the api functions in src/api 
 
 
 
 ## TODO
 
--  Set up user authentication (both for frontend and backend)
--  Set up an initial UI
--  Implement frontend-backend API interactions for submitting and viewing initiatives and the main idea
+- See issues

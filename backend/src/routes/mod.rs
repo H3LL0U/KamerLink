@@ -40,11 +40,12 @@ impl Modify for JwtAuth {
 
 #[derive(OpenApi)]
 #[openapi(
+    // All of the endpoints should be specified here
     paths(
-        gamble,//gamble path
+        gamble,//gamble path (post)
         post::create_post , // post path (post)
         post::retreve_posts, // post path (get)
-        post::like::like_post
+        post::like::like_post // like path (post)
     ),
     components(
     schemas(

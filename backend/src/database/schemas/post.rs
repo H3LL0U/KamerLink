@@ -10,8 +10,17 @@ use crate::database::ObjectIdSchema;
 pub struct Comment {
     user_id: String,
     message: String,
-    replies: Vec<Comment>, // Threaded comments
+    replies: Vec<Reply>, // Threaded comments might be implemented later (Vec<Comment> instead) 
 }
+#[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
+pub struct Reply{
+    user_id: String,
+    message: String
+}
+
+
+
+
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct InfraStemPost {
@@ -28,54 +37,3 @@ pub struct InfraStemPost {
 }
 
 
-
-
-#[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
-pub struct Location {
-    pub r#type: String,        // typically "Point"
-    pub coordinates: [f64; 2], // [longitude, latitude]
-}
-/* 
-impl InfraStemPost {
-    pub fn get_validation_options() -> CreateCollectionOptions {
-        let validator = doc! {
-            "$jsonSchema": {
-                "bsonType": "object",
-                "required": ["user_id", "title", "message", "img_urls", "likes", "points"],
-                "properties": {
-                    "user_id": { "bsonType": "string" },
-                    "created_at": { "bsonType": "string" },
-                    "title": { "bsonType": "string", "maxLength": 100 },
-                    "message": { "bsonType": "string", "maxLength": 1000 },
-                    "img_urls": {
-                        "bsonType": "array",
-                        "items": { "bsonType": "string" }
-                    },
-                    "likes": { "bsonType": "long" },
-                    "points": { "bsonType": "long" },
-                    "goal": { "bsonType": ["int", "null"] },
-                    "location": {
-                        "bsonType": ["object", "null"],
-                        "properties": {
-                            "type": { "enum": ["Point"] },
-                            "coordinates": {
-                                "bsonType": "array",
-                                "items": [
-                                    { "bsonType": "double" },
-                                    { "bsonType": "double" }
-                                ]
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        CreateCollectionOptions::builder()
-            .validator(Some(validator))
-            .validation_level(ValidationLevel::Strict)
-            .validation_action(ValidationAction::Error)
-            .build()
-    }
-}
-*/

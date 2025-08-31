@@ -1,3 +1,8 @@
+/*
+This file is used to store constants that are being used by other files later on (mostly for API purposes)
+*/
+
+
 export const API_BASE_URL =
   import.meta.env.MODE === 'production'
     ? 'https://kamerlink.onrender.com'

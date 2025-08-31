@@ -8,13 +8,15 @@ use futures::TryStreamExt;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use crate::database::schemas::{post::Location, user};
+
 use crate::AppState;
 use chrono::Utc;
 use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
-pub mod like;
+
 use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, OpenApi};
+pub mod like;
+pub mod comment;
 ///
 /// 
 /// Post request (creating a post)
@@ -200,3 +202,6 @@ pub async fn retreve_posts(
     while let Ok(Some(post)) = cursor.try_next().await { posts.push(post); };
     axum::Json(Posts { posts }).into_response()
 }
+
+
+
