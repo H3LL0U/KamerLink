@@ -7,7 +7,7 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use mongodb::bson::{doc, oid::ObjectId};
-use crate::{database::schemas::{post::InfraStemPost, user::User}, routes::post::Posts, AppState};
+use crate::{database::schemas::{post::KamerlinkPost, user::User}, routes::post::Posts, AppState};
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct LikePost {
@@ -42,7 +42,7 @@ pub async fn like_post(
     Json(input): Json<LikePost>,
 ) -> Response {
     let collection = state.db.collection::<User>("users");
-    let posts_collection = state.db.collection::<InfraStemPost>("posts");
+    let posts_collection = state.db.collection::<KamerlinkPost>("posts");
     let cur_user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
@@ -61,8 +61,11 @@ pub async fn like_post(
         Ok(Some(_)) => {
             // Post is already liked → UNLIKE
 
-
+            
             //remove post from user
+
+            
+            
             let update = doc! {
                 "$pull": { "likes": &input.post_id }
             };

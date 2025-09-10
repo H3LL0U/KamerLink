@@ -7,7 +7,18 @@ use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
 
-use crate::{rng,};
+use rand;
+use rand::Rng;
+
+pub fn generate_slots() -> Vec<u8>{
+    let mut rng = rand::rng();
+    
+    //generate 3 numbers from one to (including) 7
+    let numbers: Vec<u8> = (1..=7) 
+        .map(|_| rng.random_range(1..=3))
+        .collect();
+    numbers
+}
 
 // SCHEMAS
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -49,7 +60,7 @@ pub struct GambleResults{
 pub async fn gamble(Json(input): Json<Gamble>) -> Response {
     let result = match input.gamble_type {
         GambleTypes::Slots => GambleResults {
-            slots: Some(rng::generate_slots()),
+            slots: Some(generate_slots()),
         },
     };
 

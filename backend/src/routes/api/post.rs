@@ -9,14 +9,15 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::AppState;
+use crate::{routes::request_builder, AppState};
 use chrono::Utc;
 use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
-
+use request_builder::{RetrieveBy, RetrievePaginated};
 use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, OpenApi};
 pub mod like;
 pub mod comment;
+pub mod points;
 ///
 /// 
 /// Post request (creating a post)
@@ -38,7 +39,7 @@ pub struct PostResponse {
 }
 
 use mongodb::{self, bson::{doc, oid::ObjectId}, options::{FindOptions, InsertOneOptions}};
-use crate::database::schemas::post::InfraStemPost;
+use crate::database::schemas::post::KamerlinkPost;
 
 
 
@@ -87,7 +88,7 @@ pub async fn create_post(
         Err(_) => {return  StatusCode::INTERNAL_SERVER_ERROR.into_response()},
     };
 
-    let post_schema = InfraStemPost {
+    let post_schema = KamerlinkPost {
         _id: ObjectId::new(),
         user_id: user_id.to_string(),
         created_at: Utc::now().to_rfc3339(), 
@@ -100,7 +101,7 @@ pub async fn create_post(
 
     let new_id = match state
         .db
-        .collection::<InfraStemPost>("posts")
+        .collection::<KamerlinkPost>("posts")
         .insert_one(post_schema)
         .await
     {
@@ -125,26 +126,10 @@ pub async fn create_post(
 /// Get request (Getting a specific or multipple posts)
 /// 
 /// 
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub enum RetrieveBy {
-    PostId(String),
-    UserId(String),
-    MostLikes,
-    MostPoints,
-    MostRecent,
-    NewToUser
 
-
-}
-//
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct RetrievePost {
-    r#type: RetrieveBy,
-    page: usize
-}
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct Posts{
-    posts: Vec<InfraStemPost> // excluding comments
+    posts: Vec<KamerlinkPost> // excluding comments
 }
 
 
@@ -166,9 +151,9 @@ pub struct Posts{
 )]
 pub async fn retreve_posts(
     Extension(state): Extension<AppState>,
-    Query(req): Query<RetrievePost>,
+    Query(req): Query<RetrievePaginated>,
 ) -> Response {
-    let collection = state.db.collection::<InfraStemPost>("posts");
+    let collection = state.db.collection::<KamerlinkPost>("posts");
 
     let limit: i64 = 5;
     let skip: i64 = (req.page as i64) * limit;
@@ -185,7 +170,7 @@ pub async fn retreve_posts(
         .build();
 
     let filter = match req.r#type {
-        RetrieveBy::PostId(ref id) => ObjectId::parse_str(id)
+        RetrieveBy::Id(ref id) => ObjectId::parse_str(id)
             .map(|obj_id| doc! { "_id": obj_id })
             .unwrap_or_else(|_| doc! { "_id": "invalid" }),
         RetrieveBy::UserId(ref uid) => doc! { "user_id": uid },

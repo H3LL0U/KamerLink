@@ -40,10 +40,16 @@ export async function createPost(
 // Get request
 
 
-export type RetrievePost = components["schemas"]["RetrievePost"];
+export type RetrievePost = components["schemas"]["RetrievePaginated"];
 export type Posts = paths["/api/post"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export const retrievePosts = client.path("/api/post").method("get").create()
 
 
 export const likePost = client.path("/api/post/like").method("post").create()
+
+
+export type SpendPoints = components["schemas"]["GivePoints"];
+export const spendPoints = client.path("/api/post/points").method("post").create()
+
+export const checkPoints = client.path("/api/post/points").method("get").create()

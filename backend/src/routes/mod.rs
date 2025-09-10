@@ -1,13 +1,14 @@
 
 pub mod api;
-
+pub mod request_builder;
 pub use api::gamble::*;
 pub use api::*;
-
+pub use user;
 use serde::Serialize;
 use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, Modify, OpenApi};
 
-use crate::routes::post::{like::{LikePost, ResponseLikePost}, PostDraft, PostResponse, Posts, RetrieveBy, RetrievePost};
+use crate::routes::post::{like::{LikePost, ResponseLikePost}, PostDraft, PostResponse, Posts};
+use request_builder::{RetrieveBy, RetrievePaginated};
 
 //pub fn get_jwt_configuration () -> SecurityScheme 
 
@@ -45,14 +46,19 @@ impl Modify for JwtAuth {
         gamble,//gamble path (post)
         post::create_post , // post path (post)
         post::retreve_posts, // post path (get)
-        post::like::like_post // like path (post)
+        post::like::like_post, // like path (post)
+        post::points::spend_points, // give points path (post)
+        post::points::check_points, // check how many points was given (get)
+        user::retrieve_users // user path (get)
+
     ),
     components(
     schemas(
         GambleResults, Gamble, // Gamble schemas
         PostDraft, PostResponse, // Post schemas (post)
-        RetrievePost, Posts , RetrieveBy, // Post schemas (get)
+        RetrievePaginated, Posts , RetrieveBy, // Post schemas (get)
         LikePost, ResponseLikePost
+        
     ),
     ),
     modifiers(&JwtAuth),               

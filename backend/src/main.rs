@@ -4,6 +4,7 @@ use axum::routing::{get, Route};
 use axum::{ routing::post, Router, };
 use axum::extract::State;
 use backend::routes::post::like::like_post;
+use backend::routes::post::points::check_points;
 use backend::{get_jwks, AppState};
 use http::HeaderValue;
 use jsonwebtoken::jwk::JwkSet;
@@ -15,10 +16,10 @@ use utoipa::{OpenApi};
 use utoipa_swagger_ui::SwaggerUi;
 use tower_http::cors::{CorsLayer, Any}; 
 use dotenv::dotenv;
-pub mod rng;
 pub mod routes;
 pub mod validation;
 pub mod database;
+pub mod errors;
 use routes::*;
 use routes::ApiDoc;
 use validation::token_validation_middleware;
@@ -32,7 +33,9 @@ use axum::{
 use mongodb::{self, Client, Database};
 use tower_http::limit::RequestBodyLimitLayer;
 use crate::routes::api::post::create_post;
+use crate::routes::post::points::spend_points;
 use crate::routes::post::retreve_posts;
+use crate::routes::user::retrieve_users;
 // /gamble
 
 
@@ -46,10 +49,10 @@ pub async fn main() {
     let openapi = ApiDoc::openapi();
     fs::write("openapi.json", openapi.to_json().unwrap())
         .expect("Failed to write openapi.json");
-    println!("openapi.json generated.");
+    dbg!("openapi.json generated.");
 
     if env::args().any(|arg| arg == "-apigen") {
-        println!("The backend server is not run");
+        dbg!("The backend server is not run");
         return;
     }
     // ALLOWED ORIGINS
@@ -61,8 +64,9 @@ pub async fn main() {
 
     // MONGODB CONNECTION
     
-    let db = Arc::new(Client::with_uri_str(env::var("MONGO_DB").expect("No MONGO_DB set")).await.expect("Error connecting to db").database("kamerlink"));
-
+    let client = Arc::new(Client::with_uri_str(env::var("MONGO_DB").expect("No MONGO_DB set")).await.expect("Error connecting to db"));
+    let db = Arc::new(client.database("kamerlink"));
+    let session = Arc::new(client.start_session().await.expect("Could not initialize a session"));
     let cors = CorsLayer::new()
         .allow_origin(origins)
         .allow_methods(Any)
@@ -72,7 +76,8 @@ pub async fn main() {
 
     let state = AppState {
             jwks: Arc::new(get_jwks().await.expect("Error setting app state")),
-            db: db
+            db: db,
+            session: session
         };    
 
 
@@ -83,6 +88,9 @@ pub async fn main() {
         .route("/post", post(create_post))
         .route("/post", get(retreve_posts))
         .route("/post/like", post(like_post))
+        .route("/post/points", post(spend_points))
+        .route("/post/points", get(check_points))
+        .route("/user", get(retrieve_users))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,

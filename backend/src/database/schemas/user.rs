@@ -1,12 +1,15 @@
 
 
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use mongodb::{bson::{doc, oid::ObjectId}, options::{CreateCollectionOptions, ValidationAction, ValidationLevel}, Database};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 use anyhow::{anyhow, Context, Result};
 use derive_builder::Builder;
+use crate::database::ObjectIdSchema;
+use substruct::substruct;
+
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct UserSub{
     pub r#type: String,
@@ -41,24 +44,33 @@ pub enum Role {
     Teacher,
     Admin
 }
-
+#[substruct(UserInfo)] // Defines a safe struct that only contains public user info 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Builder, Debug)]
 #[builder(pattern = "owned")] // make setters take self instead of &mut self
+
 pub struct User {
+
+    #[substruct(UserInfo)]
+    #[schema(value_type = ObjectIdSchema)]
+    pub _id: ObjectId,
+
     // Default empty string
     #[builder(default = "std::string::String::new()", setter(into))]
     pub email: String,
 
     // Default "New user"
+    #[substruct(UserInfo)]
     #[builder(default = "String::from(\"New user\")", setter(into))]
     pub nickname: String,
 
     // Default Role::Student
+    #[substruct(UserInfo)]
     #[builder(default = "Role::Student")]
     pub role: Role,
 
     // Default false
     #[builder(default)]
+    #[substruct(UserInfo)]
     pub is_validated: bool,
 
     // Default empty Vec
@@ -68,13 +80,15 @@ pub struct User {
     #[builder(default)]
     pub likes: Vec<String>,
 
+    #[schema(value_type = HashMap<ObjectIdSchema, i64>)]
     #[builder(default)]
-    pub points_given_to: Vec<PointsGivenTo>,
+    pub points_given_to: HashMap<ObjectId, i64>, // key = post_id, value = points
 
     #[builder(default)]
     pub seen: Vec<String>,
 
     #[builder(default = 100)]
+    #[substruct(UserInfo)]
     pub points: i64
 
 }
@@ -136,13 +150,15 @@ impl User {
     pub fn new(email: String, nickname: String, user_subs:Vec<UserSub>) -> Self {
         
         
-        Self { email: email, 
+        Self { 
+            _id : ObjectId::new(),
+            email: email, 
             nickname: nickname ,
             user_subs: user_subs,
             role: Role::Student,
             is_validated: false,
             likes: Vec::new(),
-            points_given_to: Vec::new() ,
+            points_given_to: HashMap::new() ,
 
             seen: Vec::new(),
         points:100}

@@ -23,7 +23,7 @@ pub struct Reply{
 
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
-pub struct InfraStemPost {
+pub struct KamerlinkPost {
 
     #[schema(value_type = ObjectIdSchema)]
     pub _id: ObjectId,

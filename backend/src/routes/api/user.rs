@@ -1,25 +1,28 @@
 
+use axum::{extract::Query, response::Response, Extension};
 
-/* 
+use crate::{database::schemas::user::{User, UserInfo}, routes::request_builder::*, AppState};
+use crate::routes::request_builder::{RetrieveBy, RetrievePaginated, retrieve_items};
 #[utoipa::path(
     get,
-    path = "/api/gamble",
-    security(("bearerAuth" = [])),
+    path = "/api/user",
     responses(
-        (status = 200, description = "Generates a list of numbers from 1 to 7", body = GambleResults),
+        (status = 200, description = "Retrieves users", body = PaginatedResponse<UserInfo>),
         (status = 401, description = "Unauthorized - missing or invalid token")
-    )
+    ),
+    params(
+        ("type" = RetrieveBy, Query, description = "Type of retrieval"),
+        ("page" = usize, Query, description = "Page number for pagination")
+    ),
+
+
+    description = "Retrieves 5 users"
 )]
-pub async fn gamble( Json(input): Json<Gamble>, ) -> Response {
+pub async fn retrieve_users(
+    Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
+    Query(req): Query<RetrievePaginated>,
+) -> Response {
+    retrieve_items::<UserInfo>(Extension(state),Extension(sub), Query(req), "users").await
 
-
-    // Proceed with the gamble
-    let result = match input.gamble_type {
-        GambleTypes::Slots => GambleResults {
-            slots: Some(rng::generate_slots()),
-        },
-    };
-
-    Json(result).into_response()
 }
-*/

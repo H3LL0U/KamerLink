@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { type Posts, type RetrievePost,retrievePosts  } from "../api/post"; //
+import { type Posts, type RetrievePost,retrievePosts  } from "../api/post"; 
 import { useAuth0 } from "@auth0/auth0-react";
-import Card from "../components/generic_components/Card/Card";
+
 import Header from "../components/page_components/Header/Header";
 import PostCard from "../components/page_components/PostCard/PostCard";
 import NotLoggedIn from "./REPLACEMENTS/not_logged_in";
@@ -11,7 +11,9 @@ import MultiDropdown from "../components/generic_components/Dropdowns/MultiDropd
 import { defaultScheme } from "../main";
 import ColorTransition from "../components/generic_components/ColorTransition/ColorTransition";
 import { configureClient } from "../api/gen/clients";
-import type { components } from '../api/gen/api';
+import PointsPopUp from "../components/page_components/PointsPopUp/PointsPopUp";
+import { getUsers } from "../api/user";
+import {type  UserInfo } from "../api/user";
 type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
@@ -22,12 +24,32 @@ function PostViewPage() {
   const [page, setPage] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [accessToken, setAccessToken] = useState<string>("");
-
+  const [userInfo, setUserInfo] = useState<UserInfo|null>(null)
   const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
   const [filter, setFilter] = useState<Filter>("Nieuw");
 
   const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0();
+  // fetch user info once when page loads & token ready
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+          const request: RetrievePost = {
+          type: "_Self",
+          page: 0,
+        };
+        const data = (await getUsers(request)).data;
 
+        setUserInfo(data.items[0]);
+      } catch (err) {
+        console.error("Failed to fetch user info:", err);
+        setError("Failed to fetch user info.");
+      }
+    };
+
+    if (isAuthenticated && accessToken) {
+      fetchUserInfo();
+    }
+  }, [isAuthenticated, accessToken]);
   // Make sure accessToken is set once user is authenticated
   useEffect(() => {
     const fetchToken = async () => {
@@ -201,7 +223,10 @@ function PostViewPage() {
         }}
       >
         {posts.posts.map((post, index) => (
-          <PostCard key={index} post={post} access_token={accessToken} />
+          <>
+          
+          <PostCard key={index} _post={post} userInfo={userInfo} setUserInfo={setUserInfo} />
+          </>
         ))}
         {loading && <div>Loading more posts...</div>}
         {!hasMore && <div>No more posts.</div>}

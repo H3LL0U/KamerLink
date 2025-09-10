@@ -53,6 +53,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["check_points"];
+        put?: never;
+        post: operations["spend_points"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Retrieves 5 users */
+        get: operations["retrieve_users"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -65,7 +98,20 @@ export interface components {
         };
         /** @enum {string} */
         GambleTypes: "Slots";
-        InfraStemPost: {
+        GivePoints: {
+            /** Format: int64 */
+            points: number;
+            post_id: string;
+        };
+        GivenPoints: {
+            /** Format: int64 */
+            limit: number;
+            /** Format: int64 */
+            points_given: number;
+        };
+        /** @enum {string} */
+        KamerlinkError: never;
+        KamerlinkPost: {
             _id: components["schemas"]["ObjectIdSchema"];
             created_at: string;
             img_urls: string[];
@@ -83,6 +129,16 @@ export interface components {
         ObjectIdSchema: {
             $oid: string;
         };
+        PaginatedResponse_UserInfo: {
+            items: {
+                _id: components["schemas"]["ObjectIdSchema"];
+                is_validated: boolean;
+                nickname: string;
+                /** Format: int64 */
+                points: number;
+                role: components["schemas"]["Role"];
+            }[];
+        };
         /** @description
          *
          *     Post request (creating a post)
@@ -96,25 +152,38 @@ export interface components {
         PostResponse: {
             post_id: string;
         };
-        Posts: {
-            posts: components["schemas"]["InfraStemPost"][];
-        };
-        ResponseLikePost: {
-            status: components["schemas"]["LikeStatus"];
-        };
         /** @description
          *
          *     Get request (Getting a specific or multipple posts)
          *
          *      */
-        RetrieveBy: {
-            PostId: string;
+        Posts: {
+            posts: components["schemas"]["KamerlinkPost"][];
+        };
+        ResponseGivePoints: {
+            status?: null | components["schemas"]["KamerlinkError"];
+        };
+        ResponseLikePost: {
+            status: components["schemas"]["LikeStatus"];
+        };
+        RetrieveBy: "_Self" | {
+            Id: string;
         } | {
             UserId: string;
         } | "MostLikes" | "MostPoints" | "MostRecent" | "NewToUser";
-        RetrievePost: {
+        RetrievePaginated: {
             page: number;
             type: components["schemas"]["RetrieveBy"];
+        };
+        /** @enum {string} */
+        Role: "Student" | "Teacher" | "Admin";
+        UserInfo: {
+            _id: components["schemas"]["ObjectIdSchema"];
+            is_validated: boolean;
+            nickname: string;
+            /** Format: int64 */
+            points: number;
+            role: components["schemas"]["Role"];
         };
     };
     responses: never;
@@ -245,6 +314,99 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResponseLikePost"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    check_points: {
+        parameters: {
+            query: {
+                /** @description Type of retrieval */
+                post_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns how many points a specific user has spent on a post */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GivenPoints"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    spend_points: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GivePoints"];
+            };
+        };
+        responses: {
+            /** @description Gives Points to a specific post */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponseGivePoints"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    retrieve_users: {
+        parameters: {
+            query: {
+                /** @description Type of retrieval */
+                type: components["schemas"]["RetrieveBy"];
+                /** @description Page number for pagination */
+                page: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Retrieves users */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_UserInfo"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

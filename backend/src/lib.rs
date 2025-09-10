@@ -4,12 +4,11 @@ use jsonwebtoken::jwk::JwkSet;
 use std::env;
 use std::sync::Arc;
 
-pub mod rng;
 pub mod routes;
 pub mod validation;
 pub mod database;
-
-use mongodb::{self, Database};
+pub mod errors;
+use mongodb::{self, ClientSession, Database};
 
 // /gamble
 
@@ -33,7 +32,8 @@ pub async fn get_jwks() -> Result<JwkSet> {
 #[derive(Clone)]
 pub struct AppState {
     pub jwks: Arc<JwkSet>,
-    pub db: Arc<Database>
+    pub db: Arc<Database>,
+    pub session: Arc<ClientSession>
     }
 
 
