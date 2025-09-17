@@ -14,6 +14,9 @@ import { configureClient } from "../api/gen/clients";
 import PointsPopUp from "../components/page_components/PointsPopUp/PointsPopUp";
 import { getUsers } from "../api/user";
 import {type  UserInfo } from "../api/user";
+import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
+import EmailNotVerified from "./REPLACEMENTS/email_not_verified";
+import InvalidEmail from "./REPLACEMENTS/invalid_email";
 type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
@@ -23,50 +26,12 @@ function PostViewPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [accessToken, setAccessToken] = useState<string>("");
-  const [userInfo, setUserInfo] = useState<UserInfo|null>(null)
+
   const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
   const [filter, setFilter] = useState<Filter>("Nieuw");
+  const { userInfo, accessToken, AuthReplacement,setUserInfo, isAuthenticated} = useAuthenticatedUser();
 
-  const { getAccessTokenSilently, isAuthenticated, isLoading } = useAuth0();
-  // fetch user info once when page loads & token ready
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-          const request: RetrievePost = {
-          type: "_Self",
-          page: 0,
-        };
-        const data = (await getUsers(request)).data;
 
-        setUserInfo(data.items[0]);
-      } catch (err) {
-        console.error("Failed to fetch user info:", err);
-        setError("Failed to fetch user info.");
-      }
-    };
-
-    if (isAuthenticated && accessToken) {
-      fetchUserInfo();
-    }
-  }, [isAuthenticated, accessToken]);
-  // Make sure accessToken is set once user is authenticated
-  useEffect(() => {
-    const fetchToken = async () => {
-      try {
-        const token = await getAccessTokenSilently();
-        setAccessToken(token);
-        configureClient(token)
-
-      } catch (err) {
-        console.error("Failed to get access token:", err);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchToken();
-    }
-  }, [isAuthenticated, getAccessTokenSilently]);
 
   const fetchPosts = useCallback(async () => {
     if (loading || !hasMore || !accessToken) return;
@@ -147,15 +112,9 @@ function PostViewPage() {
     fetchFilteredPosts();
   }, [filter, isAuthenticated]);
 
-  if (isLoading) {
-    return <LoadingPage />;
-  }
 
-  if (!isAuthenticated) {
-    return <NotLoggedIn />;
-  }
-
-  if (error) return <div>{error}</div>;
+  if (AuthReplacement) return AuthReplacement
+  if (error) return <InvalidEmail/>;
 
   return (
     <>

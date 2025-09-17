@@ -18,6 +18,7 @@ html{
   margin: 0;
   box-sizing: border-box;
   color: #EEEEEE;
+  scroll-behavior: smooth;
 }
 body{
   background-color: #041562 ;
@@ -81,7 +82,7 @@ body {
 }
 
 /* inline text component styles */
-p {
+p, li{
   font-weight: 400;
   line-height: 1.6;
   margin: 0 0 1rem 0;

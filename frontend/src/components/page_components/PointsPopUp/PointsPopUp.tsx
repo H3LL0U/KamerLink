@@ -28,7 +28,7 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
       try {
         const response = await checkPoints({ post_id });
         setPointsOnPost(response.data);
-        setSelectedPoints(0);
+        setSelectedPoints(response.data.points_given);
       } catch (err) {
         console.error("Failed to fetch points_on_post:", err);
         setPointsOnPost({ points_given: 0, limit: remaining_points }); // fallback

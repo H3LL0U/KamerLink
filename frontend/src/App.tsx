@@ -7,6 +7,7 @@ import PostPage from './pages/user/postpage';
 import PostViewPage from './pages/posts';
 import SecretPage from './pages/secret';
 import Redirect from './pages/redirect';
+import Vragen from './pages/vragen';
 
 
 
@@ -23,7 +24,10 @@ function App() {
         <Route path="/user/profile" element={<Profile/>} />
         <Route path='/user/new_post' element = { <PostPage/>} />
         <Route path='/secret' element = { <SecretPage/>} />
-      
+        <Route path='/vragen' element = {<Vragen/>}/>
+
+
+
         {/* Used for redirecting to the same page as where the login button was pressed */ }
         <Route path='/redirect' element = {<Redirect/>}/>
       

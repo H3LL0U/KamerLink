@@ -3,6 +3,7 @@ import { createPost, type PostDraft } from "../../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
 import { LocationPicker } from "../../components/generic_components/LocationPicker/LocationPicker";
 import Header from "../../components/page_components/Header/Header";
+import { useAuthenticatedUser } from "../../hooks/useAuthenticatedUser";
 // Helper function to convert files into arrays of numbers
 export async function filesToNumbers(files: File[]): Promise<number[][]> {
   const readFile = (file: File) =>
@@ -29,8 +30,8 @@ function PostPage() {
   const [goal, setGoal] = useState<number | undefined>(undefined); // <-- new goal state
   const { getAccessTokenSilently } = useAuth0();
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
-
-  // Handle dropped files  
+  const {AuthReplacement, } = useAuthenticatedUser();
+  // Handle dropped files 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const filesArray = Array.from(e.dataTransfer.files).filter((file) =>
@@ -85,7 +86,7 @@ function PostPage() {
 
     alert("Post submitted!");
   };
-
+  if (AuthReplacement) return AuthReplacement;
   return (
     <>
     <Header></Header>
@@ -158,7 +159,7 @@ function PostPage() {
 
 
         <button type="submit" style={{ marginTop: 15, padding: "10px 20px" }}>
-          Submit
+          Verstuur
         </button>
       </form>
       </div>

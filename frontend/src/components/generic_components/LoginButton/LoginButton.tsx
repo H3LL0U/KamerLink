@@ -22,7 +22,7 @@ interface LoginButtonProps {
 const LoginButton = ({
   scheme = defaultScheme,
   login_text = "Log in",
-  logout_text = "Log out",
+  logout_text = "Log uit",
   loading_text = "Loading...",
   style = {},
   text_style = {},
