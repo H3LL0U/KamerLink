@@ -1,27 +1,33 @@
-use std::{error::Error, str::FromStr};
+use crate::errors::KamerlinkError;
+use crate::{
+    AppState,
+    database::schemas::{post::KamerlinkPost, user::User},
+    routes::post::{Posts, points},
+};
 use anyhow::anyhow;
 use axum::{
-    extract::Query, response::{IntoResponse, Response}, Extension, Json
+    Extension, Json,
+    extract::Query,
+    response::{IntoResponse, Response},
 };
 use http::StatusCode;
+use mongodb::bson::{self, Bson, Document, doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::{error::Error, str::FromStr};
 use tower_http::limit;
 use utoipa::ToSchema;
-use mongodb::bson::{self, doc, oid::ObjectId, Bson, Document };
-use crate::{database::schemas::{post::KamerlinkPost, user::User}, routes::post::{points, Posts}, AppState};
-use crate::errors::KamerlinkError;
 
-const MAX_POINTS_ALLOWED:usize = 100;
+pub const MAX_POINTS_ALLOWED: usize = 100;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct GivePoints {
     points: i64,
-    post_id: String
+    post_id: String,
 }
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct ResponseGivePoints{
-    status: Option<KamerlinkError>
+pub struct ResponseGivePoints {
+    status: Option<KamerlinkError>,
 }
 
 #[axum::debug_handler]
@@ -40,112 +46,121 @@ pub async fn spend_points(
     Extension(state): Extension<AppState>,
     Json(input): Json<GivePoints>,
 ) -> Response {
-
-
-    
     let cur_user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    let post_id = match ObjectId::from_str( &input.post_id) {
-                Ok(k) => {k},
-                Err(_) => {return StatusCode::INTERNAL_SERVER_ERROR.into_response()},
-            };
-
-
+    let post_id = match ObjectId::from_str(&input.post_id) {
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
 
     let mut session = match state.db.client().start_session().await {
-    Ok(k) => {k},
-    Err(_) => {return StatusCode::INTERNAL_SERVER_ERROR.into_response();},
-    };
-
-    let _ = match session.start_transaction().and_run2(async move |client_session: &mut mongodb::ClientSession| {
-        
-        let db = client_session.client().database("kamerlink");
-        let collection = db.collection::<Document>("users");
-        let posts_collection = db.collection::<KamerlinkPost>("posts");
-        //update points_given_to for the user
-    let filter = doc! {
-        "_id": &cur_user_id,
-        "points": { "$gte": input.points as i64 }, // check if the user has enough points
-
-    };
-    //updates the value of the post 
-    let update_post = doc! {
-        "$inc": {
-            format!("points_given_to.{}", input.post_id): input.points as i64, // add/increment to a new post that the user has given points to
-            "points": -(input.points as i64) //decrement points from user
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-         
-        match collection.find_one(filter).projection(doc! {format!("points_given_to.{}", input.post_id):1 , "_id":0}).await {
-            Ok(Some(doc)) => {
-                
-                let points_given_to: &Document = match doc.get("points_given_to") {
-                    Some(Bson::Document(d)) => d,
-                    _ => &Document::new(), // empty Document if missing or wrong type
-                };
 
-                //check if a user is allowed to make a transaction
-                 if let Some(Bson::Int64(user_points)) = points_given_to.get(&input.post_id) {
-                    if (MAX_POINTS_ALLOWED as i64) < *user_points+input.points || *user_points+input.points <0 {
-                        return Err(mongodb::error::Error::from(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "More points spent on post than allowed",
-                        )));
-                    }
+    let _ = match session
+        .start_transaction()
+        .and_run2(async move |client_session: &mut mongodb::ClientSession| {
+            let db = client_session.client().database("kamerlink");
+            let collection = db.collection::<Document>("users");
+            let posts_collection = db.collection::<KamerlinkPost>("posts");
+            //update points_given_to for the user
+            let filter = doc! {
+                "_id": &cur_user_id,
+                "points": { "$gte": input.points as i64 }, // check if the user has enough points
+
+            };
+            //updates the value of the post
+            let update_post = doc! {
+                "$inc": {
+                    format!("points_given_to.{}", input.post_id): input.points as i64, // add/increment to a new post that the user has given points to
+                    "points": -(input.points as i64) //decrement points from user
                 }
-                else {
-                    if (MAX_POINTS_ALLOWED as i64) < input.points || input.points <0 {
-                        return Err(mongodb::error::Error::from(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "More points spent on post than allowed",
-                        )));
+            };
+
+            match collection
+                .find_one(filter)
+                .projection(doc! {format!("points_given_to.{}", input.post_id):1 , "_id":0})
+                .await
+            {
+                Ok(Some(doc)) => {
+                    let points_given_to: &Document = match doc.get("points_given_to") {
+                        Some(Bson::Document(d)) => d,
+                        _ => &Document::new(), // empty Document if missing or wrong type
+                    };
+
+                    //check if a user is allowed to make a transaction
+                    if let Some(Bson::Int64(user_points)) = points_given_to.get(&input.post_id) {
+                        if (MAX_POINTS_ALLOWED as i64) < *user_points + input.points
+                            || *user_points + input.points < 0
+                        {
+                            return Err(mongodb::error::Error::from(std::io::Error::new(
+                                std::io::ErrorKind::Other,
+                                "More points spent on post than allowed",
+                            )));
+                        }
+                    } else {
+                        if (MAX_POINTS_ALLOWED as i64) < input.points || input.points < 0 {
+                            return Err(mongodb::error::Error::from(std::io::Error::new(
+                                std::io::ErrorKind::Other,
+                                "More points spent on post than allowed",
+                            )));
+                        }
                     }
+                    let filter = doc! {
+                        "_id": &cur_user_id,
+                        "points": { "$gte": input.points as i64 }, // check if the user has enough points
+
+                    };
+                    //update the post on the user profile
+                    collection.update_one(filter, update_post).await?;
+
+                    //update the ammount of points that a post has recieved
+                    let _ = posts_collection
+                        .find_one_and_update(
+                            doc! {"_id": &post_id, },
+                            doc! {"$inc": {"points": input.points as i64}},
+                        )
+                        .await?;
                 }
-                let filter = doc! {
-                    "_id": &cur_user_id,
-                    "points": { "$gte": input.points as i64 }, // check if the user has enough points
-
-                };
-                //update the post on the user profile
-                collection.update_one(filter, update_post).await?;
-
-                //update the ammount of points that a post has recieved
-                let _ = posts_collection.find_one_and_update(doc! {"_id": &post_id, }, doc! {"$inc": {"points": input.points as i64}} ).await?;
-    
-    
-            },
-            Ok(None) => {return Err(mongodb::error::Error::from(std::io::Error::new(
+                Ok(None) => {
+                    return Err(mongodb::error::Error::from(std::io::Error::new(
                         std::io::ErrorKind::Other,
                         "user not found or more points given than expected",
-                    )));}
-            Err(e) => return Err(e)
+                    )));
+                }
+                Err(e) => return Err(e),
+            }
+
+            Ok(())
+        })
+        .await
+    {
+        Ok(_) => {
+            return Json(ResponseGivePoints { status: None }).into_response();
         }
-    
-    
-        Ok(())
-        
-        
-        
-        }).await {
-        Ok(_) => {return Json(ResponseGivePoints{status: None}).into_response();},
-        Err(e) => {return (StatusCode::BAD_REQUEST, Json(json!({ "err": e.to_string() }))).into_response();},
+        Err(e) => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(json!({ "err": e.to_string() })),
+            )
+                .into_response();
+        }
     };
-    
-
-
-
-    }
+}
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct CheckPointsQuery{
-    post_id:String
+pub struct CheckPointsQuery {
+    post_id: String,
 }
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-struct GivenPoints{
+struct GivenPoints {
     points_given: i64,
-    limit: i64
+    limit: i64,
 }
 
 #[axum::debug_handler]
@@ -176,9 +191,11 @@ pub async fn check_points(
 
     let filter = doc! { "_id": &cur_user_id };
 
-
-
-    match collection.find_one(filter).projection(doc! { format!("points_given_to.{}", req.post_id): 1, "_id": 0 }).await {
+    match collection
+        .find_one(filter)
+        .projection(doc! { format!("points_given_to.{}", req.post_id): 1, "_id": 0 })
+        .await
+    {
         Ok(Some(doc)) => {
             let points_given_to: &Document = match doc.get("points_given_to") {
                 Some(Bson::Document(d)) => d,

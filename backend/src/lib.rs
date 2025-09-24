@@ -1,21 +1,19 @@
-use anyhow::{Result, Context};
+use anyhow::{Context, Result};
 use jsonwebtoken::jwk::JwkSet;
-
+pub mod utils;
 use std::env;
 use std::sync::Arc;
 
-pub mod routes;
-pub mod validation;
 pub mod database;
 pub mod errors;
+pub mod routes;
+pub mod validation;
 use mongodb::{self, ClientSession, Database};
 
 // /gamble
 
-
 pub async fn get_jwks() -> Result<JwkSet> {
-    let issuer = env::var("ISSUER")
-        .context("Environment variable ISSUER is not set")?;
+    let issuer = env::var("ISSUER").context("Environment variable ISSUER is not set")?;
 
     let jwks_url = format!("{}/.well-known/jwks.json", issuer.trim_end_matches('/'));
 
@@ -33,8 +31,5 @@ pub async fn get_jwks() -> Result<JwkSet> {
 pub struct AppState {
     pub jwks: Arc<JwkSet>,
     pub db: Arc<Database>,
-    pub session: Arc<ClientSession>
-    }
-
-
-
+    pub session: Arc<ClientSession>,
+}

@@ -1,20 +1,23 @@
-
 pub mod api;
 pub mod request_builder;
 pub use api::gamble::*;
 pub use api::*;
-pub use user;
 use serde::Serialize;
-use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, Modify, OpenApi};
+pub use user;
+use utoipa::{
+    Modify, OpenApi,
+    openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
+};
 
-use crate::routes::post::{like::{LikePost, ResponseLikePost}, PostDraft, PostResponse, Posts};
+use crate::routes::post::{
+    PostDraft, PostResponse, Posts,
+    like::{LikePost, ResponseLikePost},
+};
 use request_builder::{RetrieveBy, RetrievePaginated};
 
-//pub fn get_jwt_configuration () -> SecurityScheme 
+//pub fn get_jwt_configuration () -> SecurityScheme
 
 //{SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).bearer_format("JWT").build())}
-
-
 
 #[derive(Debug, Serialize)]
 struct JwtAuth;
@@ -27,7 +30,7 @@ impl Modify for JwtAuth {
                 SecurityScheme::Http(
                     HttpBuilder::new()
                         .scheme(HttpAuthScheme::Bearer) // use Bearer
-                        .bearer_format("JWT")           // show "JWT" in docs
+                        .bearer_format("JWT") // show "JWT" in docs
                         .build(),
                 ),
             );
@@ -35,17 +38,13 @@ impl Modify for JwtAuth {
     }
 }
 
-
-
-
-
 #[derive(OpenApi)]
 #[openapi(
     // All of the endpoints should be specified here
     paths(
         gamble,//gamble path (post)
         post::create_post , // post path (post)
-        post::retreve_posts, // post path (get)
+        post::retrieve_posts, // post path (get)
         post::like::like_post, // like path (post)
         post::points::spend_points, // give points path (post)
         post::points::check_points, // check how many points was given (get)

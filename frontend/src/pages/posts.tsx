@@ -17,6 +17,7 @@ import {type  UserInfo } from "../api/user";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import EmailNotVerified from "./REPLACEMENTS/email_not_verified";
 import InvalidEmail from "./REPLACEMENTS/invalid_email";
+import OptionBar from "../components/generic_components/OptionBar/OptionBar";
 type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
@@ -30,13 +31,13 @@ function PostViewPage() {
   const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
   const [filter, setFilter] = useState<Filter>("Nieuw");
   const { userInfo, accessToken, AuthReplacement,setUserInfo, isAuthenticated} = useAuthenticatedUser();
-
+  const [fetchAtempts, setFetchAtempts] = useState(0)
 
 
   const fetchPosts = useCallback(async () => {
-    if (loading || !hasMore || !accessToken) return;
+    if (loading || !hasMore || !accessToken || fetchAtempts >=3) return;
     setLoading(true);
-
+    
     try {
       type RetrieveBy = "MostRecent" | "MostLikes" | "MostPoints";
 
@@ -61,6 +62,7 @@ function PostViewPage() {
     } catch (err) {
       console.error(err);
       setError("Failed to fetch posts.");
+      setFetchAtempts(fetchAtempts+1)
     } finally {
       setLoading(false);
     }
@@ -126,18 +128,7 @@ function PostViewPage() {
       ></ColorTransition>
       <div style={{ width: "100%", backgroundColor: defaultScheme.second }}>
         {/* Filters Bar */}
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            padding: "0.5rem 1rem",
-            gap: "1rem",
-            maxWidth: "1000px",
-            margin: "auto",
-          }}
-        >
+      <OptionBar>
           <MultiDropdown
             onSelect={setTags}
             options={["Grappig", "Idee", "Nieuws", "Alle"]}
@@ -163,7 +154,7 @@ function PostViewPage() {
               minWidth: "120px",
             }}
           />
-        </div>
+    </OptionBar>
 
         {/* Bottom Transition Line */}
         <ColorTransition

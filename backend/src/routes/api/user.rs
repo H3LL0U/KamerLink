@@ -1,8 +1,11 @@
+use axum::{Extension, extract::Query, response::Response};
 
-use axum::{extract::Query, response::Response, Extension};
-
-use crate::{database::schemas::user::{User, UserInfo}, routes::request_builder::*, AppState};
 use crate::routes::request_builder::{RetrieveBy, RetrievePaginated, retrieve_items};
+use crate::{
+    AppState,
+    database::schemas::user::{User, UserInfo},
+    routes::request_builder::*,
+};
 #[utoipa::path(
     get,
     path = "/api/user",
@@ -23,6 +26,5 @@ pub async fn retrieve_users(
     Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
-    retrieve_items::<UserInfo>(Extension(state),Extension(sub), Query(req), "users").await
-
+    retrieve_items::<UserInfo>(Extension(state), Extension(sub), Query(req), "users").await
 }

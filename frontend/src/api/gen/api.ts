@@ -132,6 +132,7 @@ export interface components {
         PaginatedResponse_UserInfo: {
             items: {
                 _id: components["schemas"]["ObjectIdSchema"];
+                bio: string;
                 is_validated: boolean;
                 nickname: string;
                 /** Format: int64 */
@@ -179,6 +180,7 @@ export interface components {
         Role: "Student" | "Teacher" | "Admin";
         UserInfo: {
             _id: components["schemas"]["ObjectIdSchema"];
+            bio: string;
             is_validated: boolean;
             nickname: string;
             /** Format: int64 */
@@ -328,7 +330,7 @@ export interface operations {
     check_points: {
         parameters: {
             query: {
-                /** @description Type of retrieval */
+                /** @description Post id of a specific post */
                 post_id: string;
             };
             header?: never;

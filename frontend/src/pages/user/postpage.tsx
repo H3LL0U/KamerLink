@@ -71,9 +71,6 @@ function PostPage() {
       ? { type: "Point", coordinates }
       : null;
 
-    // if goal is 0 or undefined, send null
-    const goalValue = goal !== undefined ? goal : null;
-
     await createPost(
       {
         title,

@@ -1,7 +1,6 @@
 import { Fetcher } from "openapi-typescript-fetch";
-import type { paths } from "./api"; 
+import type { paths } from "./api";
 import { API_BASE_URL } from "../api";
-
 
 import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -9,11 +8,10 @@ import { useAuth0 } from "@auth0/auth0-react";
 // Create the client
 export const client = Fetcher.for<paths>();
 
-
 /**
  * Custom hook to automatically configure the API client with Auth0 JWT.
  * Add it to every page where authorization is needed
- */ 
+ */
 
 export function useAuth0ClientConfig() {
   const { isAuthenticated, getAccessTokenSilently } = useAuth0();
@@ -38,20 +36,17 @@ export function useAuth0ClientConfig() {
 client.configure({
   baseUrl: API_BASE_URL,
   init: {
-    headers: {
-    },
+    headers: {},
   },
 });
 
-export function configureClient(token:string) {
-    client.configure({
+export function configureClient(token: string) {
+  client.configure({
     baseUrl: API_BASE_URL,
     init: {
-        headers: {
+      headers: {
         Authorization: token,
-        },
+      },
     },
-    });
+  });
 }
-
-

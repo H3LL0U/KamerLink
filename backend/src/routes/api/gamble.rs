@@ -1,46 +1,41 @@
-use axum::{extract::State, response::{IntoResponse, Response}, Json};
-use axum_extra::extract::cookie::CookieJar;
 use axum::http::StatusCode;
-use utoipa::openapi::security::{SecurityScheme, HttpAuthScheme};
+use axum::{
+    Json,
+    extract::State,
+    response::{IntoResponse, Response},
+};
+use axum_extra::extract::cookie::CookieJar;
+use utoipa::openapi::security::{HttpAuthScheme, SecurityScheme};
 
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
-
 use rand;
 use rand::Rng;
 
-pub fn generate_slots() -> Vec<u8>{
+pub fn generate_slots() -> Vec<u8> {
     let mut rng = rand::rng();
-    
+
     //generate 3 numbers from one to (including) 7
-    let numbers: Vec<u8> = (1..=7) 
-        .map(|_| rng.random_range(1..=3))
-        .collect();
+    let numbers: Vec<u8> = (1..=7).map(|_| rng.random_range(1..=3)).collect();
     numbers
 }
 
 // SCHEMAS
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct Gamble {
-
-    pub(crate) gamble_type: GambleTypes
+    pub(crate) gamble_type: GambleTypes,
 }
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub enum GambleTypes{
-    Slots
- }
-
-
-
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct GambleResults{
-    pub(crate) slots: Option<Vec<u8>>
+pub enum GambleTypes {
+    Slots,
 }
 
-
-
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
+pub struct GambleResults {
+    pub(crate) slots: Option<Vec<u8>>,
+}
 
 // /gamble
 #[utoipa::path(

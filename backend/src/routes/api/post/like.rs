@@ -1,13 +1,17 @@
-use std::str::FromStr;
+use crate::{
+    AppState,
+    database::schemas::{post::KamerlinkPost, user::User},
+    routes::post::Posts,
+};
 use axum::{
-    response::{IntoResponse, Response},
     Extension, Json,
+    response::{IntoResponse, Response},
 };
 use http::StatusCode;
-use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 use mongodb::bson::{doc, oid::ObjectId};
-use crate::{database::schemas::{post::KamerlinkPost, user::User}, routes::post::Posts, AppState};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct LikePost {
@@ -47,10 +51,10 @@ pub async fn like_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    let post_id = match ObjectId::from_str( &input.post_id) {
-                Ok(k) => {k},
-                Err(_) => {return StatusCode::INTERNAL_SERVER_ERROR.into_response()},
-            };
+    let post_id = match ObjectId::from_str(&input.post_id) {
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
     // Check if post_id is already in user's likes
     let filter = doc! {
         "_id": &cur_user_id,
@@ -61,15 +65,15 @@ pub async fn like_post(
         Ok(Some(_)) => {
             // Post is already liked → UNLIKE
 
-            
             //remove post from user
 
-            
-            
             let update = doc! {
                 "$pull": { "likes": &input.post_id }
             };
-            if let Err(_) = collection.update_one(doc! {"_id": &cur_user_id}, update).await {
+            if let Err(_) = collection
+                .update_one(doc! {"_id": &cur_user_id}, update)
+                .await
+            {
                 return StatusCode::INTERNAL_SERVER_ERROR.into_response();
             }
 
@@ -79,10 +83,13 @@ pub async fn like_post(
                 "_id": post_id
             };
 
-            if let Err(_) =  posts_collection.update_one(filter, doc! {"$inc": {"likes":-1} }).await{
+            if let Err(_) = posts_collection
+                .update_one(filter, doc! {"$inc": {"likes":-1} })
+                .await
+            {
                 return StatusCode::INTERNAL_SERVER_ERROR.into_response();
             }
-            
+
             Json(ResponseLikePost {
                 status: LikeStatus::Unlike,
             })
@@ -90,13 +97,15 @@ pub async fn like_post(
         }
         Ok(None) => {
             // Post is not liked → LIKE
-            
-            
+
             // Add post to user's likes
             let update = doc! {
                 "$push": { "likes": &input.post_id }
             };
-            if let Err(_) = collection.update_one(doc! {"_id": &cur_user_id}, update).await {
+            if let Err(_) = collection
+                .update_one(doc! {"_id": &cur_user_id}, update)
+                .await
+            {
                 return StatusCode::INTERNAL_SERVER_ERROR.into_response();
             }
 
@@ -105,10 +114,12 @@ pub async fn like_post(
                 "_id": post_id
             };
 
-            if let Err(_) =  posts_collection.update_one(filter, doc! {"$inc": {"likes": 1} }).await{
+            if let Err(_) = posts_collection
+                .update_one(filter, doc! {"$inc": {"likes": 1} })
+                .await
+            {
                 return StatusCode::INTERNAL_SERVER_ERROR.into_response();
             }
-            
 
             Json(ResponseLikePost {
                 status: LikeStatus::Like,

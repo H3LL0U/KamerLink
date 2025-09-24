@@ -1,28 +1,31 @@
 use anyhow::Context;
 use axum::{
+    Json,
     extract::{Extension, Multipart, Query},
     response::{IntoResponse, Response},
-    Json,
 };
 use futures::TryStreamExt;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::{routes::request_builder, AppState};
-use chrono::Utc;
 use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
+use crate::{AppState, routes::request_builder};
+use chrono::Utc;
 use request_builder::{RetrieveBy, RetrievePaginated};
-use utoipa::{openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme}, OpenApi};
-pub mod like;
+use utoipa::{
+    OpenApi,
+    openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
+};
 pub mod comment;
+pub mod like;
 pub mod points;
 ///
-/// 
+///
 /// Post request (creating a post)
-/// 
-/// 
+///
+///
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct PostDraft {
@@ -30,7 +33,6 @@ pub struct PostDraft {
     message: String,
     #[schema(content_media_type = "application/octet-stream")]
     images: Vec<Vec<u8>>,
-
 }
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -38,10 +40,12 @@ pub struct PostResponse {
     post_id: String,
 }
 
-use mongodb::{self, bson::{doc, oid::ObjectId}, options::{FindOptions, InsertOneOptions}};
 use crate::database::schemas::post::KamerlinkPost;
-
-
+use mongodb::{
+    self,
+    bson::{doc, oid::ObjectId},
+    options::{FindOptions, InsertOneOptions},
+};
 
 #[utoipa::path(
     post,
@@ -84,14 +88,14 @@ pub async fn create_post(
     }
 
     let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
-        Ok(k) => {k},
-        Err(_) => {return  StatusCode::INTERNAL_SERVER_ERROR.into_response()},
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
     let post_schema = KamerlinkPost {
         _id: ObjectId::new(),
         user_id: user_id.to_string(),
-        created_at: Utc::now().to_rfc3339(), 
+        created_at: Utc::now().to_rfc3339(),
         title,
         message,
         img_urls: vec![], // TODO: replace with URLs after upload
@@ -120,19 +124,16 @@ pub async fn create_post(
     Json(result).into_response()
 }
 
-
 ///
-/// 
+///
 /// Get request (Getting a specific or multipple posts)
-/// 
-/// 
+///
+///
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct Posts{
-    posts: Vec<KamerlinkPost> // excluding comments
+pub struct Posts {
+    posts: Vec<KamerlinkPost>, // excluding comments
 }
-
-
 
 #[utoipa::path(
     get,
@@ -149,7 +150,7 @@ pub struct Posts{
 
     description = "Retrieves 5 posts"
 )]
-pub async fn retreve_posts(
+pub async fn retrieve_posts(
     Extension(state): Extension<AppState>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
@@ -177,16 +178,13 @@ pub async fn retreve_posts(
         RetrieveBy::NewToUser => doc! {}, // public route, skip `sub`
         _ => doc! {},
     };
-    let mut cursor = match collection.find(filter).
-    with_options(find_options).await 
-    { 
+    let mut cursor = match collection.find(filter).with_options(find_options).await {
         Ok(c) => c,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(), 
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
     let mut posts = Vec::new();
-    while let Ok(Some(post)) = cursor.try_next().await { posts.push(post); };
+    while let Ok(Some(post)) = cursor.try_next().await {
+        posts.push(post);
+    }
     axum::Json(Posts { posts }).into_response()
 }
-
-
-

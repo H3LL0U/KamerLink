@@ -1,33 +1,28 @@
 use mongodb::{
-    bson::{doc, oid::ObjectId, Document},
+    bson::{Document, doc, oid::ObjectId},
     options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
 };
 use serde::{Deserialize, Serialize};
-use utoipa::{openapi::Object, ToSchema};
+use utoipa::{ToSchema, openapi::Object};
 
 use crate::database::ObjectIdSchema;
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct Comment {
     user_id: String,
     message: String,
-    replies: Vec<Reply>, // Threaded comments might be implemented later (Vec<Comment> instead) 
+    replies: Vec<Reply>, // Threaded comments might be implemented later (Vec<Comment> instead)
 }
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
-pub struct Reply{
+pub struct Reply {
     user_id: String,
-    message: String
+    message: String,
 }
-
-
-
-
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct KamerlinkPost {
-
     #[schema(value_type = ObjectIdSchema)]
     pub _id: ObjectId,
-    pub user_id: String, // Who made the post
+    pub user_id: String,    // Who made the post
     pub created_at: String, // when was the post created
     pub title: String,
     pub message: String,
@@ -35,7 +30,3 @@ pub struct KamerlinkPost {
     pub likes: usize,
     pub points: usize,
 }
-
-
-
-

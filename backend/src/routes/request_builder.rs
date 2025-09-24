@@ -5,38 +5,34 @@ use axum::{
 };
 use futures::TryStreamExt;
 use mongodb::{
+    Collection,
     bson::{doc, oid::ObjectId},
     options::FindOptions,
-    Collection,
 };
-use serde::{de::DeserializeOwned, Deserialize};
 use serde::Serialize;
+use serde::{Deserialize, de::DeserializeOwned};
 use utoipa::ToSchema;
 
-use crate::{ database::schemas::user::User, AppState};
-
+use crate::{AppState, database::schemas::user::User};
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub enum RetrieveBy {
-
     _Self,
     Id(String),
     UserId(String),
     MostLikes,
     MostPoints,
     MostRecent,
-    NewToUser
-
-
+    NewToUser,
 }
 //
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct RetrievePaginated {
     pub r#type: RetrieveBy,
-    pub(crate) page: usize
+    pub(crate) page: usize,
 }
 
-// Used to build a paginated response from 
+// Used to build a paginated response from
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct PaginatedResponse<T> {
     pub items: Vec<T>,
@@ -46,12 +42,12 @@ pub async fn retrieve_items<T>(
     Extension(state): Extension<AppState>,
     Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
-    collection: &str 
+    collection: &str,
 ) -> Response
 where
     T: DeserializeOwned + Unpin + Send + Sync + Serialize,
 {
-    let collection: Collection<T> = state.db.collection(collection); 
+    let collection: Collection<T> = state.db.collection(collection);
 
     let limit: i64 = 5;
     let skip: i64 = (req.page as i64) * limit;
@@ -60,7 +56,6 @@ where
         .skip(Some(skip as u64))
         .limit(limit)
         .sort(match req.r#type {
-
             RetrieveBy::MostLikes => doc! { "likes": -1 },
             RetrieveBy::MostPoints => doc! { "points": -1 },
             RetrieveBy::MostRecent => doc! { "created_at": -1 },
@@ -70,13 +65,12 @@ where
 
     let filter = match req.r#type {
         RetrieveBy::_Self => {
-            
             let cur_user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
                 Ok(k) => k,
                 Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
             };
             doc! {"_id": cur_user_id}
-        },
+        }
         RetrieveBy::Id(ref id) => ObjectId::parse_str(id)
             .map(|obj_id| doc! { "_id": obj_id })
             .unwrap_or_else(|_| doc! { "_id": "invalid" }),

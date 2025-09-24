@@ -1,19 +1,21 @@
-
-
 use std::{collections::HashMap, sync::Arc};
 
-use mongodb::{bson::{doc, oid::ObjectId}, options::{CreateCollectionOptions, ValidationAction, ValidationLevel}, Database};
-use serde::{Deserialize, Serialize};
-use utoipa::{OpenApi, ToSchema};
-use anyhow::{anyhow, Context, Result};
-use derive_builder::Builder;
 use crate::database::ObjectIdSchema;
+use anyhow::{Context, Result, anyhow};
+use derive_builder::Builder;
+use mongodb::{
+    Database,
+    bson::{doc, oid::ObjectId},
+    options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
+};
+use serde::{Deserialize, Serialize};
 use substruct::substruct;
+use utoipa::{OpenApi, ToSchema};
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
-pub struct UserSub{
+pub struct UserSub {
     pub r#type: String,
-    pub sub: String
+    pub sub: String,
 }
 
 impl TryFrom<&str> for UserSub {
@@ -31,26 +33,24 @@ impl TryFrom<&str> for UserSub {
     }
 }
 
-
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
-pub struct PointsGivenTo{
+pub struct PointsGivenTo {
     post_id: String,
-    points: usize
+    points: usize,
 }
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 
 pub enum Role {
     Student,
     Teacher,
-    Admin
+    Admin,
 }
 
-#[substruct(UserInfo)] // Defines a safe struct that only contains public user info 
+#[substruct(UserInfo)] // Defines a safe struct that only contains public user info
 #[derive(Serialize, Deserialize, Clone, ToSchema, Builder, Debug)]
 #[builder(pattern = "owned")] // make setters take self instead of &mut self
 
 pub struct User {
-
     #[substruct(UserInfo)]
     #[builder(default = "ObjectId::new()", setter(into))]
     #[schema(value_type = ObjectIdSchema)]
@@ -91,8 +91,7 @@ pub struct User {
 
     #[builder(default = 100)]
     #[substruct(UserInfo)]
-    pub points: i64
-
+    pub points: i64,
 }
 #[derive(Debug, serde::Deserialize)]
 struct UserIdOnly {
@@ -100,9 +99,8 @@ struct UserIdOnly {
     id: ObjectId,
 }
 
-
 impl User {
-    /* 
+    /*
     pub fn get_validation_options() -> CreateCollectionOptions {
         let validator = doc! {
             "$jsonSchema": {
@@ -145,31 +143,25 @@ impl User {
             .validator(Some(validator))
             .validation_level(ValidationLevel::Strict)
             .validation_action(ValidationAction::Error)
-            
+
             .build()
     }
     */
-    pub fn new(email: String, nickname: String, user_subs:Vec<UserSub>) -> Self {
-        
-        
-        Self { 
-            _id : ObjectId::new(),
-            email: email, 
-            nickname: nickname ,
+    pub fn new(email: String, nickname: String, user_subs: Vec<UserSub>) -> Self {
+        Self {
+            _id: ObjectId::new(),
+            email: email,
+            nickname: nickname,
             user_subs: user_subs,
             role: Role::Student,
             is_validated: false,
             likes: Vec::new(),
-            points_given_to: HashMap::new() ,
+            points_given_to: HashMap::new(),
 
             seen: Vec::new(),
-        points:100}
-            
-
+            points: 100,
+        }
     }
-
-
-    
 
     pub async fn get_user_id_by_sub(
         db: &Arc<Database>,
@@ -190,12 +182,10 @@ impl User {
         };
 
         let user = collection
-            .find_one(filter,)
+            .find_one(filter)
             .await
             .with_context(|| "Failed to query users collection")?;
 
         Ok(user.map(|u| u.id).ok_or(anyhow!("No id"))?)
     }
-
-
 }
