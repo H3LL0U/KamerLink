@@ -36,7 +36,9 @@ The codebase is separated into two parts:
 
 Documentation for each of the parts is stored in ./frontend/README.MD and ./backend/README.MD respectively 
 
+## Basic Kamerlink architecture diagram
 
+<img width="681" height="322" alt="Image" src="https://github.com/user-attachments/assets/572bb7da-11c1-4781-8eb6-de0ceb175e5b" />
 
 
 ## TODO
