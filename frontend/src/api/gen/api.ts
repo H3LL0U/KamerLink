@@ -28,7 +28,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Retrieves 5 posts */
-        get: operations["retreve_posts"];
+        get: operations["retrieve_posts"];
         put?: never;
         post: operations["create_post"];
         delete?: never;
@@ -132,7 +132,6 @@ export interface components {
         PaginatedResponse_UserInfo: {
             items: {
                 _id: components["schemas"]["ObjectIdSchema"];
-                bio: string;
                 is_validated: boolean;
                 nickname: string;
                 /** Format: int64 */
@@ -180,7 +179,6 @@ export interface components {
         Role: "Student" | "Teacher" | "Admin";
         UserInfo: {
             _id: components["schemas"]["ObjectIdSchema"];
-            bio: string;
             is_validated: boolean;
             nickname: string;
             /** Format: int64 */
@@ -228,7 +226,7 @@ export interface operations {
             };
         };
     };
-    retreve_posts: {
+    retrieve_posts: {
         parameters: {
             query: {
                 /** @description Type of retrieval */
@@ -330,7 +328,7 @@ export interface operations {
     check_points: {
         parameters: {
             query: {
-                /** @description Post id of a specific post */
+                /** @description Type of retrieval */
                 post_id: string;
             };
             header?: never;
