@@ -82,6 +82,9 @@ pub struct User {
     #[builder(default)]
     pub likes: Vec<String>,
 
+    #[builder(default)]
+    pub comment_likes: Vec<String>,
+
     #[schema(value_type = HashMap<ObjectIdSchema, i64>)]
     #[builder(default)]
     pub points_given_to: HashMap<ObjectId, i64>, // key = post_id, value = points
@@ -156,6 +159,7 @@ impl User {
             role: Role::Student,
             is_validated: false,
             likes: Vec::new(),
+            comment_likes: Vec::new(),
             points_given_to: HashMap::new(),
 
             seen: Vec::new(),

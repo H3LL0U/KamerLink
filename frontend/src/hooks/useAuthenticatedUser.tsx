@@ -34,7 +34,7 @@ export function useAuthenticatedUser() {
 
   // Fetch access token only if user is authenticated and email verified
   useEffect(() => {
-    if (!isAuthenticated || !user?.email_verified || accessToken|| retryCount>3) return;
+    if (!isAuthenticated || !user?.email_verified || accessToken || retryCount > 3) return;
 
     const fetchToken = async () => {
       try {
@@ -63,7 +63,7 @@ export function useAuthenticatedUser() {
       } catch (err) {
         console.error("Failed to fetch user info:", err);
         setError("Failed to fetch user info.");
-        setRetryCount(retryCount+1);
+        setRetryCount(retryCount + 1);
       }
     };
 

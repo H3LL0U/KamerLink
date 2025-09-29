@@ -1,4 +1,4 @@
-# Kamerlink frontend
+# Kamerlink backend
 Contains code for the site's backend
 
 ## src/database

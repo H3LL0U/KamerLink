@@ -6,40 +6,44 @@ import { defaultScheme } from "../../../main";
 import { likePost } from "../../../api/post";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
-
 interface PostCardProps {
-  _post: Posts["posts"][number];
+  _post: Posts["items"][number];
   scheme?: ColorScheme;
-  userInfo?: UserInfo| null;
-  setUserInfo?: ((value: UserInfo | null | ((prev: UserInfo | null) => UserInfo | null)) => void)|null;
+  userInfo?: UserInfo | null;
+  full_view?: boolean,
+  setUserInfo?: ((value: UserInfo | null | ((prev: UserInfo | null) => UserInfo | null)) => void) | null;
 }
 
 
 
 
 
-function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo = null }: PostCardProps) {
-  const [curPost, setCurPost] = useState(_post)
+function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo = null, full_view = false }: PostCardProps) {
+  const [curPost, setCurPost] = useState(_post);
   const [likes, setLikes] = useState(curPost.likes);
   const [showPointsPopup, setShowPointsPopup] = useState(false);
-  const handleConfirmPoints =async (points: SpendPoints) => {
-    const response = await spendPoints(points)
-      const newPost:Posts["posts"][number] = {...curPost, points: curPost.points +points.points, }
-      setCurPost(newPost)
-    console.log(response)
+
+  const handleConfirmPoints = async (points: SpendPoints) => {
+    const response = await spendPoints(points);
+    const newPost: Posts["items"][number] = { ...curPost, points: curPost.points + points.points };
+    setCurPost(newPost);
     setShowPointsPopup(false);
+    console.log(response);
   };
 
-
-function onPointsSet(newUserInfo: UserInfo | null){
-    if (newUserInfo && userInfo && setUserInfo){
-        const delta = newUserInfo.points- userInfo?.points
-
-        setUserInfo(newUserInfo)
+  function onPointsSet(newUserInfo: UserInfo | null) {
+    if (newUserInfo && userInfo && setUserInfo) {
+      setUserInfo(newUserInfo);
     }
-
   }
 
+  const handleCardClick = () => {
+    // Redirect to the full view page
+    if (!full_view) {
+      window.location.href = `posts/view?id=${curPost._id.$oid}`;
+    }
+
+  };
 
   return (
     <>
@@ -52,7 +56,9 @@ function onPointsSet(newUserInfo: UserInfo | null){
           flexDirection: "column",
           gap: "0.75rem",
           position: "relative",
+          cursor: "pointer", // show pointer on hover
         }}
+        onClick={handleCardClick}
       >
         {/* User + Date row */}
         <div
@@ -74,16 +80,18 @@ function onPointsSet(newUserInfo: UserInfo | null){
         <p
           style={{
             margin: 0,
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 10, // max lines
+            overflow: full_view ? "visible" : "hidden",
+            display: full_view ? "block" : "-webkit-box",
+            WebkitBoxOrient: full_view ? undefined : "vertical",
+            WebkitLineClamp: full_view ? undefined : 10,
+            wordBreak: "break-word",
+            whiteSpace: full_view ? "pre-wrap" : "normal",
           }}
         >
           {curPost.message}
         </p>
 
-        {/* Interaction buttons (Likes, Points, Comments) */}
+        {/* Interaction buttons */}
         <div
           style={{
             display: "flex",
@@ -99,13 +107,10 @@ function onPointsSet(newUserInfo: UserInfo | null){
               cursor: "pointer",
               fontSize: "0.95rem",
             }}
-            onClick={async () => {
-              let response = await likePost({ post_id: curPost._id.$oid });
-              if (response.data.status == "Like") {
-                setLikes(likes + 1);
-              } else {
-                setLikes(likes - 1);
-              }
+            onClick={async (e) => {
+              e.stopPropagation(); // prevent triggering card click
+              const response = await likePost({ post_id: curPost._id.$oid });
+              setLikes(likes + (response.data.status === "Like" ? 1 : -1));
             }}
           >
             ❤️ {likes}
@@ -117,7 +122,10 @@ function onPointsSet(newUserInfo: UserInfo | null){
               cursor: "pointer",
               fontSize: "0.95rem",
             }}
-            onClick={() => setShowPointsPopup(true)}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent triggering card click
+              setShowPointsPopup(true);
+            }}
           >
             ⭐ {curPost.points}
           </button>
@@ -128,6 +136,7 @@ function onPointsSet(newUserInfo: UserInfo | null){
               cursor: "pointer",
               fontSize: "0.95rem",
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             💬
           </button>
@@ -137,7 +146,7 @@ function onPointsSet(newUserInfo: UserInfo | null){
       {showPointsPopup && (
         <PointsPopUp
           post_id={curPost._id.$oid}
-          remaining_points={userInfo?.points || 0} 
+          remaining_points={userInfo?.points || 0}
           onConfirm={handleConfirmPoints}
           onClose={() => setShowPointsPopup(false)}
           setUserInfo={setUserInfo}
@@ -148,5 +157,6 @@ function onPointsSet(newUserInfo: UserInfo | null){
     </>
   );
 }
+
 
 export default PostCard;

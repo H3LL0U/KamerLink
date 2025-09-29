@@ -2,14 +2,13 @@ use crate::errors::KamerlinkError;
 use crate::{
     AppState,
     database::schemas::{post::KamerlinkPost, user::User},
-    routes::post::{Posts, points},
 };
 use anyhow::anyhow;
 use axum::{
     Extension, Json,
-    extract::Query,
     response::{IntoResponse, Response},
 };
+use axum_extra::extract::Query;
 use http::StatusCode;
 use mongodb::bson::{self, Bson, Document, doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};

@@ -10,7 +10,7 @@ use utoipa::{
 };
 
 use crate::routes::post::{
-    PostDraft, PostResponse, Posts,
+    PostDraft, PostResponse,
     like::{LikePost, ResponseLikePost},
 };
 use request_builder::{RetrieveBy, RetrievePaginated};
@@ -48,14 +48,17 @@ impl Modify for JwtAuth {
         post::like::like_post, // like path (post)
         post::points::spend_points, // give points path (post)
         post::points::check_points, // check how many points was given (get)
+        post::comment::create_comment, // creates a comment under a post (post)
+        post::comment::retrieve_comments, // retrieves comments based on the specified parameters (get)
         user::retrieve_users // user path (get)
+        
 
     ),
     components(
     schemas(
         GambleResults, Gamble, // Gamble schemas
         PostDraft, PostResponse, // Post schemas (post)
-        RetrievePaginated, Posts , RetrieveBy, // Post schemas (get)
+        RetrievePaginated , RetrieveBy, // Post schemas (get)
         LikePost, ResponseLikePost
         
     ),

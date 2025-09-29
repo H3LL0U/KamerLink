@@ -13,7 +13,7 @@ interface PointsPopUpProps {
   onClose: () => void;
   scheme?: ColorScheme;
   userInfo?: UserInfo | null;
-    setUserInfo?: ((value: UserInfo | null | ((prev: UserInfo | null) => UserInfo | null)) => void)|null;
+  setUserInfo?: ((value: UserInfo | null | ((prev: UserInfo | null) => UserInfo | null)) => void) | null;
 }
 
 function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = defaultScheme, userInfo = null, setUserInfo = null }: PointsPopUpProps) {
@@ -106,7 +106,7 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
         <input
           type="range"
           min={0}
-          max={Math.min(pointsOnPost.limit, remaining_points)}
+          max={Math.min(pointsOnPost.limit, remaining_points + pointsOnPost.points_given)}
           value={selectedPoints}
           onChange={(e) => setSelectedPoints(Number(e.target.value))}
           style={{
@@ -127,17 +127,18 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
             }}
             onClick={() => {
 
-                let delta = selectedPoints - pointsOnPost.points_given //how many points are actually spent
-                if (userInfo!=null){
-                    const updatedUserInfo = { ...userInfo, points: userInfo.points - delta };
-                    
-                    if (setUserInfo){
+              let delta = selectedPoints - pointsOnPost.points_given //how many points are actually spent
+              if (userInfo != null) {
+                const updatedUserInfo = { ...userInfo, points: userInfo.points - delta };
 
-                        setUserInfo(updatedUserInfo)  // Set user info to update it everywhere
-                    }
+                if (setUserInfo) {
+
+                  setUserInfo(updatedUserInfo)  // Set user info to update it everywhere
                 }
-                onConfirm({ points: delta, post_id })}}
-            disabled={selectedPoints > remaining_points}
+              }
+              onConfirm({ points: delta, post_id })
+            }}
+          //disabled={selectedPoints > remaining_points}
           >
             Confirm
           </button>

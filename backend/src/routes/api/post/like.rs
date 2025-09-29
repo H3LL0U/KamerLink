@@ -1,7 +1,6 @@
 use crate::{
     AppState,
     database::schemas::{post::KamerlinkPost, user::User},
-    routes::post::Posts,
 };
 use axum::{
     Extension, Json,
@@ -51,6 +50,7 @@ pub async fn like_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
+
     let post_id = match ObjectId::from_str(&input.post_id) {
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
@@ -126,6 +126,6 @@ pub async fn like_post(
             })
             .into_response()
         }
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(e) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }

@@ -27,7 +27,7 @@ pub async fn get_jwks() -> Result<JwkSet> {
     Ok(jwks)
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AppState {
     pub jwks: Arc<JwkSet>,
     pub db: Arc<Database>,

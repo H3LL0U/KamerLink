@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { type Posts, type RetrievePost,retrievePosts  } from "../api/post"; 
+import { type Posts, type RetrievePost, retrievePosts } from "../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import Header from "../components/page_components/Header/Header";
@@ -13,7 +13,7 @@ import ColorTransition from "../components/generic_components/ColorTransition/Co
 import { configureClient } from "../api/gen/clients";
 import PointsPopUp from "../components/page_components/PointsPopUp/PointsPopUp";
 import { getUsers } from "../api/user";
-import {type  UserInfo } from "../api/user";
+import { type UserInfo } from "../api/user";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import EmailNotVerified from "./REPLACEMENTS/email_not_verified";
 import InvalidEmail from "./REPLACEMENTS/invalid_email";
@@ -22,7 +22,7 @@ type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
 function PostViewPage() {
-  const [posts, setPosts] = useState<Posts>({ posts: [] });
+  const [posts, setPosts] = useState<Posts>({ items: [] });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(0);
@@ -30,14 +30,14 @@ function PostViewPage() {
 
   const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
   const [filter, setFilter] = useState<Filter>("Nieuw");
-  const { userInfo, accessToken, AuthReplacement,setUserInfo, isAuthenticated} = useAuthenticatedUser();
+  const { userInfo, accessToken, AuthReplacement, setUserInfo, isAuthenticated } = useAuthenticatedUser();
   const [fetchAtempts, setFetchAtempts] = useState(0)
 
 
   const fetchPosts = useCallback(async () => {
-    if (loading || !hasMore || !accessToken || fetchAtempts >=3) return;
+    if (loading || !hasMore || !accessToken || fetchAtempts >= 3) return;
     setLoading(true);
-    
+
     try {
       type RetrieveBy = "MostRecent" | "MostLikes" | "MostPoints";
 
@@ -53,16 +53,16 @@ function PostViewPage() {
       };
       const data = (await retrievePosts(request)).data;
 
-      if (data.posts.length === 0) {
+      if (data.items.length === 0) {
         setHasMore(false);
       } else {
-        setPosts((prev) => ({ posts: [...prev.posts, ...data.posts] }));
+        setPosts((prev) => ({ items: [...prev.items, ...data.items] }));
         setPage((prev) => prev + 1);
       }
     } catch (err) {
       console.error(err);
       setError("Failed to fetch posts.");
-      setFetchAtempts(fetchAtempts+1)
+      setFetchAtempts(fetchAtempts + 1)
     } finally {
       setLoading(false);
     }
@@ -95,9 +95,9 @@ function PostViewPage() {
         };
 
         const data = (await retrievePosts(request,)).data;
-        setPosts({ posts: data.posts });
+        setPosts({ items: data.items });
         setPage(1);
-        setHasMore(data.posts.length > 0);
+        setHasMore(data.items.length > 0);
       } catch (err) {
         console.error(err);
         setError("Failed to fetch posts.");
@@ -107,7 +107,7 @@ function PostViewPage() {
     };
 
     // reset state first
-    setPosts({ posts: [] });
+    setPosts({ items: [] });
     setPage(0);
     setHasMore(true);
 
@@ -116,19 +116,14 @@ function PostViewPage() {
 
 
   if (AuthReplacement) return AuthReplacement
-  if (error) return <InvalidEmail/>;
+  if (error) return <InvalidEmail />;
 
   return (
     <>
       <Header />
-      <ColorTransition
-        height="5px"
-        from={defaultScheme.fourth}
-        to={defaultScheme.second}
-      ></ColorTransition>
       <div style={{ width: "100%", backgroundColor: defaultScheme.second }}>
         {/* Filters Bar */}
-      <OptionBar>
+        <OptionBar>
           <MultiDropdown
             onSelect={setTags}
             options={["Grappig", "Idee", "Nieuws", "Alle"]}
@@ -154,7 +149,7 @@ function PostViewPage() {
               minWidth: "120px",
             }}
           />
-    </OptionBar>
+        </OptionBar>
 
         {/* Bottom Transition Line */}
         <ColorTransition
@@ -172,10 +167,10 @@ function PostViewPage() {
           width: "100%",
         }}
       >
-        {posts.posts.map((post, index) => (
+        {posts.items.map((post, index) => (
           <>
-          
-          <PostCard key={index} _post={post} userInfo={userInfo} setUserInfo={setUserInfo} />
+
+            <PostCard key={index} _post={post} userInfo={userInfo} setUserInfo={setUserInfo} />
           </>
         ))}
         {loading && <div>Loading more posts...</div>}

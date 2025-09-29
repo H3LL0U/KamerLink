@@ -3,6 +3,7 @@ use axum::extract::State;
 use axum::routing::{Route, get};
 use axum::{Extension, middleware};
 use axum::{Router, routing::post};
+use backend::routes::post::comment::create_comment;
 use backend::routes::post::like::like_post;
 use backend::routes::post::points::check_points;
 use backend::{AppState, get_jwks};
@@ -22,6 +23,7 @@ pub mod routes;
 pub mod utils;
 pub mod validation;
 use crate::routes::api::post::create_post;
+use crate::routes::post::comment::retrieve_comments;
 use crate::routes::post::points::spend_points;
 use crate::routes::post::retrieve_posts;
 use crate::routes::user::retrieve_users;
@@ -102,6 +104,8 @@ pub async fn main() {
         .route("/post/points", post(spend_points))
         .route("/post/points", get(check_points))
         .route("/user", get(retrieve_users))
+        .route("/post/comment", get(retrieve_comments))
+        .route("/post/comment", post(create_comment))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,

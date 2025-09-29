@@ -1,18 +1,20 @@
 use anyhow::Context;
 use axum::{
     Json,
-    extract::{Extension, Multipart, Query},
+    extract::{Extension, Multipart},
     response::{IntoResponse, Response},
 };
+use axum_extra::extract::Query;
 use futures::TryStreamExt;
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
-use crate::database::schemas::post::Comment;
 use crate::database::schemas::user::User;
 use crate::{AppState, routes::request_builder};
+use crate::{database::schemas::post::Comment, routes::request_builder::retrieve_items};
 use chrono::Utc;
+use request_builder::PaginatedResponse;
 use request_builder::{RetrieveBy, RetrievePaginated};
 use utoipa::{
     OpenApi,
@@ -130,21 +132,15 @@ pub async fn create_post(
 ///
 ///
 
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
-pub struct Posts {
-    posts: Vec<KamerlinkPost>, // excluding comments
-}
-
 #[utoipa::path(
     get,
     path = "/api/post",
     responses(
-        (status = 200, description = "Retrieves posts", body = Posts),
+        (status = 200, description = "Retrieves posts", body = PaginatedResponse<KamerlinkPost>),
         (status = 401, description = "Unauthorized - missing or invalid token")
     ),
     params(
-        ("type" = RetrieveBy, Query, description = "Type of retrieval"),
-        ("page" = usize, Query, description = "Page number for pagination")
+        RetrievePaginated
     ),
 
 
@@ -152,39 +148,22 @@ pub struct Posts {
 )]
 pub async fn retrieve_posts(
     Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
-    let collection = state.db.collection::<KamerlinkPost>("posts");
-
-    let limit: i64 = 5;
-    let skip: i64 = (req.page as i64) * limit;
-
-    let find_options = FindOptions::builder()
-        .skip(Some(skip as u64))
-        .limit(limit)
-        .sort(match req.r#type {
-            RetrieveBy::MostLikes => doc! { "likes": -1 },
-            RetrieveBy::MostPoints => doc! { "points": -1 },
-            RetrieveBy::MostRecent => doc! { "created_at": -1 },
-            _ => doc! {},
-        })
-        .build();
-
-    let filter = match req.r#type {
-        RetrieveBy::Id(ref id) => ObjectId::parse_str(id)
-            .map(|obj_id| doc! { "_id": obj_id })
-            .unwrap_or_else(|_| doc! { "_id": "invalid" }),
-        RetrieveBy::UserId(ref uid) => doc! { "user_id": uid },
-        RetrieveBy::NewToUser => doc! {}, // public route, skip `sub`
-        _ => doc! {},
-    };
-    let mut cursor = match collection.find(filter).with_options(find_options).await {
-        Ok(c) => c,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-    };
-    let mut posts = Vec::new();
-    while let Ok(Some(post)) = cursor.try_next().await {
-        posts.push(post);
-    }
-    axum::Json(Posts { posts }).into_response()
+    retrieve_items::<KamerlinkPost>(
+        Extension(state),
+        Extension(sub),
+        Query(req),
+        "posts",
+        &[
+            RetrieveBy::Id("".to_string()),
+            RetrieveBy::MostPoints,
+            RetrieveBy::MostLikes,
+            RetrieveBy::MostPoints,
+            RetrieveBy::MostRecent,
+        ],
+        doc! {},
+    )
+    .await
 }

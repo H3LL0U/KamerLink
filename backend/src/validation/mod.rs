@@ -23,7 +23,7 @@ struct Claims {
 }
 
 ///
-/// Validates the token, checks if the email of the user is veryfied and adds it to the database if it is.
+/// Validates the token, checks if the email of the user is verified and adds it to the database if it is.
 ///
 ///
 /// The goal of this function is to only allow users with specific emails that are already specified in the database to enter while filtering all the remaining users.
