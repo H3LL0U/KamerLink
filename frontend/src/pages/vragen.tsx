@@ -8,7 +8,8 @@ import LoginButton from "../components/generic_components/LoginButton/LoginButto
 // Images
 import LoginInstruction from "../assets/vragen/login.png";
 import PostInstruction from "../assets/vragen/post.png";
-
+import StatusBulb from "../components/generic_components/StatusBulb/StatusBulb";
+import { API_BASE_URL } from "../api/api";
 
 
 
@@ -48,23 +49,23 @@ const Vragen = () => {
         }}
       >
         <CrystalButton
-        text="Account"
-        hoverIntensity={0}
-        size={300}
-        onClick={() => {
+          text="Account"
+          hoverIntensity={0}
+          size={300}
+          onClick={() => {
             const el = document.getElementById("account");
             if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
+          }}
         />
 
         <CrystalButton
-        text="Dienst"
-        hoverIntensity={0}
-        size={300}
-        onClick={() => {
+          text="Dienst"
+          hoverIntensity={0}
+          size={300}
+          onClick={() => {
             const el = document.getElementById("dienst");
             if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
+          }}
         />
       </div>
 
@@ -88,7 +89,7 @@ const Vragen = () => {
             </p>
           }
         >
-          <Card style={{textAlign:"left"}}>
+          <Card style={{ textAlign: "left" }}>
             <ol style={{ textAlign: "left", paddingLeft: "1rem" }}>
               <li><p>Log in met jouw school e-mail</p>
                 <p><LoginButton></LoginButton></p>
@@ -98,8 +99,8 @@ const Vragen = () => {
               </li>
               <li>Bezoek de "<a href="/user/new_post">maak een post</a>" pagina</li>
               <li>
-                <p>Beschrijf uw suggestie en selecteer de meest passende tags. </p>
-                <img src={PostInstruction} alt="Instructies om een post te maken" width={"100%"}/>
+                <p>Beschrijf uw suggestie en selecteer de meest passende tags. (nog in ontwikkeling) </p>
+                <img src={PostInstruction} alt="Instructies om een post te maken" width={"100%"} />
               </li>
               <li>
                 Als uw suggestie de website betreft, voeg een "Website suggestie" tag toe
@@ -112,12 +113,12 @@ const Vragen = () => {
         <Accordion
           title={<p style={{ margin: "0px" }}>Problemen met posts laden en sturen</p>}
         >
-          <Card style={{textAlign:"left"}}>
+          <Card style={{ textAlign: "left" }}>
             <p>
-              Als er steeds "Meer posts laden..." wordt weergegeven of het lang duurt
-              tot uw post is aangemaakt: wacht een minuutje totdat de website volledig is
-              geladen.
+              Als er steeds Onverwachte fouten ontstaan bij het laden van een pagina is er een mogelijkheid dat het dienst op dat moment niet werkt.
+
             </p>
+            <p>status van het dienst: <StatusBulb endpoint={API_BASE_URL + "/docs"}></StatusBulb></p>
             <p>
               Als het probleem blijft bestaan, neem contact op via:{" "}
               <a href="mailto:3007651@leerling.o2g2.nl">mail</a>
@@ -127,14 +128,14 @@ const Vragen = () => {
       </section>
 
       {/* Account Section */}
-      <section style={{ textAlign: "center", paddingBottom:"50px" }}>
+      <section style={{ textAlign: "center", paddingBottom: "50px" }}>
         <h2 id="account" style={{ margin: "50px auto" }}>
           Account
         </h2>
         <div id="register"></div>
-        <Accordion 
+        <Accordion
           title={<p style={{ margin: "0px" }}>Hoe registreer ik een account?</p>}
-          
+
         >
 
           <Card>
@@ -144,7 +145,7 @@ const Vragen = () => {
               <li>
                 Typ jouw school email in en selecteer een wachtwoord.
                 <br />
-                <strong style={{color: "red"}}>
+                <strong style={{ color: "red" }}>
                   BELANGRIJK: gebruik jouw school e-mail dus een e-mail die eindigt op o2g2.nl
                 </strong>
               </li>

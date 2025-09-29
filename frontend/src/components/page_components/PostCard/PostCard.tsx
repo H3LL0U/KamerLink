@@ -56,9 +56,9 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           flexDirection: "column",
           gap: "0.75rem",
           position: "relative",
-          cursor: "pointer", // show pointer on hover
+
         }}
-        onClick={handleCardClick}
+        onClick={!full_view ? handleCardClick : undefined}
       >
         {/* User + Date row */}
         <div
