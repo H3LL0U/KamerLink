@@ -53,7 +53,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
         style={{
           maxWidth: "1300px",
           backgroundColor: scheme.second,
-          padding: "clamp(2.5rem, 5vw, 5rem)",
+          padding: "clamp(0.1rem, 5vw, 2rem)",
           display: "flex",
           flexDirection: "column",
           gap: "clamp(1.2rem, 2vw, 2.5rem)",
@@ -93,7 +93,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             wordBreak: "break-word",
             whiteSpace: full_view ? "pre-wrap" : "normal",
             fontFamily,
-            fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
+            fontSize: 'clamp(1.1rem, 2vw, 2.0rem)',
             lineHeight: 1.8,
           }}
         >
