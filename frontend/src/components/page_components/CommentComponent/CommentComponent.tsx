@@ -17,9 +17,12 @@ const CommentComponent: React.FC<CommentComponentProps> = ({ comment, color_sche
             style={{
                 backgroundColor: color_scheme.second,
                 color: color_scheme.third,
-                padding: 'clamp(2.5rem, 5vw, 5rem)',
+                margin: 0,
+                width: "100%",
                 fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
                 fontSize: 'clamp(1.25rem, 2vw, 2.2rem)',
+                padding: 'clamp(1.2rem, 3vw, 2.5rem)',
+                boxSizing: "border-box",
                 ...style,
             }}
         >
