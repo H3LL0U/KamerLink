@@ -75,7 +75,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             fontWeight: 500,
           }}
         >
-          <span>👤 {curPost.user_id}</span>
+          <span>👤</span>
           <span>🗓 {new Date(curPost.created_at).toLocaleDateString()}</span>
         </div>
 
