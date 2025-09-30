@@ -219,10 +219,7 @@ export interface components {
         ResponseLikePost: {
             status: components["schemas"]["LikeStatus"];
         };
-        /** @description Defines the different ways items can be retrieved.
-         *
-         *     Each variant represents a retrieval strategy that can be used in queries.
-         *      */
+        /** @description RetrieveBy can be either one of the fixed options (`"_Self"`, `"MostLikes"`, `"MostPoints"`, `"MostRecent"`) or any string (interpreted as an ID). */
         RetrieveBy: null | string;
         RetrievePaginated: {
             page: number;
@@ -350,10 +347,8 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                retrieve_type: {
-                    page: number;
-                    type: components["schemas"]["RetrieveBy"];
-                };
+                type: components["schemas"]["RetrieveBy"];
+                page: number;
                 post_id: string;
             };
             cookie?: never;
@@ -397,7 +392,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/plain": string;
+                    "application/json": components["schemas"]["Comment"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

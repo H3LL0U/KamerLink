@@ -56,4 +56,6 @@ export const checkPoints = client.path("/api/post/points").method("get").create(
 
 export const createComment = client.path("/api/post/comment").method("post").create()
 
+
+export type PostComment = paths["/api/post/comment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
 export const retrieveComments = client.path("/api/post/comment").method("get").create()

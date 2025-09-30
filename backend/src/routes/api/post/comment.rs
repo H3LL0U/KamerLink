@@ -17,16 +17,16 @@ use http::StatusCode;
 use mongodb::bson::Document;
 use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::results::InsertOneResult;
+use serde;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use utoipa::{IntoParams, ToSchema};
-
 #[utoipa::path(
     post,
     path = "/api/post/comment",
     security(("bearerAuth" = [])),
     responses(
-        (status = 200, description = "Adds a comment to a post (returns a comment id)", body = String),
+        (status = 200, description = "Adds a comment to a post (returns a comment id)", body = Comment),
         (status = 401, description = "Unauthorized - missing or invalid token")
     ),
     request_body = CommentDraft
@@ -58,7 +58,7 @@ pub async fn create_comment(
         }
     };
 
-    let comment_id = match collection.insert_one(comment).await {
+    let comment_id = match collection.insert_one(&comment).await {
         Ok(k) => k,
         Err(_) => {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -68,15 +68,25 @@ pub async fn create_comment(
         Some(k) => k,
         None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    return Json(id.to_hex()).into_response();
+    return Json(&comment).into_response();
 }
 
-#[derive(Deserialize, Serialize, IntoParams)]
+#[derive(Deserialize, Serialize, IntoParams, ToSchema)]
+
 pub struct RetrieveComment {
-    #[param(inline)]
-    pub retrieve_type: RetrievePaginated,
+    pub r#type: RetrieveBy,
+    pub(crate) page: usize,
 
     pub post_id: String,
+}
+
+impl RetrieveComment {
+    pub fn into_retrieve_paginated(&self) -> RetrievePaginated {
+        RetrievePaginated {
+            r#type: self.r#type.clone(),
+            page: self.page,
+        }
+    }
 }
 
 #[utoipa::path(
@@ -96,7 +106,7 @@ pub async fn retrieve_comments(
     Extension(sub): Extension<String>,
     Query(req): Query<RetrieveComment>,
 ) -> Response {
-    let comment_id = match ObjectId::from_str(&req.post_id) {
+    let post_id = match ObjectId::from_str(&req.post_id) {
         Ok(k) => k,
         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
     };
@@ -104,14 +114,14 @@ pub async fn retrieve_comments(
     retrieve_items::<Comment>(
         Extension(state),
         Extension(sub),
-        Query(req.retrieve_type),
+        Query(req.into_retrieve_paginated()),
         "comments",
         &[
             RetrieveBy::MostLikes,
             RetrieveBy::MostRecent,
             RetrieveBy::Id("".to_string()),
         ],
-        doc! {"_id": comment_id},
+        doc! {"post_id": post_id.to_hex()},
     )
     .await
 }

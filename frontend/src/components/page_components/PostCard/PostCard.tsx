@@ -4,6 +4,7 @@ import { spendPoints, type Posts, type SpendPoints } from "../../../api/post";
 import { type ColorScheme } from "../../../main";
 import { defaultScheme } from "../../../main";
 import { likePost } from "../../../api/post";
+import LikeButton from "../../generic_components/LikeButton/LikeButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
 interface PostCardProps {
@@ -45,18 +46,21 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
 
   };
 
+  const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif';
   return (
     <>
       <Card
         style={{
-          maxWidth: "1000px",
+          maxWidth: "1300px",
           backgroundColor: scheme.second,
-          padding: "2rem",
+          padding: "clamp(2.5rem, 5vw, 5rem)",
           display: "flex",
           flexDirection: "column",
-          gap: "0.75rem",
+          gap: "clamp(1.2rem, 2vw, 2.5rem)",
           position: "relative",
-
+          fontFamily,
+          fontSize: 'clamp(1.25rem, 2vw, 2.2rem)',
+          ...(full_view ? { width: "100%", margin: 0, marginTop: "5%" } : {}),
         }}
         onClick={!full_view ? handleCardClick : undefined}
       >
@@ -65,8 +69,10 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           style={{
             display: "flex",
             justifyContent: "space-between",
-            fontSize: "0.9rem",
-            opacity: 0.8,
+            fontSize: "clamp(1.25rem, 1.7vw, 2rem)",
+            opacity: 0.85,
+            fontFamily,
+            fontWeight: 500,
           }}
         >
           <span>👤 {curPost.user_id}</span>
@@ -74,7 +80,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
         </div>
 
         {/* Title */}
-        <h3 style={{ margin: 0 }}>{curPost.title}</h3>
+        <h3 style={{ margin: 0, fontFamily, fontWeight: 700, fontSize: 'clamp(2rem, 3vw, 2.8rem)', letterSpacing: '0.01em' }}>{curPost.title}</h3>
 
         {/* Description */}
         <p
@@ -86,6 +92,9 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             WebkitLineClamp: full_view ? undefined : 10,
             wordBreak: "break-word",
             whiteSpace: full_view ? "pre-wrap" : "normal",
+            fontFamily,
+            fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
+            lineHeight: 1.8,
           }}
         >
           {curPost.message}
@@ -96,31 +105,30 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           style={{
             display: "flex",
             justifyContent: "flex-start",
-            gap: "1rem",
-            marginTop: "0.5rem",
+            gap: "clamp(1.5rem, 2vw, 3rem)",
+            marginTop: "1rem",
+            fontFamily,
           }}
         >
-          <button
-            style={{
-              backgroundColor: scheme.first,
-              border: "none",
-              cursor: "pointer",
-              fontSize: "0.95rem",
-            }}
+          <LikeButton
+            likes={likes}
+            style={{ backgroundColor: scheme.first, fontFamily }}
             onClick={async (e) => {
               e.stopPropagation(); // prevent triggering card click
               const response = await likePost({ post_id: curPost._id.$oid });
               setLikes(likes + (response.data.status === "Like" ? 1 : -1));
             }}
-          >
-            ❤️ {likes}
-          </button>
+          />
           <button
             style={{
               backgroundColor: scheme.first,
               border: "none",
               cursor: "pointer",
-              fontSize: "0.95rem",
+              fontSize: "clamp(1.05rem, 1.2vw, 1.3rem)",
+              fontFamily,
+              fontWeight: 500,
+              borderRadius: '8px',
+              padding: '0.6em 1.6em',
             }}
             onClick={(e) => {
               e.stopPropagation(); // prevent triggering card click
@@ -134,9 +142,17 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
               backgroundColor: scheme.first,
               border: "none",
               cursor: "pointer",
-              fontSize: "0.95rem",
+              fontSize: "clamp(1.05rem, 1.2vw, 1.3rem)",
+              fontFamily,
+              fontWeight: 500,
+              borderRadius: '8px',
+              padding: '0.6em 1.6em',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              handleCardClick();
+            }
+            }
           >
             💬
           </button>

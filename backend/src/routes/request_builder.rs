@@ -19,11 +19,17 @@ use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 use serde::{Serialize, Serializer};
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, ToSchema)]
+//#[serde(untagged)]
 /// Defines the different ways items can be retrieved.
 ///
 /// Each variant represents a retrieval strategy that can be used in queries.
 ///
+///
+#[derive(Serialize, Debug, Clone, ToSchema)]
+#[serde(untagged)]
+#[schema(
+    description = "RetrieveBy can be either one of the fixed options (`\"_Self\"`, `\"MostLikes\"`, `\"MostPoints\"`, `\"MostRecent\"`) or any string (interpreted as an ID)."
+)]
 pub enum RetrieveBy {
     /// Retrieves items that have the same `_id` as the user
     /// who is currently accessing the page.
@@ -41,22 +47,6 @@ pub enum RetrieveBy {
 
     /// Retrieves all items, sorted by creation date (`created_at` field, descending).
     MostRecent,
-}
-
-impl Serialize for RetrieveBy {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = match self {
-            RetrieveBy::_Self => "_Self",
-            RetrieveBy::Id(id) => id,
-            RetrieveBy::MostLikes => "MostLikes",
-            RetrieveBy::MostPoints => "MostPoints",
-            RetrieveBy::MostRecent => "MostRecent",
-        };
-        serializer.serialize_str(s)
-    }
 }
 
 impl<'de> Deserialize<'de> for RetrieveBy {
@@ -184,6 +174,7 @@ where
         _ => doc! {},
     };
     filter.extend(base_query);
+
     let mut cursor = match collection.find(filter).with_options(find_options).await {
         Ok(c) => c,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
