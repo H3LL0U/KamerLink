@@ -6,9 +6,10 @@ interface LikeButtonProps {
     style?: React.CSSProperties;
     className?: string;
     children?: React.ReactNode;
+    emoji?: string;
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({ likes, onClick, style, className, children }) => {
+const CountButton: React.FC<LikeButtonProps> = ({ likes, onClick, style, className, children, emoji = "❤️" }) => {
     return (
         <button
             style={{
@@ -25,9 +26,9 @@ const LikeButton: React.FC<LikeButtonProps> = ({ likes, onClick, style, classNam
             className={className}
             onClick={onClick}
         >
-            {children ? children : <>❤️ {likes}</>}
+            {children ? children : <>{emoji} {likes}</>}
         </button>
     );
 };
 
-export default LikeButton;
+export default CountButton;

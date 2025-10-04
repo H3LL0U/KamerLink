@@ -7,6 +7,7 @@ use std::sync::Arc;
 pub mod database;
 pub mod errors;
 pub mod routes;
+pub mod routes_builder;
 pub mod validation;
 use mongodb::{self, ClientSession, Database};
 

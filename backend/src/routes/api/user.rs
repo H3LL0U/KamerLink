@@ -24,17 +24,19 @@ pub async fn retrieve_users(
     Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
-    retrieve_items::<UserInfo>(
-        Extension(state),
-        Extension(sub),
-        Query(req),
-        "users",
-        &[
+    crate::routes::request_builder::RetrieveItemsBuilder::default()
+        .state(Extension(state))
+        .sub(Extension(sub))
+        .req(Query(req))
+        .collection("users")
+        .allowed_retrieval_types(&[
             RetrieveBy::_Self,
             RetrieveBy::Id("".to_string()),
             RetrieveBy::MostPoints,
-        ],
-        doc! {},
-    )
-    .await
+        ])
+        .base_query(doc! {})
+        .build()
+        .unwrap()
+        .run::<UserInfo>()
+        .await
 }

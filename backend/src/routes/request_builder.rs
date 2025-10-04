@@ -17,14 +17,9 @@ use mongodb::{
 };
 use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 use serde::{Serialize, Serializer};
+use std::str::FromStr;
 use utoipa::ToSchema;
 
-//#[serde(untagged)]
-/// Defines the different ways items can be retrieved.
-///
-/// Each variant represents a retrieval strategy that can be used in queries.
-///
-///
 #[derive(Serialize, Debug, Clone, ToSchema)]
 #[serde(untagged)]
 #[schema(
@@ -93,7 +88,7 @@ fn validate_retrieve_by(req: &RetrieveBy, allowed: &[RetrieveBy]) -> Result<(), 
 ///Can be used to build the retrieve items function
 #[builder(setter(strip_option))]
 #[derive(Clone, Builder)]
-struct RetrieveItems<'a> {
+pub struct RetrieveItems<'a> {
     state: Extension<AppState>,
     sub: Extension<String>,
     req: Query<RetrievePaginated>,
@@ -104,6 +99,8 @@ struct RetrieveItems<'a> {
     base_query: Document,
     #[builder(default)]
     allowed_retrieval_types: &'a [RetrieveBy],
+    #[builder(default)]
+    projection: Option<Document>,
 }
 
 impl<'a> RetrieveItems<'_> {
@@ -118,6 +115,7 @@ impl<'a> RetrieveItems<'_> {
             self.collection,
             self.allowed_retrieval_types,
             self.base_query.clone(),
+            self.projection.clone(),
         )
         .await
     }
@@ -133,6 +131,7 @@ pub async fn retrieve_items<T>(
     collection: &str,
     allowed_retrieval_types: &[RetrieveBy], //Each request has specific retrieval types which it supports which should be specified here.
     base_query: Document,
+    projection: Option<Document>,
 ) -> Response
 where
     T: DeserializeOwned + Unpin + Send + Sync + Serialize,
@@ -158,6 +157,7 @@ where
             RetrieveBy::MostRecent => doc! { "created_at": -1 },
             _ => doc! {},
         })
+        .projection(projection)
         .build();
 
     let mut filter = match req.r#type {
@@ -186,4 +186,125 @@ where
     }
 
     axum::Json(PaginatedResponse { items }).into_response()
+}
+
+// Generic like
+
+/// Generic like toggling function for any collection and object id
+///
+///
+
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
+pub enum LikeStatus {
+    Like,
+    Unlike,
+}
+
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
+pub struct ResponseGenericLike {
+    pub status: LikeStatus,
+}
+
+//generic request body for like/unlike
+#[derive(Serialize, Deserialize, Debug, Clone, ToSchema)]
+pub struct GenericLike {
+    pub _id: String,
+}
+
+pub async fn toggle_like_generic(
+    sub: &str,
+    state: &AppState,
+    item_id: &str,
+    collection_name: &str,
+
+    user_likes_field: &str,
+) -> Result<bool, StatusCode> {
+    let collection = state
+        .db
+        .collection::<mongodb::bson::Document>(collection_name);
+    let users_collection = state.db.collection::<User>("users");
+    let cur_user_id = match User::get_user_id_by_sub(&state.db, sub).await {
+        Ok(k) => k,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    // Check if item_id is already in user's likes
+    let filter = doc! {
+        "_id": &cur_user_id,
+        user_likes_field: { "$in": [item_id] }
+    };
+
+    let already_liked = match users_collection.find_one(filter).await {
+        Ok(Some(_)) => true,
+        Ok(None) => false,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    let item_obj_id = match ObjectId::from_str(item_id) {
+        Ok(k) => k,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    if already_liked {
+        // Unlike: remove from user, decrement like counter
+        let update = doc! { "$pull": { user_likes_field: item_id } };
+        if let Err(_) = users_collection
+            .update_one(doc! {"_id": &cur_user_id}, update)
+            .await
+        {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+        let filter = doc! {"_id": item_obj_id};
+        if let Err(_) = collection
+            .update_one(filter, doc! {"$inc": {"likes": -1}})
+            .await
+        {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+        Ok(false) // Now unliked
+    } else {
+        // Like: add to user, increment like counter
+        let update = doc! { "$push": { user_likes_field: item_id } };
+        if let Err(_) = users_collection
+            .update_one(doc! {"_id": &cur_user_id}, update)
+            .await
+        {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+        let filter = doc! {"_id": item_obj_id};
+        if let Err(_) = collection
+            .update_one(filter, doc! {"$inc": {"likes": 1}})
+            .await
+        {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+        Ok(true) // Now liked
+    }
+}
+
+// --- Generic Add Item Builder and Function ---
+#[derive(Clone, Builder)]
+#[builder(setter(strip_option))]
+pub struct AddItem<'a> {
+    pub state: Extension<AppState>,
+    pub collection: &'a str,
+    pub document: Document,
+}
+
+impl<'a> AddItem<'a> {
+    pub async fn run(&self) -> Result<mongodb::results::InsertOneResult, StatusCode> {
+        add_item(self.state.clone(), self.collection, self.document.clone()).await
+    }
+}
+
+pub async fn add_item(
+    Extension(state): Extension<AppState>,
+    collection: &str,
+    document: Document,
+) -> Result<mongodb::results::InsertOneResult, StatusCode> {
+    let collection = state.db.collection::<Document>(collection);
+    match collection.insert_one(document).await {
+        Ok(result) => Ok(result),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }

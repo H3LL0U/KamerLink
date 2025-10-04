@@ -11,7 +11,6 @@ use utoipa::{ToSchema, openapi::Object};
 #[builder(setter(strip_option))]
 #[substruct(Reply, CommentDraft)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Builder)]
-
 pub struct Comment {
     #[builder(default = "ObjectId::new()", setter(into))]
     #[substruct(Reply)]
@@ -21,7 +20,7 @@ pub struct Comment {
     #[substruct(Reply)]
     pub user_id: String,
 
-    #[substruct(Reply, CommentDraft)]
+    #[substruct(CommentDraft)]
     pub post_id: String,
 
     #[substruct(Reply, CommentDraft)]

@@ -54,6 +54,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/comment/like": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["like_comment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/post/comment/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["add_reply_to_comment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/post/like": {
         parameters: {
             query?: never;
@@ -128,6 +160,9 @@ export interface components {
         };
         /** @enum {string} */
         GambleTypes: "Slots";
+        GenericLike: {
+            _id: string;
+        };
         GivePoints: {
             /** Format: int64 */
             points: number;
@@ -154,7 +189,12 @@ export interface components {
         LikePost: {
             post_id: string;
         };
-        /** @enum {string} */
+        /**
+         * @description Generic like toggling function for any collection and object id
+         *
+         *
+         * @enum {string}
+         */
         LikeStatus: "Like" | "Unlike";
         ObjectIdSchema: {
             $oid: string;
@@ -210,8 +250,14 @@ export interface components {
             created_at: string;
             likes: number;
             message: string;
-            post_id: string;
             user_id: string;
+        };
+        ReplyDraft: {
+            comment_id: string;
+            message: string;
+        };
+        ResponseGenericLike: {
+            status: components["schemas"]["LikeStatus"];
         };
         ResponseGivePoints: {
             status?: null | components["schemas"]["KamerlinkError"];
@@ -393,6 +439,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Comment"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    like_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenericLike"];
+            };
+        };
+        responses: {
+            /** @description Toggles the like/unlike under a comment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResponseGenericLike"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    add_reply_to_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyDraft"];
+            };
+        };
+        responses: {
+            /** @description Adds a reply to a comment (returns the updated comment) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Reply"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

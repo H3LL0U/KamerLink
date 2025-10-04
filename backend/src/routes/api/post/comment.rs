@@ -1,5 +1,9 @@
-use crate::database::schemas::post::{Comment, CommentBuilder, CommentDraft};
+use crate::database::schemas::post::Reply;
+use crate::database::schemas::post::{Comment, CommentBuilder, CommentDraft, ReplyBuilder};
 use crate::database::schemas::user;
+use crate::routes::request_builder::{
+    GenericLike, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder, toggle_like_generic,
+};
 use crate::routes::request_builder::{
     PaginatedResponse, RetrieveBy, RetrievePaginated, retrieve_items,
 };
@@ -7,10 +11,12 @@ use crate::{
     AppState,
     database::schemas::{post::KamerlinkPost, user::User},
 };
+use axum::extract::Path;
 use axum::{
     Extension, Json,
     response::{IntoResponse, Response},
 };
+
 use axum_extra::extract::Query;
 use chrono::Utc;
 use http::StatusCode;
@@ -110,18 +116,176 @@ pub async fn retrieve_comments(
         Ok(k) => k,
         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
     };
-
-    retrieve_items::<Comment>(
-        Extension(state),
-        Extension(sub),
-        Query(req.into_retrieve_paginated()),
-        "comments",
-        &[
+    crate::routes::request_builder::RetrieveItemsBuilder::default()
+        .state(Extension(state))
+        .sub(Extension(sub))
+        .req(Query(req.into_retrieve_paginated()))
+        .collection("comments")
+        .allowed_retrieval_types(&[
             RetrieveBy::MostLikes,
             RetrieveBy::MostRecent,
             RetrieveBy::Id("".to_string()),
-        ],
-        doc! {"post_id": post_id.to_hex()},
-    )
-    .await
+        ])
+        .base_query(doc! {"post_id": post_id.to_hex()})
+        .build()
+        .unwrap()
+        .run::<Comment>()
+        .await
 }
+
+#[utoipa::path(
+    post,
+    path = "/api/post/comment/like",
+    security(("bearerAuth" = [])),
+    responses(
+        (status = 200, description = "Toggles the like/unlike under a comment", body = ResponseGenericLike),
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = GenericLike
+)]
+pub async fn like_comment(
+    Extension(sub): Extension<String>,
+    Extension(state): Extension<AppState>,
+    Json(input): Json<GenericLike>,
+) -> Response {
+    let result = toggle_like_generic(
+        sub.as_str(),
+        &state,
+        &input._id,
+        "comments",
+        "comment_likes", // or "likes" if your user schema uses the same field for comments
+    )
+    .await;
+
+    match result {
+        Ok(true) => {
+            // Now liked
+            Json(ResponseGenericLike {
+                status: LikeStatus::Like,
+            })
+            .into_response()
+        }
+        Ok(false) => {
+            // Now unliked
+            Json(ResponseGenericLike {
+                status: LikeStatus::Unlike,
+            })
+            .into_response()
+        }
+        Err(_) => http::StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+}
+
+#[derive(Deserialize, Serialize, IntoParams, ToSchema, Debug, Clone)]
+pub struct ReplyDraft {
+    pub comment_id: String,
+    pub message: String,
+}
+
+#[utoipa::path(
+    post,
+    path = "/api/post/comment/reply",
+    security(("bearerAuth" = [])),
+    responses(
+        (status = 200, description = "Adds a reply to a comment (returns the updated comment)", body = Reply),
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = ReplyDraft
+)]
+pub async fn add_reply_to_comment(
+    Extension(sub): Extension<String>,
+    Extension(state): Extension<AppState>,
+    Json(input): Json<ReplyDraft>,
+) -> Response {
+    let collection = state.db.collection::<Comment>("comments");
+    let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
+
+    let reply = match ReplyBuilder::default()
+        .created_at(Utc::now().to_rfc3339())
+        .user_id(user_id.to_hex())
+        .likes(0)
+        .message(input.message.clone())
+        .build()
+    {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
+
+    let comment_obj_id = match ObjectId::from_str(&input.comment_id) {
+        Ok(k) => k,
+        Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
+    let reply_bson = match mongodb::bson::to_bson(&reply) {
+        Ok(bson) => bson,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    let update_result = collection
+        .update_one(
+            doc! {"_id": comment_obj_id},
+            doc! {"$push": {"replies": reply_bson} },
+        )
+        .await;
+
+    match update_result {
+        Ok(res) if res.modified_count == 1 => {
+            // return the inserted reply
+            return Json(&reply).into_response();
+        }
+
+        _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    }
+}
+
+//In case there is a need to not retrieve all comments at once. for now replies will be fetched with the comment
+
+// #[utoipa::path(
+//     get,
+//     path = "/api/post/comment/{comment_id}/replies",
+//     responses(
+//         (status = 200, description = "Retrieves replies for a comment", body = PaginatedResponse<Comment>),
+//         (status = 401, description = "Unauthorized - missing or invalid token")
+//     ),
+//     params(
+//         ("comment_id" = String, Path, description = "The id of the comment to get replies for"),
+//         RetrievePaginated
+//     ),
+
+//     description = "Retrieves replies for a comment"
+// )]
+// pub async fn retrieve_comment_replies(
+//     Extension(state): Extension<AppState>,
+//     Extension(sub): Extension<String>,
+//     Path(comment_id): Path<String>,
+//     Query(req): Query<RetrievePaginated>,
+// ) -> Response {
+//     let comment_obj_id = match ObjectId::from_str(&comment_id) {
+//         Ok(k) => k,
+//         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+//     };
+
+//     RetrieveItemsBuilder::default()
+//         .state(Extension(state))
+//         .sub(Extension(sub))
+//         .req(Query(req))
+//         .collection("comments")
+//         .allowed_retrieval_types(&[
+//             RetrieveBy::Id(comment_id.clone()),
+//             RetrieveBy::MostLikes,
+//             RetrieveBy::MostRecent,
+//         ])
+//         .base_query(doc! {"_id": comment_obj_id})
+//         .projection(doc! {"replies": 1, "_id": 0})
+//         .build()
+//         .unwrap()
+//         .run::<Comment>()
+//         .await
+// }

@@ -151,19 +151,21 @@ pub async fn retrieve_posts(
     Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
-    retrieve_items::<KamerlinkPost>(
-        Extension(state),
-        Extension(sub),
-        Query(req),
-        "posts",
-        &[
+    crate::routes::request_builder::RetrieveItemsBuilder::default()
+        .state(Extension(state))
+        .sub(Extension(sub))
+        .req(Query(req))
+        .collection("posts")
+        .allowed_retrieval_types(&[
             RetrieveBy::Id("".to_string()),
             RetrieveBy::MostPoints,
             RetrieveBy::MostLikes,
             RetrieveBy::MostPoints,
             RetrieveBy::MostRecent,
-        ],
-        doc! {},
-    )
-    .await
+        ])
+        .base_query(doc! {})
+        .build()
+        .unwrap()
+        .run::<KamerlinkPost>()
+        .await
 }

@@ -20,6 +20,7 @@ use utoipa_swagger_ui::SwaggerUi;
 pub mod database;
 pub mod errors;
 pub mod routes;
+pub mod routes_builder;
 pub mod utils;
 pub mod validation;
 use crate::routes::api::post::create_post;
@@ -27,6 +28,7 @@ use crate::routes::post::comment::retrieve_comments;
 use crate::routes::post::points::spend_points;
 use crate::routes::post::retrieve_posts;
 use crate::routes::user::retrieve_users;
+use crate::routes_builder::{build_private_routes, build_public_routes};
 use axum::{
     extract::Request,
     http::StatusCode,
@@ -96,24 +98,11 @@ pub async fn main() {
         reset::schedule_reset(when_to_reset, db.clone()).await;
     });
 
-    let protected_routes: Router = Router::new()
-        .route("/gamble", post(gamble))
-        .route("/post", post(create_post))
-        .route("/post", get(retrieve_posts))
-        .route("/post/like", post(like_post))
-        .route("/post/points", post(spend_points))
-        .route("/post/points", get(check_points))
-        .route("/user", get(retrieve_users))
-        .route("/post/comment", get(retrieve_comments))
-        .route("/post/comment", post(create_comment))
-        .route_layer(middleware::from_fn_with_state(
-            state.clone(),
-            token_validation_middleware,
-        ));
+    let protected_routes: Router = build_private_routes(&state);
     //.layer(Extension(state.clone())); //
 
     // Public routes (empty for now)
-    let public_routes: Router = Router::new();
+    let public_routes: Router = build_public_routes();
 
     let app = Router::new()
         .nest("/api", protected_routes) // all /api/* routes are protected

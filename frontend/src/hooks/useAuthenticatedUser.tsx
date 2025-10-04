@@ -1,3 +1,6 @@
+/// Used to get user information and replacements for pages when the user is not fully loaded
+
+
 import { useState, useEffect, type JSX } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { configureClient } from "../api/gen/clients";

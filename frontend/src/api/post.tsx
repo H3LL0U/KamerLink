@@ -3,7 +3,7 @@ import { API_BASE_URL } from "./api";
 import { client } from "./gen/clients";
 export type PostDraft = components["schemas"]["PostDraft"];
 export type PostResponse = paths["/api/post"]["post"]["responses"]["200"]["content"]["application/json"];
-/* The client created function (like ones bellow) doens't send the correct request. Couldn't figure out why so it will be written manually. */
+/* The client created function (like ones bellow) doesn't send the correct request. Couldn't figure out why so it will be written manually. */
 export async function createPost(
   draft: PostDraft,
   token: string
@@ -36,9 +36,7 @@ export async function createPost(
   return res.json();
 }
 
-// Get request
-
-
+//Posts
 export type RetrievePost = components["schemas"]["RetrievePaginated"];
 export type Posts = paths["/api/post"]["get"]["responses"]["200"]["content"]["application/json"];
 
@@ -54,8 +52,16 @@ export const spendPoints = client.path("/api/post/points").method("post").create
 
 export const checkPoints = client.path("/api/post/points").method("get").create()
 
+
+
+// Comments under posts
 export const createComment = client.path("/api/post/comment").method("post").create()
 
-
 export type PostComment = paths["/api/post/comment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
+
 export const retrieveComments = client.path("/api/post/comment").method("get").create()
+
+export const likeComment = client.path("/api/post/comment/like").method("post").create()
+
+//reply to comment
+export const addReplyToComment = client.path("/api/post/comment/reply").method("post").create()

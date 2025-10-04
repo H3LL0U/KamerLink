@@ -4,7 +4,7 @@ import { spendPoints, type Posts, type SpendPoints } from "../../../api/post";
 import { type ColorScheme } from "../../../main";
 import { defaultScheme } from "../../../main";
 import { likePost } from "../../../api/post";
-import LikeButton from "../../generic_components/LikeButton/LikeButton";
+import LikeButton from "../../generic_components/CountButton/CountButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
 interface PostCardProps {
@@ -51,7 +51,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     <>
       <Card
         style={{
-          maxWidth: "1300px",
+          maxWidth: "1000px",
           backgroundColor: scheme.second,
           padding: "clamp(0.1rem, 5vw, 2rem)",
           display: "flex",

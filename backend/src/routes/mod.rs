@@ -50,8 +50,9 @@ impl Modify for JwtAuth {
         post::points::check_points, // check how many points was given (get)
         post::comment::create_comment, // creates a comment under a post (post)
         post::comment::retrieve_comments, // retrieves comments based on the specified parameters (get)
-        user::retrieve_users // user path (get)
-        
+        post::comment::like_comment, // like/unlike a comment (post)
+        user::retrieve_users, // user path (get)
+        post::comment::add_reply_to_comment // add a reply to a comment (post
 
     ),
     components(

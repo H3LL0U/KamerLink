@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "apigen": "cd ../backend && cargo run -- -apigen && cd ../frontend && npx openapi-typescript ../backend/openapi.json --output src/api/gen/api.ts",
-    "dev": "npm run apigen && vite",
+    "dev": "vite",
     "lint": "eslint .",
     "preview": "vite preview"
   },
