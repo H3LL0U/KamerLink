@@ -41,7 +41,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
   const handleCardClick = () => {
     // Redirect to the full view page
     if (!full_view) {
-      window.location.href = `posts/view?id=${curPost._id.$oid}`;
+      window.location.href = window.location.href = `${window.location.origin}/posts/view?id=${curPost._id.$oid}`;;
     }
 
   };
