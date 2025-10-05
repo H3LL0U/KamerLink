@@ -155,7 +155,7 @@ function PostPage() {
                   fontWeight: 500,
                 }}
               />
-              <div style={{ fontSize: "0.95em", color: "#888", textAlign: "right", marginBottom: 10 }}>
+              <div style={{ fontSize: "0.95em", color: "#ffffffff", textAlign: "right", marginBottom: 10 }}>
                 {title.length}/100
               </div>
               <textarea
@@ -178,7 +178,7 @@ function PostPage() {
                   resize: "vertical",
                 }}
               />
-              <div style={{ fontSize: "0.95em", color: "#888", textAlign: "right", marginBottom: 10 }}>
+              <div style={{ fontSize: "0.95em", color: "#ffffffff", textAlign: "right", marginBottom: 10 }}>
                 {message.length}/5000
               </div>
 

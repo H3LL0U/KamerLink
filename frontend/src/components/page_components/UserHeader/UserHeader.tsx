@@ -63,7 +63,7 @@ function Header({
       </div>
 
       <div className="header-container">
-        <h3 style={{ display: "block", width: "100%" }}>{name}</h3>
+        <h3 style={{ display: "block", width: "100%", marginBottom: "10px" }}>{name}</h3>
         {children}
       </div>
     </header>

@@ -10,7 +10,7 @@ use crate::routes::post::comment::{
 use crate::routes::post::like::like_post;
 use crate::routes::post::points::{check_points, spend_points};
 use crate::routes::post::retrieve_posts;
-use crate::routes::user::retrieve_users;
+use crate::routes::user::{retrieve_user_posts, retrieve_users};
 use crate::validation::token_validation_middleware;
 
 pub fn build_private_routes(state: &AppState) -> Router {
@@ -25,7 +25,8 @@ pub fn build_private_routes(state: &AppState) -> Router {
         .route("/post/comment", get(retrieve_comments))
         .route("/post/comment", post(create_comment))
         .route("/post/comment/like", post(like_comment))
-        .route("/post/comment/reply", post(add_reply_to_comment)) // reusing create_comment for replies
+        .route("/post/comment/reply", post(add_reply_to_comment))
+        .route("/user/{user_id}/posts", get(retrieve_user_posts))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             token_validation_middleware,

@@ -52,6 +52,7 @@ impl Modify for JwtAuth {
         post::comment::retrieve_comments, // retrieves comments based on the specified parameters (get)
         post::comment::like_comment, // like/unlike a comment (post)
         user::retrieve_users, // user path (get)
+        user::retrieve_user_posts, // retrieves posts from a specific user (get)
         post::comment::add_reply_to_comment // add a reply to a comment (post
 
     ),
