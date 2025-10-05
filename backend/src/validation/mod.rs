@@ -183,7 +183,6 @@ pub async fn token_validation_middleware(
                     }
                 }
                 Err(e) => {
-                    dbg!(format!("{}", e));
                     return StatusCode::FORBIDDEN.into_response();
                 }
             };

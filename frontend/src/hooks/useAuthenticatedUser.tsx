@@ -15,7 +15,7 @@ export function useAuthenticatedUser() {
 
   const [accessToken, setAccessToken] = useState<string>("");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [responseStatus, setResponseStatus] = useState<number | null>(null);
   const [AuthReplacement, setAuthReplacement] = useState<JSX.Element | null>(<LoadingPage />);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -27,13 +27,19 @@ export function useAuthenticatedUser() {
       setAuthReplacement(<NotLoggedIn />);
     } else if (!user?.email_verified) {
       setAuthReplacement(<EmailNotVerified />);
-    } else if (error && retryCount >= 3) {
+    } else if (responseStatus && retryCount >= 3) {
+
       // After 3 failures, fall back to EmailNotVerified
+      alert(responseStatus)
+      if (responseStatus === 403) {
+        setAuthReplacement(<EmailNotVerified />);
+        return
+      }
       setAuthReplacement(<UnexpectedError />);
     } else {
       setAuthReplacement(null); // User can see content
     }
-  }, [isLoading, isAuthenticated, user?.email_verified, error, retryCount]);
+  }, [isLoading, isAuthenticated, user?.email_verified, responseStatus, retryCount]);
 
   // Fetch access token only if user is authenticated and email verified
   useEffect(() => {
@@ -44,9 +50,10 @@ export function useAuthenticatedUser() {
         const token = await getAccessTokenSilently();
         setAccessToken(token);
         configureClient(token);
-      } catch (err) {
+      } catch (err: any) {
+        const code = err.response?.status ?? 500;
         console.error("Failed to get access token:", err);
-        setError("Failed to get access token.");
+        setResponseStatus(code);
       }
     };
 
@@ -60,18 +67,22 @@ export function useAuthenticatedUser() {
 
     const fetchUserInfo = async () => {
       try {
-        const data = (await getUsers({ type: "_Self", page: 0 })).data;
-        setUserInfo(data.items[0]);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch user info:", err);
-        setError("Failed to fetch user info.");
-        setRetryCount(retryCount + 1);
+        const response = await getUsers({ type: "_Self", page: 0 });
+        setResponseStatus(response.status);
+        setUserInfo(response.data.items[0]);
+
+
+      } catch (err: any) {
+        //const code = err.response?.status ?? 500;
+        console.error("Failed to fetch user info:", responseStatus, err.response?.data ?? err.message);
+        //setError("Failed to fetch user info.");
+        //setResponseStatus(code);
+        setRetryCount((prev) => prev + 1);
       }
     };
 
     fetchUserInfo();
   }, [isAuthenticated, user?.email_verified, accessToken, userInfo, retryCount]);
 
-  return { accessToken, userInfo, AuthReplacement, error, user, setUserInfo, isAuthenticated };
+  return { accessToken, userInfo, AuthReplacement, responseStatus, user, setUserInfo, isAuthenticated };
 }
