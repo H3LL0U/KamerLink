@@ -10,26 +10,33 @@ COLOR SCHEME
 
 */
 
-html{
-  background-color:#041562 ;
+html {
+  background-color: #041562;
   margin-bottom: 0;
 }
-*{
+
+* {
   margin: 0;
   box-sizing: border-box;
   color: #EEEEEE;
   scroll-behavior: smooth;
 }
-body{
-  background-color: #041562 ;
+
+body {
+  background-color: #041562;
 }
+
 #root {
   margin: 0 auto;
 
 }
-html, body, #root {
+
+html,
+body,
+#root {
   height: 100%;
 }
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -62,7 +69,10 @@ html, body, #root {
   padding: 2em;
 }
 
-h1,h2,h3,h4{
+h1,
+h2,
+h3,
+h4 {
   user-select: none;
 }
 
@@ -73,6 +83,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -82,15 +93,14 @@ body {
 }
 
 /* inline text component styles */
-p, li{
+p,
+li {
   font-weight: 400;
   line-height: 1.6;
   margin: 0 0 1rem 0;
-  font-size: clamp(
-    1.3125rem,   
-    2.25vw + 0.75rem, 
-    2rem       
-  );
+  font-size: clamp(1.3125rem,
+      2.25vw + 0.75rem,
+      2rem);
   color: rgba(255, 255, 255, 0.87);
 }
 
@@ -98,42 +108,48 @@ h1 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(3rem, 6vw + 1.5rem, 6rem); /* 2*1.5, 4*1.5, 4*1.5 */
+  font-size: clamp(3rem, 6vw + 1.5rem, 6rem);
+  /* 2*1.5, 4*1.5, 4*1.5 */
 }
 
 h2 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(2.625rem, 5.25vw + 1.5rem, 5.25rem); /* 1.75*1.5, 3.5*1.5, 3.5*1.5 */
+  font-size: clamp(2.625rem, 5.25vw + 1.5rem, 5.25rem);
+  /* 1.75*1.5, 3.5*1.5, 3.5*1.5 */
 }
 
 h3 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(2.25rem, 4.5vw + 1.2rem, 4.5rem); /* 1.5*1.5, 3*1.5, 3*1.5 */
+  font-size: clamp(2.25rem, 4.5vw + 1.2rem, 4.5rem);
+  /* 1.5*1.5, 3*1.5, 3*1.5 */
 }
 
 h4 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.875rem, 3.75vw + 0.75rem, 3.75rem); /* 1.25*1.5, 2.5*1.5, 2.5*1.5 */
+  font-size: clamp(1.875rem, 3.75vw + 0.75rem, 3.75rem);
+  /* 1.25*1.5, 2.5*1.5, 2.5*1.5 */
 }
 
 h5 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.5rem, 3vw + 0.75rem, 3rem); /* 1*1.5, 2*1.5, 2*1.5 */
+  font-size: clamp(1.5rem, 3vw + 0.75rem, 3rem);
+  /* 1*1.5, 2*1.5, 2*1.5 */
 }
 
 h6 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
-  font-size: clamp(1.3125rem, 2.25vw + 0.75rem, 2.25rem); /* 0.875*1.5, 1.5*1.5, 1.5*1.5 */
+  font-size: clamp(1.3125rem, 2.25vw + 0.75rem, 2.25rem);
+  /* 0.875*1.5, 1.5*1.5, 1.5*1.5 */
 }
 
 
@@ -148,9 +164,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -162,5 +180,3 @@ button:focus-visible {
     color: #747bff;
   }
 }
-
-

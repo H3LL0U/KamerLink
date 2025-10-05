@@ -103,9 +103,10 @@ function PostPage() {
       <Header />
       <div
         style={{
-          width: "100vw",
+          width: "100%",
+          maxWidth: "100%",
           minHeight: "100vh",
-          padding: 20,
+          boxSizing: "border-box",
           background: color_scheme.first,
         }}
         onDrop={handleDrop}
