@@ -1,46 +1,42 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { type Posts, type RetrievePost, retrievePosts } from "../api/post";
-import { useAuth0 } from "@auth0/auth0-react";
-
 import Header from "../components/page_components/Header/Header";
 import PostCard from "../components/page_components/PostCard/PostCard";
-import NotLoggedIn from "./REPLACEMENTS/not_logged_in";
-import LoadingPage from "./REPLACEMENTS/loading";
 import Dropdown from "../components/generic_components/Dropdowns/Dropdown";
 import MultiDropdown from "../components/generic_components/Dropdowns/MultiDropdown";
 import { defaultScheme } from "../main";
 import ColorTransition from "../components/generic_components/ColorTransition/ColorTransition";
-import { configureClient } from "../api/gen/clients";
-import PointsPopUp from "../components/page_components/PointsPopUp/PointsPopUp";
-import { getUsers } from "../api/user";
-import { type UserInfo } from "../api/user";
-import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
-import EmailNotVerified from "./REPLACEMENTS/email_not_verified";
-import InvalidEmail from "./REPLACEMENTS/invalid_email";
 import OptionBar from "../components/generic_components/OptionBar/OptionBar";
+import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
+import InvalidEmail from "./REPLACEMENTS/invalid_email";
+import { useScrollToBottom } from "../hooks/useScrollToBottom";
+
 type Filter = "Nieuw" | "Likes" | "Points";
 type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
 
 function PostViewPage() {
   const [posts, setPosts] = useState<Posts>({ items: [] });
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState<number>(0);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-
+  let [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [fetchAttempts, setFetchAttempts] = useState(0);
+  const [atTheEnd, setAtTheEnd] = useState(false);
   const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
   const [filter, setFilter] = useState<Filter>("Nieuw");
-  const { userInfo, accessToken, AuthReplacement, setUserInfo, isAuthenticated } = useAuthenticatedUser();
-  const [fetchAtempts, setFetchAtempts] = useState(0)
 
+  const { userInfo, accessToken, AuthReplacement, setUserInfo, isAuthenticated } =
+    useAuthenticatedUser();
 
+  // --- FETCH POSTS ---
   const fetchPosts = useCallback(async () => {
-    if (loading || !hasMore || !accessToken || fetchAtempts >= 3) return;
-    setLoading(true);
+    if (loading || !hasMore || !accessToken || fetchAttempts >= 3 || !atTheEnd) return;
 
+
+
+    setLoading(true);
     try {
       type RetrieveBy = "MostRecent" | "MostLikes" | "MostPoints";
-
       const filterToRetrieveBy: Record<Filter, RetrieveBy> = {
         Nieuw: "MostRecent",
         Likes: "MostLikes",
@@ -49,8 +45,9 @@ function PostViewPage() {
 
       const request: RetrievePost = {
         type: filterToRetrieveBy[filter],
-        page: page,
+        page,
       };
+
       const data = (await retrievePosts(request)).data;
 
       if (data.items.length === 0) {
@@ -58,24 +55,31 @@ function PostViewPage() {
       } else {
         setPosts((prev) => ({ items: [...prev.items, ...data.items] }));
         setPage((prev) => prev + 1);
+        setAtTheEnd(false);
       }
     } catch (err) {
       console.error(err);
       setError("Failed to fetch posts.");
-      setFetchAtempts(fetchAtempts + 1)
+      setFetchAttempts((prev) => prev + 1);
+
     } finally {
       setLoading(false);
     }
-  }, [page, loading, hasMore, accessToken, filter]);
+  }, [hasMore, accessToken, filter, setPage, page, atTheEnd]);
 
-  // initial fetch
+  useScrollToBottom(() => {
+    // User reached bottom, set atTheEnd to true
+    setAtTheEnd(true);
+  }, 200);
+
+  // --- INITIAL FETCH ---
   useEffect(() => {
     if (isAuthenticated && accessToken) {
       fetchPosts();
     }
-  }, [fetchPosts, isAuthenticated]);
+  }, [fetchPosts, isAuthenticated, accessToken]);
 
-  // when filter changes, reset posts and fetch fresh
+  // --- WHEN FILTER CHANGES, RESET POSTS ---
   useEffect(() => {
     if (!isAuthenticated || !accessToken) return;
 
@@ -94,7 +98,7 @@ function PostViewPage() {
           page: 0,
         };
 
-        const data = (await retrievePosts(request,)).data;
+        const data = (await retrievePosts(request)).data;
         setPosts({ items: data.items });
         setPage(1);
         setHasMore(data.items.length > 0);
@@ -105,17 +109,16 @@ function PostViewPage() {
         setLoading(false);
       }
     };
-
-    // reset state first
+    // reset before fetching
     setPosts({ items: [] });
     setPage(0);
     setHasMore(true);
-
     fetchFilteredPosts();
-  }, [filter, isAuthenticated]);
+  }, [filter, isAuthenticated, accessToken]);
 
 
-  if (AuthReplacement) return AuthReplacement
+
+  if (AuthReplacement) return AuthReplacement;
   if (error) return <InvalidEmail />;
 
   return (
@@ -127,7 +130,7 @@ function PostViewPage() {
           <MultiDropdown
             onSelect={setTags}
             options={["Grappig", "Idee", "Nieuws", "Alle"]}
-            selectAllOption={"Alle"}
+            selectAllOption="Alle"
             placeholder="Selecteer tags"
           />
 
@@ -135,7 +138,10 @@ function PostViewPage() {
             onClick={() => {
               window.location.replace("/user/new_post");
             }}
-            style={{ backgroundColor: defaultScheme.first, borderRadius: "100%" }}
+            style={{
+              backgroundColor: defaultScheme.first,
+              borderRadius: "100%",
+            }}
           >
             +
           </button>
@@ -145,9 +151,7 @@ function PostViewPage() {
             onSelect={setFilter}
             placeholder="Nieuw"
             scheme={defaultScheme}
-            style={{
-              minWidth: "120px",
-            }}
+            style={{ minWidth: "120px" }}
           />
         </OptionBar>
 
@@ -156,8 +160,10 @@ function PostViewPage() {
           height="5px"
           from={defaultScheme.second}
           to={defaultScheme.first}
-        ></ColorTransition>
+        />
       </div>
+
+      {/* POSTS */}
       <div
         style={{
           display: "flex",
@@ -168,13 +174,16 @@ function PostViewPage() {
         }}
       >
         {posts.items.map((post, index) => (
-          <>
-
-            <PostCard key={index} _post={post} userInfo={userInfo} setUserInfo={setUserInfo} />
-          </>
+          <PostCard
+            key={index}
+            _post={post}
+            userInfo={userInfo}
+            setUserInfo={setUserInfo}
+          />
         ))}
-        {loading && <div>Loading more posts...</div>}
-        {!hasMore && <div>No more posts.</div>}
+
+        {loading && <div>Meer posts laden</div>}
+        {!hasMore && <div>Geen posts meer</div>}
       </div>
     </>
   );

@@ -1,11 +1,13 @@
 import { addReplyToComment } from '../../../api/post';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Card from '../../generic_components/Card/Card';
 import { likeComment, type PostComment } from '../../../api/post';
 import type { ColorScheme } from '../../../main';
 import { defaultScheme } from '../../../main';
 import CountButton from '../../generic_components/CountButton/CountButton';
 import type { UserInfo } from '../../../api/user';
+import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
+import { getUsers } from "../../../api/user";
 
 interface CommentComponentProps {
     comment: PostComment;
@@ -21,7 +23,54 @@ const CommentComponent: React.FC<CommentComponentProps> = ({ comment, color_sche
     const [showReplies, setShowReplies] = React.useState(false);
     const [replyMsg, setReplyMsg] = React.useState("");
     const [replyLoading, setReplyLoading] = React.useState(false);
+    const [authorInfo, setAuthorInfo] = useState<UserInfo | null>(null);
+    const [replyAuthors, setReplyAuthors] = useState<Record<string, UserInfo>>({});
     const repliesRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Fetch author info if not already fetched
+        const fetchAuthor = async () => {
+            if (comment.user_id && (!authorInfo || authorInfo._id.$oid !== comment.user_id)) {
+                const res = await getUsers({ type: comment.user_id, page: 0 });
+                if (res.data.items && res.data.items.length > 0) {
+                    setAuthorInfo(res.data.items[0]);
+                }
+            }
+        };
+        fetchAuthor();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [comment.user_id]);
+
+    // Fetch reply authors
+    useEffect(() => {
+        const fetchReplyAuthors = async () => {
+            if (!Array.isArray(curComment.replies)) return;
+            const missingIds = curComment.replies
+                .map((reply: any) => reply.user_id)
+                .filter((id: string) => id && !replyAuthors[id]);
+            if (missingIds.length === 0) return;
+            const uniqueIds = Array.from(new Set(missingIds));
+            const promises = uniqueIds.map(async (id) => {
+                const res = await getUsers({ type: id, page: 0 });
+                if (res.data.items && res.data.items.length > 0) {
+                    return { id, info: res.data.items[0] as UserInfo };
+                }
+                return null;
+            });
+            const results = await Promise.all(promises);
+            const newAuthors: Record<string, UserInfo> = {};
+            results.forEach((result) => {
+                if (result && result.info) {
+                    newAuthors[result.id] = result.info;
+                }
+            });
+            if (Object.keys(newAuthors).length > 0) {
+                setReplyAuthors((prev) => ({ ...prev, ...newAuthors }));
+            }
+        };
+        fetchReplyAuthors();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [curComment.replies]);
 
     const handleLike = async () => {
         try {
@@ -76,8 +125,19 @@ const CommentComponent: React.FC<CommentComponentProps> = ({ comment, color_sche
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(1.2rem, 2vw, 2.5rem)', position: 'relative' }}>
                 <div style={{ padding: 'clamp(1.2rem, 3vw, 2.5rem)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', fontWeight: 600, fontSize: 'clamp(1.25rem, 1.7vw, 2rem)', marginBottom: 0 }}>
-                        <span>Gebruiker: {curComment.user_id}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 600, fontSize: 'clamp(1.25rem, 1.7vw, 2rem)', marginBottom: 0 }}>
+                        {/* Replace user_id with UserInfoCircle */}
+                        {authorInfo ? (
+                            <UserInfoCircle
+                                userInfo={authorInfo}
+                                behavior="redirectToUserPage"
+                                style={{ height: "40px", width: "40px", display: "inline-block" }}
+                            >
+                                {authorInfo.nickname}
+                            </UserInfoCircle>
+                        ) : (
+                            <span>Gebruiker: {curComment.user_id}</span>
+                        )}
                         <span style={{ fontSize: '1rem', color: color_scheme.fourth, whiteSpace: 'nowrap', marginLeft: '1rem' }}>{new Date(curComment.created_at).toLocaleString('nl-NL')}</span>
                     </div>
                     <div style={{ fontSize: 'clamp(1.5rem, 2vw, 2.2rem)', marginBottom: '0.5rem' }}>{curComment.message}</div>
@@ -144,8 +204,19 @@ const CommentComponent: React.FC<CommentComponentProps> = ({ comment, color_sche
                             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                             .map((reply: any, idx: number) => (
                                 <div key={idx} style={{ marginBottom: '0.7rem', borderRadius: '6px', background: color_scheme.second, padding: '0.7rem', position: 'relative', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.3rem' }}>
-                                        <div style={{ fontWeight: 500 }}>{reply.user_id}</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                                        {/* Replace reply.user_id with UserInfoCircle */}
+                                        {replyAuthors[reply.user_id] ? (
+                                            <UserInfoCircle
+                                                userInfo={replyAuthors[reply.user_id]}
+                                                behavior="redirectToUserPage"
+                                                style={{ height: "32px", width: "32px", display: "inline-block" }}
+                                            >
+                                                {replyAuthors[reply.user_id].nickname}
+                                            </UserInfoCircle>
+                                        ) : (
+                                            <div style={{ fontWeight: 500 }}>{reply.user_id}</div>
+                                        )}
                                         <div style={{ fontSize: '0.9rem', color: color_scheme.fourth, marginLeft: '1rem', whiteSpace: 'nowrap' }}>{new Date(reply.created_at).toLocaleString('nl-NL')}</div>
                                     </div>
                                     <div style={{ whiteSpace: 'pre-line', overflowWrap: 'break-word', wordBreak: 'break-word', hyphens: 'auto' }}>{reply.message}</div>

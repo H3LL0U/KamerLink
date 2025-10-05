@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../../generic_components/Card/Card";
 import { spendPoints, type Posts, type SpendPoints } from "../../../api/post";
 import { type ColorScheme } from "../../../main";
@@ -7,6 +7,9 @@ import { likePost } from "../../../api/post";
 import LikeButton from "../../generic_components/CountButton/CountButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
+import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
+import { getUsers } from "../../../api/user";
+
 interface PostCardProps {
   _post: Posts["items"][number];
   scheme?: ColorScheme;
@@ -15,14 +18,11 @@ interface PostCardProps {
   setUserInfo?: ((value: UserInfo | null | ((prev: UserInfo | null) => UserInfo | null)) => void) | null;
 }
 
-
-
-
-
 function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo = null, full_view = false }: PostCardProps) {
   const [curPost, setCurPost] = useState(_post);
   const [likes, setLikes] = useState(curPost.likes);
   const [showPointsPopup, setShowPointsPopup] = useState(false);
+  const [authorInfo, setAuthorInfo] = useState<UserInfo | null>(null);
 
   const handleConfirmPoints = async (points: SpendPoints) => {
     const response = await spendPoints(points);
@@ -45,6 +45,20 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     }
 
   };
+
+  useEffect(() => {
+    // Fetch author info if not already fetched
+    const fetchAuthor = async () => {
+      if (_post.user_id && (!authorInfo || authorInfo._id.$oid !== _post.user_id)) {
+        const res = await getUsers({ type: _post.user_id, page: 0 });
+        if (res.data.items && res.data.items.length > 0) {
+          setAuthorInfo(res.data.items[0]);
+        }
+      }
+    };
+    fetchAuthor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_post.user_id]);
 
   const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif';
   return (
@@ -69,18 +83,29 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           style={{
             display: "flex",
             justifyContent: "space-between",
-            fontSize: "clamp(1.25rem, 1.7vw, 2rem)",
+            alignItems: "center",
+            fontSize: "clamp(1.1rem, 1.3vw, 1.3rem)", // smaller font size
             opacity: 0.85,
             fontFamily,
             fontWeight: 500,
           }}
         >
-          <span>👤</span>
-          <span>🗓 {new Date(curPost.created_at).toLocaleDateString()}</span>
+          {authorInfo ? (
+            <UserInfoCircle
+              userInfo={authorInfo}
+              behavior="redirectToUserPage"
+              style={{ height: "60px", width: "60px", display: "inline-block" }}
+            >
+              {authorInfo.nickname}
+            </UserInfoCircle>
+          ) : (
+            <span>👤</span>
+          )}
+          <span style={{ fontSize: "0.80em" }}>{new Date(curPost.created_at).toLocaleDateString()}</span>
         </div>
 
         {/* Title */}
-        <h3 style={{ margin: 0, fontFamily, fontWeight: 700, fontSize: 'clamp(2rem, 3vw, 2.8rem)', letterSpacing: '0.01em' }}>{curPost.title}</h3>
+        <h3 style={{ margin: 0, fontFamily, fontWeight: 700, fontSize: 'clamp(2rem, 3vw, 2.8rem)', letterSpacing: '0.01em', wordBreak: "break-word" }}>{curPost.title}</h3>
 
         {/* Description */}
         <p

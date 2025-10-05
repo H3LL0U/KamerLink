@@ -118,7 +118,8 @@ const Vragen = () => {
               Als er steeds Onverwachte fouten ontstaan bij het laden van een pagina is er een mogelijkheid dat het dienst op dat moment niet werkt.
 
             </p>
-            <p>status van het dienst: <StatusBulb endpoint={API_BASE_URL + "/docs"}></StatusBulb></p>
+            <p>status van het dienst: </p>
+            <StatusBulb endpoint={API_BASE_URL + "/docs"} style={{ display: "inline" }}></StatusBulb>
             <p>
               Als het probleem blijft bestaan, neem contact op via:{" "}
               <a href="mailto:3007651@leerling.o2g2.nl">mail</a>

@@ -4,9 +4,10 @@ type StatusBulbStatus = "loading" | "success" | "error";
 
 interface StatusBulbProps {
     endpoint: string;
+    style?: React.CSSProperties;
 }
 
-const StatusBulb: React.FC<StatusBulbProps> = ({ endpoint }) => {
+const StatusBulb: React.FC<StatusBulbProps> = ({ endpoint, style }) => {
     const [status, setStatus] = useState<StatusBulbStatus>("loading");
 
     useEffect(() => {
@@ -49,6 +50,7 @@ const StatusBulb: React.FC<StatusBulbProps> = ({ endpoint }) => {
                 backgroundColor: getColor(),
                 boxShadow: `0 0 10px ${getColor()}`,
                 transition: "background-color 0.3s, box-shadow 0.3s",
+                ...style,
             }}
         />
     );

@@ -9,8 +9,9 @@ import Card from "../../components/generic_components/Card/Card";
 import ColorTransition from "../../components/generic_components/ColorTransition/ColorTransition";
 import { defaultScheme } from "../../main";
 import Popup from "../../components/generic_components/PopUp/PopUp";
-
-
+import UserInfoCircle from "../../components/page_components/UserInfoCircle/UserInfoCircle";
+import { getUsers } from "../../api/user";
+import { useLocation } from "react-router-dom";
 
 const Profile = () => {
   const { user, isAuthenticated, AuthReplacement, userInfo } =
@@ -85,26 +86,52 @@ const Profile = () => {
   const [curImg, setCurImg] = useState<React.ReactElement>(teacherSVG);
   const [showPopup, setShowPopup] = useState(false);
 
-  useEffect(() => {
-    if (!userInfo) return;
+  // Add state for override userInfo
+  const [overrideUserInfo, setOverrideUserInfo] = useState<components["schemas"]["UserInfo"] | null>(null);
 
-    if (userInfo.role === "Student") setCurImg(studentSVG);
-    else if (userInfo.role === "Teacher") setCurImg(teacherSVG);
-    else if (userInfo.role === "Admin") setCurImg(adminSVG);
-  }, [userInfo]);
+  // Get URL params
+  const location = useLocation();
+
+  // Wait for userInfo to be available before fetching override user
+  useEffect(() => {
+    if (!userInfo) return; // Wait until default userInfo is fetched
+
+    const params = new URLSearchParams(location.search);
+    const type = params.get("type");
+    const fetchUser = async () => {
+      if (type) {
+        let user = await getUsers({ type: type, page: 0 });
+        setOverrideUserInfo(user.data.items[0]);
+      } else {
+        setOverrideUserInfo(null);
+      }
+    };
+    fetchUser();
+  }, [location.search, userInfo]);
+
+  useEffect(() => {
+    const info = overrideUserInfo || userInfo;
+    if (!info) return;
+
+    if (info.role === "Student") setCurImg(studentSVG);
+    else if (info.role === "Teacher") setCurImg(teacherSVG);
+    else if (info.role === "Admin") setCurImg(adminSVG);
+  }, [userInfo, overrideUserInfo]);
 
   if (AuthReplacement) return AuthReplacement;
 
+  // Use overrideUserInfo if present, otherwise userInfo
+  const displayUserInfo = overrideUserInfo || userInfo;
 
   return (
     <>
       <Header />
       <UserHeader
-        name={userInfo?.nickname ?? "loading"}
-        userInfo={userInfo}
+        name={displayUserInfo?.nickname ?? "loading"}
+        userInfo={displayUserInfo}
         img_src={
           <div onClick={() => setShowPopup(true)} style={{ display: "inline-block", cursor: "pointer" }}>
-            {curImg}
+            <UserInfoCircle userInfo={displayUserInfo} />
           </div>
         }
       >
@@ -116,18 +143,7 @@ const Profile = () => {
         height="20px"
       />
 
-      {showPopup && (
-        <Popup onClose={() => setShowPopup(false)} scheme={colorScheme}>
-          <h3 style={{ marginBottom: "0.5em" }}>{userInfo?.nickname}</h3>
-          <hr />
-          <p>Id: {userInfo?._id.$oid} </p>
-          <hr />
-          <p>Rol: {userInfo?.role === "Teacher" ? "Docent" : userInfo?.role}</p>
-          <hr />
-          <p>Punten: {userInfo?.points}</p>
 
-        </Popup>
-      )}
     </>
   );
 };
