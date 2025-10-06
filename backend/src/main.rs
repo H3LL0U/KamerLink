@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
+use axum::Extension;
 use axum::extract::State;
 use axum::routing::{Route, get};
-use axum::{Extension, middleware};
 use axum::{Router, routing::post};
 use backend::routes::post::comment::create_comment;
 use backend::routes::post::like::like_post;
@@ -13,16 +13,18 @@ use jsonwebtoken::jwk::JwkSet;
 use mongodb::options::ClientOptions;
 use std::env;
 use std::fs;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 pub mod database;
 pub mod errors;
+pub mod middleware;
 pub mod routes;
 pub mod routes_builder;
+pub mod test_utils;
 pub mod utils;
-pub mod validation;
 use crate::routes::api::post::create_post;
 use crate::routes::post::comment::retrieve_comments;
 use crate::routes::post::points::spend_points;
@@ -35,12 +37,12 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
+use middleware::token_validation_middleware;
 use mongodb::{self, Client, Database};
 use routes::ApiDoc;
 use routes::*;
 use tower_http::limit::RequestBodyLimitLayer;
 use utils::reset;
-use validation::token_validation_middleware;
 #[tokio::main]
 pub async fn main() {
     dotenv().ok(); //auto set the .env
@@ -116,6 +118,11 @@ pub async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5000")
         .await
         .expect("Failed to bind to port");
-    println!("🚀 Running at http://localhost:5000/docs");
-    axum::serve(listener, app).await.unwrap();
+    println!("Running at http://localhost:5000/docs");
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }

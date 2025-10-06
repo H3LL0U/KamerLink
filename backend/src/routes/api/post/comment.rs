@@ -27,6 +27,7 @@ use serde;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use utoipa::{IntoParams, ToSchema};
+use validator::Validate;
 #[utoipa::path(
     post,
     path = "/api/post/comment",
@@ -49,6 +50,13 @@ pub async fn create_comment(
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
+    //validate comment before inserting
+    match &input.validate() {
+        Ok(_) => {}
+        Err(_) => {
+            return StatusCode::BAD_REQUEST.into_response();
+        }
+    }
 
     let comment = match CommentBuilder::default()
         .created_at(Utc::now().to_rfc3339())

@@ -1,14 +1,18 @@
 use anyhow::{Context, Result};
 use jsonwebtoken::jwk::JwkSet;
+use tokio::sync::Mutex;
 pub mod utils;
+
+use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 
 pub mod database;
 pub mod errors;
+pub mod middleware;
 pub mod routes;
 pub mod routes_builder;
-pub mod validation;
+pub mod test_utils;
 use mongodb::{self, ClientSession, Database};
 
 // /gamble
@@ -30,6 +34,7 @@ pub async fn get_jwks() -> Result<JwkSet> {
 
 #[derive(Clone, Debug)]
 pub struct AppState {
+    //pub user_limiters: Arc<DefaultDirectRateLimiter>,
     pub jwks: Arc<JwkSet>,
     pub db: Arc<Database>,
     pub session: Arc<ClientSession>,

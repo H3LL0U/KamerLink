@@ -48,8 +48,7 @@ pub enum Role {
 
 #[substruct(UserInfo)] // Defines a safe struct that only contains public user info
 #[derive(Serialize, Deserialize, Clone, ToSchema, Builder, Debug)]
-#[builder(pattern = "owned")] // make setters take self instead of &mut self
-
+#[builder(pattern = "owned")]
 pub struct User {
     #[substruct(UserInfo)]
     #[builder(default = "ObjectId::new()", setter(into))]

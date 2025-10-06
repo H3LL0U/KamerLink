@@ -1,18 +1,26 @@
 use anyhow::Context;
 use axum::{
     Json,
-    extract::{Extension, Multipart},
+    extract::{Extension, Multipart, Request},
     response::{IntoResponse, Response},
 };
 use axum_extra::extract::Query;
 use futures::TryStreamExt;
-use http::StatusCode;
+use http::{StatusCode, status};
 use serde::{Deserialize, Serialize};
+use serde_json::from_str;
 use utoipa::ToSchema;
+use validator::Validate;
 
-use crate::database::schemas::user::User;
 use crate::{AppState, routes::request_builder};
 use crate::{database::schemas::post::Comment, routes::request_builder::retrieve_items};
+use crate::{
+    database::schemas::{
+        post::{KamerlinkPostBuilder, PostTag, RequestPostTag},
+        user::User,
+    },
+    routes::post::tags::update_tags,
+};
 use chrono::Utc;
 use request_builder::PaginatedResponse;
 use request_builder::{RetrieveBy, RetrievePaginated};
@@ -23,6 +31,7 @@ use utoipa::{
 pub mod comment;
 pub mod like;
 pub mod points;
+pub mod tags;
 ///
 ///
 /// Post request (creating a post)
@@ -72,6 +81,7 @@ pub async fn create_post(
     let mut title = String::new();
     let mut message = String::new();
     let mut images: Vec<Vec<u8>> = vec![];
+    let mut tags: Vec<RequestPostTag> = vec![];
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap_or_default();
         match name {
@@ -84,7 +94,15 @@ pub async fn create_post(
             "images" => {
                 images.push(field.bytes().await.unwrap().to_vec());
             }
-
+            "tags" => {
+                let text = field.text().await.unwrap_or_default();
+                if let Ok(parsed_tags) = from_str::<Vec<RequestPostTag>>(&text) {
+                    tags = parsed_tags;
+                } else {
+                    eprintln!("Failed to parse tags: {}", text);
+                    return StatusCode::BAD_REQUEST.into_response();
+                }
+            }
             _ => {}
         }
     }
@@ -94,16 +112,33 @@ pub async fn create_post(
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
-    let post_schema = KamerlinkPost {
-        _id: ObjectId::new(),
-        user_id: user_id.to_string(),
-        created_at: Utc::now().to_rfc3339(),
-        title,
-        message,
-        img_urls: vec![], // TODO: replace with URLs after upload
-        likes: 0,
-        points: 0,
+    let tags = match update_tags(tags, state.db.clone()).await {
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
+
+    let post_schema = match KamerlinkPostBuilder::default()
+        ._id(ObjectId::new())
+        .user_id(user_id.to_string())
+        .created_at(Utc::now().to_rfc3339())
+        .title(title)
+        .message(message)
+        .img_urls(vec![]) // TODO: replace with uploaded URLs
+        .likes(0)
+        .points(0)
+        .tags(Some(tags))
+        .build()
+    {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
+
+    // validate the schema before inserting:
+    if let Err(e) = post_schema.validate() {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
 
     let new_id = match state
         .db

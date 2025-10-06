@@ -118,6 +118,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/post/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["retrieve_tags"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user": {
         parameters: {
             query?: never;
@@ -163,11 +179,13 @@ export interface components {
             message: string;
             post_id: string;
             replies: components["schemas"]["Reply"][];
+            tags?: components["schemas"]["PostTag"][] | null;
             user_id: string;
         };
         CommentDraft: {
             message: string;
             post_id: string;
+            tags?: components["schemas"]["PostTag"][] | null;
         };
         Gamble: {
             gamble_type: components["schemas"]["GambleTypes"];
@@ -224,6 +242,7 @@ export interface components {
                 message: string;
                 post_id: string;
                 replies: components["schemas"]["Reply"][];
+                tags?: components["schemas"]["PostTag"][] | null;
                 user_id: string;
             }[];
         };
@@ -237,6 +256,15 @@ export interface components {
                 points: number;
                 title: string;
                 user_id: string;
+            }[];
+        };
+        PaginatedResponse_PostTag: {
+            items: {
+                _id: components["schemas"]["ObjectIdSchema"];
+                base_tag: boolean;
+                color: string;
+                tag_name: string;
+                uses: number;
             }[];
         };
         PaginatedResponse_UserInfo: {
@@ -261,6 +289,13 @@ export interface components {
         };
         PostResponse: {
             post_id: string;
+        };
+        PostTag: {
+            _id: components["schemas"]["ObjectIdSchema"];
+            base_tag: boolean;
+            color: string;
+            tag_name: string;
+            uses: number;
         };
         Reply: {
             _id: components["schemas"]["ObjectIdSchema"];
@@ -610,6 +645,36 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResponseGivePoints"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    retrieve_tags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                type: components["schemas"]["RetrieveBy"];
+                page: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description retrieves suggested */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedResponse_PostTag"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

@@ -42,6 +42,9 @@ pub enum RetrieveBy {
 
     /// Retrieves all items, sorted by creation date (`created_at` field, descending).
     MostRecent,
+
+    /// Retrieves the items that have uses set to the highest value. the values that have base_tag set to the highest value and then uses in descending order
+    MostUses,
 }
 
 impl<'de> Deserialize<'de> for RetrieveBy {
@@ -101,6 +104,8 @@ pub struct RetrieveItems<'a> {
     allowed_retrieval_types: &'a [RetrieveBy],
     #[builder(default)]
     projection: Option<Document>,
+    #[builder(default)]
+    size_limit: Option<i64>,
 }
 
 impl<'a> RetrieveItems<'_> {
@@ -116,6 +121,7 @@ impl<'a> RetrieveItems<'_> {
             self.allowed_retrieval_types,
             self.base_query.clone(),
             self.projection.clone(),
+            self.size_limit,
         )
         .await
     }
@@ -132,6 +138,7 @@ pub async fn retrieve_items<T>(
     allowed_retrieval_types: &[RetrieveBy], //Each request has specific retrieval types which it supports which should be specified here.
     base_query: Document,
     projection: Option<Document>,
+    size_limit: Option<i64>,
 ) -> Response
 where
     T: DeserializeOwned + Unpin + Send + Sync + Serialize,
@@ -145,7 +152,7 @@ where
 
     let collection: Collection<T> = state.db.collection(collection);
 
-    let limit: i64 = 5;
+    let limit: i64 = size_limit.unwrap_or(5);
     let skip: i64 = (req.page as i64) * limit;
 
     let find_options = FindOptions::builder()
@@ -155,6 +162,8 @@ where
             RetrieveBy::MostLikes => doc! { "likes": -1 },
             RetrieveBy::MostPoints => doc! { "points": -1 },
             RetrieveBy::MostRecent => doc! { "created_at": -1 },
+            RetrieveBy::MostUses => doc! { "base_tag":-1, "uses": -1 },
+
             _ => doc! {},
         })
         .projection(projection)

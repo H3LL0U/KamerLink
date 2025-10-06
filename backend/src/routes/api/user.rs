@@ -1,5 +1,6 @@
 use crate::database::schemas::post::KamerlinkPost;
 use crate::routes::request_builder::{RetrieveBy, RetrievePaginated, retrieve_items};
+use crate::test_utils::setup_test_state;
 use crate::{
     AppState,
     database::schemas::user::{User, UserInfo},

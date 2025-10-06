@@ -53,7 +53,8 @@ impl Modify for JwtAuth {
         post::comment::like_comment, // like/unlike a comment (post)
         user::retrieve_users, // user path (get)
         user::retrieve_user_posts, // retrieves posts from a specific user (get)
-        post::comment::add_reply_to_comment // add a reply to a comment (post
+        post::comment::add_reply_to_comment, // add a reply to a comment (post)
+        post::tags::retrieve_tags // retrieve all tags (get)
 
     ),
     components(
