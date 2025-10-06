@@ -1,6 +1,9 @@
+use std::net::IpAddr;
+
 use axum::routing::{get, post};
 use axum::{Router, middleware};
 
+use tower_governor::GovernorError;
 use tower_governor::governor::GovernorConfig;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 
@@ -18,18 +21,49 @@ use crate::routes::post::points::{check_points, spend_points};
 use crate::routes::post::retrieve_posts;
 use crate::routes::user::{retrieve_user_posts, retrieve_users};
 
+use axum::http::Request;
+use tower_governor::key_extractor::KeyExtractor;
+
+#[derive(Clone)]
+//Labels users for their Authorization header for rate limiting
+struct AuthHeaderKeyExtractor;
+
+impl KeyExtractor for AuthHeaderKeyExtractor {
+    type Key = String;
+
+    fn extract<B>(&self, req: &Request<B>) -> Result<String, GovernorError> {
+        // Try Authorization header first
+        if let Some(auth) = req.headers().get("authorization") {
+            if let Ok(auth_str) = auth.to_str() {
+                return Ok(auth_str.to_string());
+            }
+        }
+
+        // Fallback to IP address
+        let ip: IpAddr = req
+            .extensions()
+            .get::<std::net::SocketAddr>()
+            .map(|addr| addr.ip())
+            .unwrap_or_else(|| "127.0.0.1".parse().unwrap());
+
+        Ok(ip.to_string())
+    }
+}
+
 pub fn build_private_routes(state: &AppState) -> Router {
     //Posts that need to have rate limiting set up
 
     let secure_governor_conf = GovernorConfigBuilder::default()
         .per_second(10)
         .burst_size(3)
+        .key_extractor(AuthHeaderKeyExtractor)
         .finish()
         .unwrap();
 
     let common_router_conf = GovernorConfigBuilder::default()
         .per_millisecond(3)
         .burst_size(400)
+        .key_extractor(AuthHeaderKeyExtractor)
         .finish()
         .unwrap();
 
