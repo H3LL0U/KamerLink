@@ -82,7 +82,8 @@ pub fn build_private_routes(state: &AppState) -> Router {
         .route("/user", get(retrieve_users))
         .route("/post/comment", get(retrieve_comments))
         .route("/user/{user_id}/posts", get(retrieve_user_posts))
-        .route("/post/tags", get(retrieve_tags))
+        .route("/post/tags/{post_id}", get(retrieve_tags)) // both of these routes map to the same function
+        .route("/post/tags/", get(retrieve_tags)) // both of these routes map to the same function
         .layer(GovernorLayer::new(common_router_conf));
 
     Router::new()

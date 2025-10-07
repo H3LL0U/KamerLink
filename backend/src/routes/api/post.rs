@@ -44,6 +44,8 @@ pub struct PostDraft {
     message: String,
     #[schema(content_media_type = "application/octet-stream")]
     images: Vec<Vec<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tags: Option<Vec<RequestPostTag>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -111,12 +113,13 @@ pub async fn create_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-
     let tags = match update_tags(tags, state.db.clone()).await {
         Ok(k) => k,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
     };
-
+    let tag_ids: Vec<ObjectId> = tags.iter().map(|tag| tag._id).collect();
     let post_schema = match KamerlinkPostBuilder::default()
         ._id(ObjectId::new())
         .user_id(user_id.to_string())
@@ -126,7 +129,7 @@ pub async fn create_post(
         .img_urls(vec![]) // TODO: replace with uploaded URLs
         .likes(0)
         .points(0)
-        .tags(Some(tags))
+        .tags(Some(tag_ids))
         .build()
     {
         Ok(k) => k,
@@ -136,7 +139,7 @@ pub async fn create_post(
     };
 
     // validate the schema before inserting:
-    if let Err(e) = post_schema.validate() {
+    if let Err(_) = post_schema.validate() {
         return StatusCode::BAD_REQUEST.into_response();
     }
 

@@ -10,9 +10,14 @@ import { useAuthenticatedUser } from "../../../hooks/useAuthenticatedUser";
 import InvalidEmail from "../../../pages/REPLACEMENTS/invalid_email";
 import { useScrollToBottom } from "../../../hooks/useScrollToBottom";
 import Header from "../Header/Header";
+import type { PostTag, RequestPostTag } from "../../../api/post";
+import PopUpButton from "../../generic_components/PopUpButton/PopUpButton";
+import TagSelector from "../TagSelector/TagSelector";
 
 type Filter = "Nieuw" | "Likes" | "Points";
-type Tags = "Nieuws" | "Grappig" | "Idee" | "Alle";
+
+
+
 
 interface PostViewBaseProps {
     /** Optional custom post fetching function */
@@ -32,7 +37,7 @@ export default function PostViewBase({
     const [hasMore, setHasMore] = useState(true);
     const [fetchAttempts, setFetchAttempts] = useState(0);
     const [atTheEnd, setAtTheEnd] = useState(false);
-    const [tags, setTags] = useState<Tags[]>(["Nieuws", "Grappig", "Idee"]);
+
     const [filter, setFilter] = useState<Filter>("Nieuw");
 
     const { userInfo, accessToken, AuthReplacement, setUserInfo, isAuthenticated } =
@@ -140,12 +145,11 @@ export default function PostViewBase({
             >
                 {/* Filters Bar */}
                 <OptionBar>
-                    <MultiDropdown
-                        onSelect={setTags}
-                        options={["Grappig", "Idee", "Nieuws", "Alle"]}
-                        selectAllOption="Alle"
-                        placeholder="Selecteer tags"
-                    />
+                    <PopUpButton text="Filteren">
+
+                        <TagSelector ></TagSelector>
+
+                    </PopUpButton>
 
                     <button
                         onClick={() => window.location.replace("/user/new_post")}

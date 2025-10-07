@@ -11,6 +11,9 @@ export async function createPost(
   const formData = new FormData();
   formData.append("title", draft.title);
   formData.append("message", draft.message);
+  if (draft.tags) {
+    formData.append("tags", JSON.stringify(draft.tags))
+  }
 
 
 
@@ -65,3 +68,11 @@ export const likeComment = client.path("/api/post/comment/like").method("post").
 
 //reply to comment
 export const addReplyToComment = client.path("/api/post/comment/reply").method("post").create()
+
+//post tags
+export type PostTag = paths["/api/post/tags/{post_id}"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
+
+export type RequestPostTag = components["schemas"]["RequestPostTag"];
+
+// set post_id  to "" in order to retrieve the 
+export const retrievePostTags = client.path("/api/post/tags/{post_id}").method("get").create()

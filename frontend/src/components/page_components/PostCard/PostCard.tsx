@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Card from "../../generic_components/Card/Card";
-import { spendPoints, type Posts, type SpendPoints } from "../../../api/post";
+import { retrievePostTags, spendPoints, type Posts, type SpendPoints } from "../../../api/post";
 import { type ColorScheme } from "../../../main";
 import { defaultScheme } from "../../../main";
 import { likePost } from "../../../api/post";
@@ -9,7 +9,7 @@ import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
 import { getUsers } from "../../../api/user";
-
+import type { PostTag } from "../../../api/post";
 interface PostCardProps {
   _post: Posts["items"][number];
   scheme?: ColorScheme;
@@ -23,7 +23,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
   const [likes, setLikes] = useState(curPost.likes);
   const [showPointsPopup, setShowPointsPopup] = useState(false);
   const [authorInfo, setAuthorInfo] = useState<UserInfo | null>(null);
-
+  const [postTags, setPostTags] = useState<PostTag[]>([])
   const handleConfirmPoints = async (points: SpendPoints) => {
     const response = await spendPoints(points);
     const newPost: Posts["items"][number] = { ...curPost, points: curPost.points + points.points };
@@ -57,8 +57,29 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
       }
     };
     fetchAuthor();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [_post.user_id]);
+
+  useEffect(() => {
+    // Fetch possible post tags
+    if (_post.tags && _post._id) {
+      const fetchPostTags = async () => {
+        const res = await retrievePostTags({ post_id: _post._id.$oid, page: 0, type: "MostUses" })
+
+        if (res.data.items && res.data.items.length > 0) {
+          setPostTags(res.data.items)
+
+
+        }
+      }
+      fetchPostTags();
+
+    }
+
+
+  }, [_post.tags])
+
+
 
   const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif';
   return (

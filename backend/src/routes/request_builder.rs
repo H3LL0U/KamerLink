@@ -43,7 +43,7 @@ pub enum RetrieveBy {
     /// Retrieves all items, sorted by creation date (`created_at` field, descending).
     MostRecent,
 
-    /// Retrieves the items that have uses set to the highest value. the values that have base_tag set to the highest value and then uses in descending order
+    /// Retrieves the items that have "uses" set to the highest value. the values that have "base_tag" set to true and then uses in descending order
     MostUses,
 }
 
@@ -59,6 +59,7 @@ impl<'de> Deserialize<'de> for RetrieveBy {
             "MostLikes" => Ok(RetrieveBy::MostLikes),
             "MostPoints" => Ok(RetrieveBy::MostPoints),
             "MostRecent" => Ok(RetrieveBy::MostRecent),
+            "MostUses" => Ok(RetrieveBy::MostUses),
             other => Ok(RetrieveBy::Id(other.to_string())),
         }
     }

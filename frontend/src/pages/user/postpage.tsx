@@ -81,6 +81,7 @@ function PostPage() {
         title,
         message,
         images,
+        tags: [{ color: "#FFF", tag_name: "Website suggestie" }]
       } as PostDraft,
       await getAccessTokenSilently()
     );
@@ -93,7 +94,7 @@ function PostPage() {
     if (newId) {
       navigate(`/posts/view?id=${newId}`);
     } else {
-      alert("Post submitted!");
+      
     }
   };
 
