@@ -33,7 +33,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     const newPost: Posts["items"][number] = { ...curPost, points: curPost.points + points.points };
     setCurPost(newPost);
     setShowPointsPopup(false);
-    console.log(response);
+
   };
 
   function onPointsSet(newUserInfo: UserInfo | null) {

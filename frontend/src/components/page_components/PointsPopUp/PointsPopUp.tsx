@@ -64,7 +64,7 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
             width: "100%",
           }}
         >
-          <p>Loading...</p>
+          <p>Aan het laden</p>
         </Card>
       </div>
     );
@@ -140,7 +140,7 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
             }}
           //disabled={selectedPoints > remaining_points}
           >
-            Confirm
+            Bevestigen
           </button>
 
           <button
@@ -152,10 +152,11 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
               borderRadius: "0.75rem",
               cursor: "pointer",
               fontSize: "1rem",
+              color: "black"
             }}
             onClick={onClose}
           >
-            Cancel
+            Annuleren
           </button>
         </div>
       </Card>

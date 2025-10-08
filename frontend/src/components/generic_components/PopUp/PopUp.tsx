@@ -14,7 +14,7 @@ function Popup({ children, onClose, scheme = defaultScheme }: PopupProps) {
         position: "fixed",
         top: 0,
         left: 0,
-        width: "100vw",
+        width: "100%",
         height: "100vh",
         backgroundColor: "rgba(0,0,0,0.4)",
         display: "flex",
@@ -31,13 +31,14 @@ function Popup({ children, onClose, scheme = defaultScheme }: PopupProps) {
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
+          maxWidth: "600px",
           position: "relative",
           backgroundColor: scheme.second,
           color: scheme.fourth,
           border: `2px solid ${scheme.third}`,
           borderRadius: "10px",
           padding: "2.5rem",
-          minWidth: "300px",
+          minWidth: "100px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
         }}
       >

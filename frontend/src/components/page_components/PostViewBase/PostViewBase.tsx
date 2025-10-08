@@ -14,7 +14,7 @@ import type { PostTag, RequestPostTag } from "../../../api/post";
 import PopUpButton from "../../generic_components/PopUpButton/PopUpButton";
 import TagSelector from "../TagSelector/TagSelector";
 
-type Filter = "Nieuw" | "Likes" | "Points";
+type Filter = "Nieuw" | "Likes" | "Punten";
 
 
 
@@ -58,7 +58,7 @@ export default function PostViewBase({
             const filterToRetrieveBy: Record<Filter, RetrieveBy> = {
                 Nieuw: "MostRecent",
                 Likes: "MostLikes",
-                Points: "MostPoints",
+                Punten: "MostPoints",
             };
             const tagIds = tags.map(tag => tag._id.$oid).join(" ");
             const request: RetrievePost = {
@@ -105,11 +105,11 @@ export default function PostViewBase({
                 const filterToRetrieveBy: Record<Filter, RetrieveBy> = {
                     Nieuw: "MostRecent",
                     Likes: "MostLikes",
-                    Points: "MostPoints",
+                    Punten: "MostPoints",
                 };
                 const tagIds = tags.map(tag => tag._id.$oid).join(" ");
 
-                console.log(tagIds)
+
                 const request: RetrievePost = {
                     type: filterToRetrieveBy[filter],
                     page: 0,
@@ -172,7 +172,7 @@ export default function PostViewBase({
                     </button>
 
                     <Dropdown
-                        options={["Nieuw", "Likes", "Points"]}
+                        options={["Nieuw", "Likes", "Punten"]}
                         onSelect={setFilter}
                         placeholder="Nieuw"
                         scheme={defaultScheme}
