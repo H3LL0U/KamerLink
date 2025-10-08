@@ -1,5 +1,5 @@
 import { useState, type DragEvent, type FormEvent } from "react";
-import { createPost, type PostDraft } from "../../api/post";
+import { createPost, type PostTag, type PostDraft } from "../../api/post";
 import { useAuth0 } from "@auth0/auth0-react";
 import { LocationPicker } from "../../components/generic_components/LocationPicker/LocationPicker";
 import Header from "../../components/page_components/Header/Header";
@@ -7,6 +7,9 @@ import { useAuthenticatedUser } from "../../hooks/useAuthenticatedUser";
 import Card from "../../components/generic_components/Card/Card";
 import { useNavigate } from "react-router-dom";
 import { defaultScheme } from "../../main";
+import PopupButton from "../../components/generic_components/PopUpButton/PopUpButton";
+import TagSelector from "../../components/page_components/TagSelector/TagSelector";
+import MultitagDisplay from "../../components/page_components/TagSelector/MultitagDisplay";
 // Helper function to convert files into arrays of numbers
 export async function filesToNumbers(files: File[]): Promise<number[][]> {
   const readFile = (file: File) =>
@@ -34,7 +37,7 @@ function PostPage() {
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
   const { AuthReplacement } = useAuthenticatedUser();
   const navigate = useNavigate();
-
+  const [selectedTags, setSelectedTags] = useState<PostTag[]>([]);
   const color_scheme = defaultScheme;
 
   // Handle dropped files
@@ -81,6 +84,7 @@ function PostPage() {
         title,
         message,
         images,
+        tags: selectedTags
       } as PostDraft,
       await getAccessTokenSilently()
     );
@@ -93,7 +97,7 @@ function PostPage() {
     if (newId) {
       navigate(`/posts/view?id=${newId}`);
     } else {
-      alert("Post submitted!");
+
     }
   };
 
@@ -101,6 +105,10 @@ function PostPage() {
   return (
     <>
       <Header />
+
+
+
+
       <div
         style={{
           width: "100%",
@@ -112,6 +120,9 @@ function PostPage() {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
+
+
+
         <div style={{ margin: "auto", maxWidth: "600px" }}>
           <Card
             style={{
@@ -125,6 +136,22 @@ function PostPage() {
               border: `1px solid ${color_scheme.third}`,
             }}
           >
+
+            <MultitagDisplay
+              header="Verwijder tags"
+              tags={selectedTags}
+              onChange={(tagsToRemove) => {
+                // Remove all tags that are in `tagsToRemove` from the selectedTags state
+                setSelectedTags(prev =>
+                  prev.filter(
+                    tag => !tagsToRemove.some(removeTag => removeTag._id.$oid === tag._id.$oid)
+                  )
+                );
+              }}
+            />
+
+
+
             <h2
               style={{
                 textAlign: "center",
@@ -182,14 +209,47 @@ function PostPage() {
               <div style={{ fontSize: "0.95em", color: "#ffffffff", textAlign: "right", marginBottom: 10 }}>
                 {message.length}/5000
               </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  marginBottom: "10px",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                }}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileInputChange}
+                  style={{
+                    flexShrink: 0,
+                    padding: "6px 8px",
+                  }}
+                />
+                { /* Tags selector */}
+                <PopupButton
+                  text="Selecteer tags"
+                  style={{
+                    flexShrink: 0,
+                  }}
+                >
+                  <TagSelector
+                    onChange={(selected) => { setSelectedTags(prev => selected) }}
+                    disallowCreate={false}
+                    selectedTags={selectedTags}
 
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileInputChange}
-                style={{ marginBottom: 12 }}
-              />
+                  >
+
+
+                  </TagSelector>
+
+
+
+                </PopupButton>
+              </div>
 
               <div
                 style={{
@@ -266,7 +326,7 @@ function PostPage() {
             </form>
           </Card>
         </div>
-      </div>
+      </div >
     </>
   );
 }

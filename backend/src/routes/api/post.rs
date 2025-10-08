@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use axum::{
     Json,
@@ -7,9 +9,10 @@ use axum::{
 use axum_extra::extract::Query;
 use futures::TryStreamExt;
 use http::{StatusCode, status};
+
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
 use crate::{AppState, routes::request_builder};
@@ -44,6 +47,8 @@ pub struct PostDraft {
     message: String,
     #[schema(content_media_type = "application/octet-stream")]
     images: Vec<Vec<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    tags: Option<Vec<RequestPostTag>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
@@ -54,7 +59,7 @@ pub struct PostResponse {
 use crate::database::schemas::post::KamerlinkPost;
 use mongodb::{
     self,
-    bson::{doc, oid::ObjectId},
+    bson::{self, Document, doc, oid::ObjectId},
     options::{FindOptions, InsertOneOptions},
 };
 
@@ -111,12 +116,13 @@ pub async fn create_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-
     let tags = match update_tags(tags, state.db.clone()).await {
         Ok(k) => k,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
     };
-
+    let tag_ids: Vec<ObjectId> = tags.iter().map(|tag| tag._id).collect();
     let post_schema = match KamerlinkPostBuilder::default()
         ._id(ObjectId::new())
         .user_id(user_id.to_string())
@@ -126,7 +132,7 @@ pub async fn create_post(
         .img_urls(vec![]) // TODO: replace with uploaded URLs
         .likes(0)
         .points(0)
-        .tags(Some(tags))
+        .tags(Some(tag_ids))
         .build()
     {
         Ok(k) => k,
@@ -136,7 +142,7 @@ pub async fn create_post(
     };
 
     // validate the schema before inserting:
-    if let Err(e) = post_schema.validate() {
+    if let Err(_) = post_schema.validate() {
         return StatusCode::BAD_REQUEST.into_response();
     }
 
@@ -163,9 +169,15 @@ pub async fn create_post(
 
 ///
 ///
-/// Get request (Getting a specific or multipple posts)
+/// Get request (Getting a specific or multiple posts)
 ///
 ///
+#[derive(Serialize, Deserialize, Clone, ToSchema, IntoParams)]
+#[into_params(style = Form, parameter_in = Query)]
+pub struct Search {
+    #[param(required = false)]
+    pub search: Option<String>,
+}
 
 #[utoipa::path(
     get,
@@ -175,7 +187,8 @@ pub async fn create_post(
         (status = 401, description = "Unauthorized - missing or invalid token")
     ),
     params(
-        RetrievePaginated
+        RetrievePaginated,
+        Search
     ),
 
 
@@ -185,7 +198,31 @@ pub async fn retrieve_posts(
     Extension(state): Extension<AppState>,
     Extension(sub): Extension<String>,
     Query(req): Query<RetrievePaginated>,
+    Query(search): Query<Search>,
 ) -> Response {
+    let base_query = match search.search {
+        Some(search_string) => {
+            //parse tag_ids string into their respective ObjectIds
+            let mut tag_ids = Vec::new();
+
+            for tag_str in search_string.split(' ') {
+                match ObjectId::from_str(tag_str) {
+                    Ok(oid) => tag_ids.push(oid),
+                    Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+                }
+            }
+            doc! {
+                "tags": { "$all": tag_ids }
+
+
+
+            }
+        }
+        None => {
+            doc! {}
+        }
+    };
+
     crate::routes::request_builder::RetrieveItemsBuilder::default()
         .state(Extension(state))
         .sub(Extension(sub))
@@ -198,7 +235,7 @@ pub async fn retrieve_posts(
             RetrieveBy::MostPoints,
             RetrieveBy::MostRecent,
         ])
-        .base_query(doc! {})
+        .base_query(base_query)
         .build()
         .unwrap()
         .run::<KamerlinkPost>()

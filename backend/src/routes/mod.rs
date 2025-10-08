@@ -8,7 +8,7 @@ use utoipa::{
     Modify, OpenApi,
     openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
 };
-
+use crate::database::schemas::post::*;
 use crate::routes::post::{
     PostDraft, PostResponse,
     like::{LikePost, ResponseLikePost},
@@ -62,7 +62,8 @@ impl Modify for JwtAuth {
         GambleResults, Gamble, // Gamble schemas
         PostDraft, PostResponse, // Post schemas (post)
         RetrievePaginated , RetrieveBy, // Post schemas (get)
-        LikePost, ResponseLikePost
+        LikePost, ResponseLikePost,
+        RequestPostTag
         
     ),
     ),
@@ -71,3 +72,7 @@ impl Modify for JwtAuth {
     info(title = "InfraStemAPI", version = "1.0.0")
 )]
 pub struct ApiDoc;
+
+
+
+

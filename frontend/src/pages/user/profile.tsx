@@ -17,7 +17,7 @@ type UserInfo = components["schemas"]["UserInfo"];
 
 function buildUserPostFetcher(userInfo: UserInfo) {
   return async (request: RetrievePost): Promise<{ data: Posts }> => {
-    const { page, type } = request;
+    const { page, type, search } = request;
     const params = new URLSearchParams(window.location.search);
     const userId = params.get("type") ?? userInfo._id.$oid;
     if (!userId) throw new Error("User ID not found");
@@ -26,6 +26,9 @@ function buildUserPostFetcher(userInfo: UserInfo) {
       user_id: userId,
       page,
       type,
+      search
+
+
     });
 
     return data;
@@ -58,7 +61,7 @@ const Profile = () => {
   if (AuthReplacement) return AuthReplacement;
 
   const displayUserInfo = overrideUserInfo || userInfo;
-  if (!isAuthenticated || !displayUserInfo) return null;
+  if (!isAuthenticated || !displayUserInfo) return AuthReplacement;
 
   return (
     <>

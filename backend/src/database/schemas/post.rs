@@ -1,4 +1,5 @@
 use crate::database::ObjectIdSchema;
+use crate::routes::api::post::tags::MAX_TAGS_PER_POST;
 use derive_builder::Builder;
 use mongodb::{
     bson::{Document, doc, oid::ObjectId},
@@ -59,7 +60,8 @@ pub struct KamerlinkPost {
     #[builder(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate(length(min = 0, max = 50))]
-    pub tags: Option<Vec<PostTag>>,
+    #[schema(value_type = Option<Vec<ObjectIdSchema>>)]
+    pub tags: Option<Vec<ObjectId>>,
 }
 #[substruct(RequestPostTag)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Validate)]

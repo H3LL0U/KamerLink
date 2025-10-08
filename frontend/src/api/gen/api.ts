@@ -118,16 +118,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/post/tags": {
+    "/api/post/tags/{post_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** @description Retrieves the most used tags with tags that have base_tag set true being first. Changes behavior if post_id is supplied. In that case will return the tags of that specific post */
+        get: operations["retrieve_tags"];
         put?: never;
-        post: operations["retrieve_tags"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -179,13 +180,11 @@ export interface components {
             message: string;
             post_id: string;
             replies: components["schemas"]["Reply"][];
-            tags?: components["schemas"]["PostTag"][] | null;
             user_id: string;
         };
         CommentDraft: {
             message: string;
             post_id: string;
-            tags?: components["schemas"]["PostTag"][] | null;
         };
         Gamble: {
             gamble_type: components["schemas"]["GambleTypes"];
@@ -218,6 +217,7 @@ export interface components {
             likes: number;
             message: string;
             points: number;
+            tags?: components["schemas"]["ObjectIdSchema"][] | null;
             title: string;
             user_id: string;
         };
@@ -242,7 +242,6 @@ export interface components {
                 message: string;
                 post_id: string;
                 replies: components["schemas"]["Reply"][];
-                tags?: components["schemas"]["PostTag"][] | null;
                 user_id: string;
             }[];
         };
@@ -254,6 +253,7 @@ export interface components {
                 likes: number;
                 message: string;
                 points: number;
+                tags?: components["schemas"]["ObjectIdSchema"][] | null;
                 title: string;
                 user_id: string;
             }[];
@@ -285,6 +285,7 @@ export interface components {
         PostDraft: {
             images: number[][];
             message: string;
+            tags?: components["schemas"]["RequestPostTag"][] | null;
             title: string;
         };
         PostResponse: {
@@ -307,6 +308,10 @@ export interface components {
         ReplyDraft: {
             comment_id: string;
             message: string;
+        };
+        RequestPostTag: {
+            color: string;
+            tag_name: string;
         };
         ResponseGenericLike: {
             status: components["schemas"]["LikeStatus"];
@@ -376,12 +381,13 @@ export interface operations {
     };
     retrieve_posts: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
                 type: components["schemas"]["RetrieveBy"];
                 page: number;
+                search?: string;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -417,6 +423,7 @@ export interface operations {
                 "multipart/form-data": {
                     images: number[][];
                     message: string;
+                    tags?: components["schemas"]["RequestPostTag"][] | null;
                     title: string;
                 };
             };
@@ -658,17 +665,21 @@ export interface operations {
     };
     retrieve_tags: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
+                search?: string;
                 type: components["schemas"]["RetrieveBy"];
                 page: number;
+            };
+            header?: never;
+            path: {
+                /** @description The id of the post to get replies for */
+                post_id: string | null;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description retrieves suggested */
+            /** @description retrieves suggested tags */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -688,12 +699,12 @@ export interface operations {
     };
     retrieve_users: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
                 type: components["schemas"]["RetrieveBy"];
                 page: number;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -718,13 +729,15 @@ export interface operations {
     };
     retrieve_user_posts: {
         parameters: {
-            query?: never;
+            query: {
+                type: components["schemas"]["RetrieveBy"];
+                page: number;
+                search?: string;
+            };
             header?: never;
             path: {
                 /** @description The id of the user to get the posts from */
                 user_id: string;
-                type: components["schemas"]["RetrieveBy"];
-                page: number;
             };
             cookie?: never;
         };
