@@ -20,13 +20,16 @@ function Popup({ children, onClose, scheme = defaultScheme }: PopupProps) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-
         zIndex: 1000,
       }}
-      onClick={onClose} // close when clicking outside
+      onClick={(e) => {
+        e.stopPropagation();
+
+        onClose();
+      }}
     >
       <div
-        onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+        onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative",
           backgroundColor: scheme.second,
@@ -34,7 +37,6 @@ function Popup({ children, onClose, scheme = defaultScheme }: PopupProps) {
           border: `2px solid ${scheme.third}`,
           borderRadius: "10px",
           padding: "2.5rem",
-          
           minWidth: "300px",
           boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
         }}

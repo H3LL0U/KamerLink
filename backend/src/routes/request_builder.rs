@@ -66,7 +66,7 @@ impl<'de> Deserialize<'de> for RetrieveBy {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, ToSchema, utoipa::IntoParams)]
-
+#[into_params(style = Form, parameter_in = Query)]
 pub struct RetrievePaginated {
     pub r#type: RetrieveBy,
     pub(crate) page: usize,

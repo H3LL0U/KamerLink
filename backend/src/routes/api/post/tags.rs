@@ -1,11 +1,12 @@
 use crate::database::schemas::post::{
-    self, Comment, CommentBuilder, CommentDraft, ReplyBuilder, RequestPostTag
+    self, Comment, CommentBuilder, CommentDraft, ReplyBuilder, RequestPostTag,
 };
 use crate::database::schemas::post::{PostTag, Reply};
 use crate::database::schemas::user;
 use crate::routes::request_builder::{
     GenericLike, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder, toggle_like_generic,
 };
+
 use crate::routes::request_builder::{
     PaginatedResponse, RetrieveBy, RetrievePaginated, retrieve_items,
 };
@@ -20,12 +21,14 @@ use axum::{
 };
 use futures::TryStreamExt;
 use mongodb::error::Error;
+use regex::escape;
 
+use crate::routes::api::post::Search;
 use axum_extra::extract::Query;
 use chrono::Utc;
 use http::StatusCode;
 use mongodb::Database;
-use mongodb::bson::{Bson, Document};
+use mongodb::bson::{Bson, Document, Regex};
 use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::results::InsertOneResult;
@@ -48,7 +51,7 @@ pub const MAX_TAGS_PER_POST: i64 = 50;
     ),
     params (
         ("post_id" = Option<String>,  Path, description = "The id of the post to get replies for"),
-        
+        Search,
         RetrievePaginated),
 
     description = "Retrieves the most used tags with tags that have base_tag set true being first. Changes behavior if post_id is supplied. In that case will return the tags of that specific post"
@@ -58,35 +61,52 @@ pub async fn retrieve_tags(
     Extension(state): Extension<AppState>,
     post_id: Option<Path<String>>,
     Query(input): Query<RetrievePaginated>,
-
+    Query(search): Query<Search>,
 ) -> Response {
-    
-
-
+    let base_query = match search.search {
+        Some(ref search_str) if !search_str.is_empty() => {
+            // Case-insensitive regex match on tag_name
+            doc! {
+                "tag_name": {
+                    "$regex": Regex {
+                        pattern: escape(search_str),
+                        options: "i".to_string(), // case-insensitive
+                    }
+                }
+            }
+        }
+        _ => doc! {}, // no filter if no search term
+    };
     let _ = match post_id {
         Some(Path(post_id)) => {
-        // extract all tags
-        let post_id = match ObjectId::from_str(&post_id) {
-            Ok(k) => {k},
-            Err(_) => {return StatusCode::BAD_REQUEST.into_response()},
-        };
+            // extract all tags
+            let post_id = match ObjectId::from_str(&post_id) {
+                Ok(k) => k,
+                Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            };
 
-        let posts_collection = state.db.collection::<Document>("posts");
+            let posts_collection = state.db.collection::<Document>("posts");
 
-        //find the post which contains the tags
-        let tags_doc =  match posts_collection.find_one(doc! {"_id" : post_id}).projection(doc! {"tags":1, "_id":1}).await {
-            Ok(k) => {match k {
-                Some(k) => {k},
-                None => {return Json(PaginatedResponse{
-                    items: Vec::<PostTag>::new()
-                }).into_response()},
-            }},
-            Err(_) => {return StatusCode::INTERNAL_SERVER_ERROR.into_response()},
-        };
+            //find the post which contains the tags
+            let tags_doc = match posts_collection
+                .find_one(doc! {"_id" : post_id})
+                .projection(doc! {"tags":1, "_id":1})
+                .await
+            {
+                Ok(k) => match k {
+                    Some(k) => k,
+                    None => {
+                        return Json(PaginatedResponse {
+                            items: Vec::<PostTag>::new(),
+                        })
+                        .into_response();
+                    }
+                },
+                Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            };
 
-
-        //retrieve the tag ids from the field
-        let tag_ids: Vec<ObjectId> = match tags_doc.get_array("tags") {
+            //retrieve the tag ids from the field
+            let tag_ids: Vec<ObjectId> = match tags_doc.get_array("tags") {
                 Ok(arr) => arr
                     .iter()
                     .filter_map(|b| match b {
@@ -94,67 +114,51 @@ pub async fn retrieve_tags(
                         _ => None,
                     })
                     .collect(),
-                Err(e) => {dbg!(e);
+                Err(e) => {
+                    dbg!(e);
                     Vec::new()
-                },
+                }
             };
-        //fetch the tags from the database
-        let tags = match retrieve_tags_in_bulk(tag_ids, state.db).await {
-            Ok(k) => {k},
-            Err(_) => { return StatusCode::INTERNAL_SERVER_ERROR.into_response()},
-        };
+            //fetch the tags from the database
+            let tags = match retrieve_tags_in_bulk(tag_ids, state.db, Some(base_query)).await {
+                Ok(k) => k,
+                Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            };
 
-        return Json(PaginatedResponse{
-                    items: tags
-                }).into_response()
-        
-
-        
-        
-        },
-        None=> {
-        // if there is no post_id provided return the strings
-        let response = RetrieveItemsBuilder::default()
-        .state(axum::Extension(state))
-        .req(Query(input))
-        .sub(Extension(sub))
-        .collection("post_tags")
-        .allowed_retrieval_types(&[RetrieveBy::MostUses])
-        .base_query(doc! {})
-        .size_limit(MAX_TAGS_PER_POST) //20 tags at a time
-        .build()
-        .unwrap()
-        .run::<PostTag>()
-        .await;
-        return response;
-        },
-
-
-    
-
-
+            return Json(PaginatedResponse { items: tags }).into_response();
+        }
+        None => {
+            // if there is no post_id provided return the strings
+            let response = RetrieveItemsBuilder::default()
+                .state(axum::Extension(state))
+                .req(Query(input))
+                .sub(Extension(sub))
+                .collection("post_tags")
+                .allowed_retrieval_types(&[RetrieveBy::MostUses])
+                .base_query(base_query)
+                .size_limit(MAX_TAGS_PER_POST) //20 tags at a time
+                .build()
+                .unwrap()
+                .run::<PostTag>()
+                .await;
+            return response;
+        }
     };
-
-
-
-
-
 }
-
-
-
 
 ///These functions are not an api endpoint
 
-
 pub async fn retrieve_tags_in_bulk(
     tags: Vec<ObjectId>,
+
     db: Arc<Database>,
+    extra_query: Option<Document>,
 ) -> mongodb::error::Result<Vec<PostTag>> {
     let tags_collection = db.collection::<PostTag>("post_tags");
 
     // Build the filter: find all documents whose _id is in the given list
-    let filter = doc! { "_id": { "$in": tags } };
+    let mut filter = doc! { "_id": { "$in": tags } };
+    filter.extend(extra_query.unwrap_or(doc! {}));
 
     // Execute the query
     let cursor = tags_collection.find(filter).await?;

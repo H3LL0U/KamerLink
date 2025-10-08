@@ -40,7 +40,7 @@ export async function createPost(
 }
 
 //Posts
-export type RetrievePost = components["schemas"]["RetrievePaginated"];
+export type RetrievePost = operations["retrieve_posts"]["parameters"]["query"]
 export type Posts = paths["/api/post"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type RetrieveBy = components["schemas"]["RetrieveBy"];

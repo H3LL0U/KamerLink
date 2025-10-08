@@ -381,12 +381,13 @@ export interface operations {
     };
     retrieve_posts: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
                 type: components["schemas"]["RetrieveBy"];
                 page: number;
+                search?: string;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -664,13 +665,15 @@ export interface operations {
     };
     retrieve_tags: {
         parameters: {
-            query?: never;
+            query: {
+                search?: string;
+                type: components["schemas"]["RetrieveBy"];
+                page: number;
+            };
             header?: never;
             path: {
                 /** @description The id of the post to get replies for */
                 post_id: string | null;
-                type: components["schemas"]["RetrieveBy"];
-                page: number;
             };
             cookie?: never;
         };
@@ -696,12 +699,12 @@ export interface operations {
     };
     retrieve_users: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
+            query: {
                 type: components["schemas"]["RetrieveBy"];
                 page: number;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -726,13 +729,15 @@ export interface operations {
     };
     retrieve_user_posts: {
         parameters: {
-            query?: never;
+            query: {
+                type: components["schemas"]["RetrieveBy"];
+                page: number;
+                search?: string;
+            };
             header?: never;
             path: {
                 /** @description The id of the user to get the posts from */
                 user_id: string;
-                type: components["schemas"]["RetrieveBy"];
-                page: number;
             };
             cookie?: never;
         };

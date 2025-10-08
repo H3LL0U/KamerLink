@@ -10,6 +10,10 @@ import { type UserInfo } from "../../../api/user";
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
 import { getUsers } from "../../../api/user";
 import type { PostTag } from "../../../api/post";
+import TagButton from "../TagSelector/TagButton";
+import PopupButton from "../../generic_components/PopUpButton/PopUpButton";
+import TagSelector from "../TagSelector/TagSelector";
+import MultitagDisplay from "../TagSelector/MultitagDisplay";
 interface PostCardProps {
   _post: Posts["items"][number];
   scheme?: ColorScheme;
@@ -90,6 +94,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           backgroundColor: scheme.second,
           padding: "clamp(0.1rem, 5vw, 2rem)",
           display: "flex",
+          paddingTop: "0px",
           flexDirection: "column",
           gap: "clamp(1.2rem, 2vw, 2.5rem)",
           position: "relative",
@@ -99,6 +104,10 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
         }}
         onClick={!full_view ? handleCardClick : undefined}
       >
+        {/* Post tags*/}
+        <MultitagDisplay tags={postTags}>
+
+        </MultitagDisplay>
         {/* User + Date row */}
         <div
           style={{

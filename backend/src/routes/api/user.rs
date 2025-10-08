@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use crate::database::schemas::post::KamerlinkPost;
+use crate::routes::post::Search;
 use crate::routes::request_builder::{RetrieveBy, RetrievePaginated, retrieve_items};
 use crate::test_utils::setup_test_state;
 use crate::{
@@ -7,9 +10,12 @@ use crate::{
     routes::request_builder::*,
 };
 use axum::extract::Path;
+use axum::response::IntoResponse;
 use axum::{Extension, response::Response};
 use axum_extra::extract::Query;
+use http::StatusCode;
 use mongodb::bson::doc;
+use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 #[utoipa::path(
@@ -71,7 +77,8 @@ impl From<RetrievePosts> for RetrievePaginated {
     ),
    params(
         ("user_id" = String, Path, description = "The id of the user to get the posts from"),
-        RetrievePaginated
+        RetrievePaginated,
+        Search
     ),
     description = "Retrieves 5 users"
 )]
@@ -80,7 +87,31 @@ pub async fn retrieve_user_posts(
     Extension(sub): Extension<String>,
     Path(user_id): Path<String>,
     Query(req): Query<RetrievePaginated>,
+    Query(search): Query<Search>,
 ) -> Response {
+    let mut base_query = match search.search {
+        Some(search_string) => {
+            //parse tag_ids string into their respective ObjectIds
+            let mut tag_ids = Vec::new();
+
+            for tag_str in search_string.split(' ') {
+                match ObjectId::from_str(tag_str) {
+                    Ok(oid) => tag_ids.push(oid),
+                    Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+                }
+            }
+            doc! {
+                "tags": { "$all": tag_ids }
+
+
+
+            }
+        }
+        None => {
+            doc! {}
+        }
+    };
+    base_query.extend(doc! {"user_id": user_id});
     crate::routes::request_builder::RetrieveItemsBuilder::default()
         .state(Extension(state))
         .sub(Extension(sub))
@@ -91,7 +122,7 @@ pub async fn retrieve_user_posts(
             RetrieveBy::MostLikes,
             RetrieveBy::MostRecent,
         ])
-        .base_query(doc! {"user_id": user_id})
+        .base_query(base_query)
         .build()
         .unwrap()
         .run::<KamerlinkPost>()

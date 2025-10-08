@@ -40,6 +40,7 @@ function Dropdown<T extends string>({
         color: scheme.fourth,
         cursor: "pointer",
         outline: "none",
+        fontSize: "clamp(1.00rem, 1.2vw, 1.3rem)",
         ...style,
       }}
     >
