@@ -63,6 +63,7 @@ pub async fn main() {
         "https://kamerlink.vercel.app"
             .parse::<HeaderValue>()
             .unwrap(), // production url
+        "https://kamer-link.nl".parse::<HeaderValue>().unwrap(), //second production url
     ];
 
     // MONGODB CONNECTION
