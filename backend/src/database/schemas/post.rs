@@ -62,6 +62,8 @@ pub struct KamerlinkPost {
     #[validate(length(min = 0, max = 50))]
     #[schema(value_type = Option<Vec<ObjectIdSchema>>)]
     pub tags: Option<Vec<ObjectId>>,
+
+    pub comment_count: Option<usize>,
 }
 #[substruct(RequestPostTag)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Validate)]

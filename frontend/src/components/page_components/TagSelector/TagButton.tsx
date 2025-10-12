@@ -38,16 +38,20 @@ const getContrastingTextColor = (backgroundColor: string): string => {
 const TagButton: React.FC<TagButtonProps> = ({ tag, onSelect, style, selectable = false, selected = false }) => {
     // If selectable and selected, override color to grey
     const backgroundColor = selectable && selected ? "#A0A0A0" : tag.color;
+    const borderColor = selectable && selected ? "#ff0404ff" : 'black';
     const textColor = getContrastingTextColor(backgroundColor);
 
     return (
         <div
             style={{
+
                 backgroundColor,
+                borderBlockWidth: "2px",
+
                 color: textColor,
                 borderRadius: "50px",
                 display: "inline-block",
-                borderColor: "black",
+                borderColor: borderColor,
                 borderStyle: "solid",
                 borderWidth: "2px",
                 padding: "5px 10px",

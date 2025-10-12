@@ -62,7 +62,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     };
     fetchAuthor();
 
-  }, [_post.user_id]);
+  }, []);
 
   useEffect(() => {
     // Fetch possible post tags
@@ -81,7 +81,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     }
 
 
-  }, [_post.tags])
+  }, [])
 
 
 
@@ -209,7 +209,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             }
             }
           >
-            💬
+            💬 {curPost.comment_count ?? 0}
           </button>
         </div>
       </Card>

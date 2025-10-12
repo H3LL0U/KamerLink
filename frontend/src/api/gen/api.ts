@@ -212,6 +212,7 @@ export interface components {
         KamerlinkError: never;
         KamerlinkPost: {
             _id: components["schemas"]["ObjectIdSchema"];
+            comment_count?: number | null;
             created_at: string;
             img_urls: string[];
             likes: number;
@@ -248,6 +249,7 @@ export interface components {
         PaginatedResponse_KamerlinkPost: {
             items: {
                 _id: components["schemas"]["ObjectIdSchema"];
+                comment_count?: number | null;
                 created_at: string;
                 img_urls: string[];
                 likes: number;

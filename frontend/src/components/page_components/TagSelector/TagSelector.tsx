@@ -53,12 +53,24 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     }, [automaticallyFetchTags, searchTerm]);
 
     const toggleTag = (tag: PostTag) => {
-        const isSelected = selected.some((t) => t._id.$oid === tag._id.$oid);
-        const newSelected = isSelected
-            ? selected.filter((t) => t._id.$oid !== tag._id.$oid)
-            : multiple
-                ? [...selected, tag]
-                : [tag];
+        const isSelected = selected.some(
+            (t) => t.tag_name.toLowerCase() === tag.tag_name.toLowerCase()
+        );
+
+        let newSelected: PostTag[];
+
+        if (isSelected) {
+
+            // Remove tag if it’s already selected
+            newSelected = selected.filter(
+                (t) => t._id.$oid !== tag._id.$oid && t.tag_name.toLowerCase() !== tag.tag_name.toLowerCase()
+            );
+        } else {
+
+            // Add tag only if it doesn’t already exist
+            newSelected = multiple ? [...selected, tag] : [tag];
+        }
+
         setSelected(newSelected);
         onChange?.(newSelected);
     };
@@ -105,6 +117,9 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                 placeholder={disallowCreate ? "Zoek een tag" : "Zoek of maak een tag aan"}
                 maxLength={30}
                 value={searchTerm}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") e.preventDefault();
+                }}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
                     padding: "6px 8px",

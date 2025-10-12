@@ -58,7 +58,7 @@ pub struct PostResponse {
 
 use crate::database::schemas::post::KamerlinkPost;
 use mongodb::{
-    self,
+    self, Database,
     bson::{self, Document, doc, oid::ObjectId},
     options::{FindOptions, InsertOneOptions},
 };
@@ -133,6 +133,7 @@ pub async fn create_post(
         .likes(0)
         .points(0)
         .tags(Some(tag_ids))
+        .comment_count(Some(0))
         .build()
     {
         Ok(k) => k,

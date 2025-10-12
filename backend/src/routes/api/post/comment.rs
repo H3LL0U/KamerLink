@@ -43,6 +43,11 @@ pub async fn create_comment(
     Extension(state): Extension<AppState>,
     Json(input): Json<CommentDraft>,
 ) -> Response {
+    let post_id = match ObjectId::from_str(&input.post_id.as_str()) {
+        Ok(k) => k,
+        Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
     let collection = state.db.collection::<Comment>("comments");
     let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
@@ -50,6 +55,7 @@ pub async fn create_comment(
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
+
     //validate comment before inserting
     match &input.validate() {
         Ok(_) => {}
@@ -82,6 +88,19 @@ pub async fn create_comment(
         Some(k) => k,
         None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
+
+    // increment comment count for posts
+
+    let posts_collection = state.db.collection::<KamerlinkPost>("posts");
+
+    let _ = match posts_collection
+        .update_one(doc! {"_id":post_id}, doc! {"$inc": { "comment_count": 1}})
+        .await
+    {
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
     return Json(&comment).into_response();
 }
 
