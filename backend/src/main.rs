@@ -64,6 +64,7 @@ pub async fn main() {
             .parse::<HeaderValue>()
             .unwrap(), // production url
         "https://kamer-link.nl".parse::<HeaderValue>().unwrap(), //second production url
+        "https://www.kamer-link.nl".parse::<HeaderValue>().unwrap(), //third production url
     ];
 
     // MONGODB CONNECTION
