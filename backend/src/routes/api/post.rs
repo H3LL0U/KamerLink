@@ -12,10 +12,15 @@ use http::{StatusCode, status};
 
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
+use substruct::substruct;
 use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
-use crate::{AppState, routes::request_builder};
+use crate::{
+    AppState,
+    database::schemas::{post::EditPostDraft, user::Role},
+    routes::request_builder::{self, GenericDeleteItem, GenericUpdateItem, update_item},
+};
 use crate::{database::schemas::post::Comment, routes::request_builder::retrieve_items};
 use crate::{
     database::schemas::{
@@ -42,6 +47,7 @@ pub mod tags;
 ///
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]
+
 pub struct PostDraft {
     title: String,
     message: String,
@@ -116,7 +122,7 @@ pub async fn create_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    let tags = match update_tags(tags, state.db.clone()).await {
+    let tags = match update_tags(tags, state.db.clone(), None).await {
         Ok(k) => k,
         Err(_) => {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -241,4 +247,131 @@ pub async fn retrieve_posts(
         .unwrap()
         .run::<KamerlinkPost>()
         .await
+}
+
+#[utoipa::path(
+    patch,
+    path = "/api/post",
+    responses(
+        (status = 200, description = "Updates the post" ), // The id of the new post gets returned
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = GenericUpdateItem<PostDraft>,
+
+    description = "Updates a post if authorized"
+)]
+pub async fn update_post(
+    Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
+    Json(input): Json<GenericUpdateItem<PostDraft>>,
+) -> Response {
+    let cur_user: User = match User::get_user_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+
+    let collection = state.db.collection::<KamerlinkPost>("posts");
+
+    let post_id = match ObjectId::from_str(input.old_item_id.as_str()) {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::BAD_REQUEST.into_response();
+        }
+    };
+
+    let cur_post = match collection
+        .find_one({
+            doc! {"_id": post_id}
+        })
+        .await
+    {
+        Ok(k) => match k {
+            Some(k) => k,
+            None => {
+                return StatusCode::NOT_FOUND.into_response();
+            }
+        },
+        Err(_) => {
+            return StatusCode::BAD_REQUEST.into_response();
+        }
+    };
+    let previous_tags = cur_post.tags;
+
+    let updated_tags = match update_tags(
+        input.update_draft.tags.unwrap_or(Vec::new()),
+        state.db.clone(),
+        previous_tags,
+    )
+    .await
+    {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
+    let tag_ids: Vec<ObjectId> = updated_tags.iter().map(|tag| tag._id).collect();
+
+    let edit_post_draft = EditPostDraft {
+        title: input.update_draft.title,
+        message: input.update_draft.message,
+        tags: Some(tag_ids),
+    };
+
+    match update_item::<KamerlinkPost, EditPostDraft>(
+        Extension(state),
+        "posts",
+        &GenericUpdateItem {
+            old_item_id: input.old_item_id,
+            update_draft: edit_post_draft,
+        },
+        &cur_user,
+    )
+    .await
+    {
+        Ok(k) => return StatusCode::OK.into_response(),
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    }
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/post",
+    responses(
+        (status = 200, description = "Post deleted" ), // The id of the new post gets returned
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = GenericDeleteItem,
+
+    description = "Deletes post if authorized"
+)]
+pub async fn delete_post(
+    Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
+    Json(input): Json<request_builder::GenericDeleteItem>,
+) -> Response {
+    let cur_user: User = match User::get_user_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+    match request_builder::delete_item::<KamerlinkPost>(
+        Extension(state),
+        "posts",
+        &input,
+        &cur_user,
+    )
+    .await
+    {
+        Ok(_) => {
+            return StatusCode::OK.into_response();
+        }
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    }
 }

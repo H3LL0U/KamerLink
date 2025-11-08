@@ -26,7 +26,7 @@ const PopupButton: React.FC<PopupButtonProps> = ({
     };
 
     return (
-        <div style={{ position: "relative", display: "inline-block" }}>
+        <div style={{ position: "relative", display: "inline-block", maxWidth: "100%" }}>
             <button
                 type="button"
                 style={{
@@ -40,6 +40,7 @@ const PopupButton: React.FC<PopupButtonProps> = ({
                     padding: "0.6em 1.6em",
                     color: "#fff",
                     transition: "opacity 0.2s",
+
                     ...style,
                 }}
                 className={className}

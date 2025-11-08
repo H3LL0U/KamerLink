@@ -191,4 +191,30 @@ impl User {
 
         Ok(user.map(|u| u.id).ok_or(anyhow!("No id"))?)
     }
+
+    pub async fn get_user_by_sub(
+        db: &Arc<Database>,
+        user_sub: impl TryInto<UserSub, Error = anyhow::Error>,
+    ) -> Result<User> {
+        // Convert input into UserSub
+        let user_sub: UserSub = user_sub.try_into()?;
+
+        let collection = db.collection::<User>("users");
+
+        let filter = doc! {
+            "user_subs": {
+                "$elemMatch": {
+                    "type": &user_sub.r#type,
+                    "sub": &user_sub.sub
+                }
+            }
+        };
+
+        let user = collection
+            .find_one(filter)
+            .await
+            .with_context(|| "Failed to query users collection")?;
+
+        Ok(user.ok_or(anyhow!("No user found"))?)
+    }
 }

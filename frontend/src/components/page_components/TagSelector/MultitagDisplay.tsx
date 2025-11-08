@@ -9,7 +9,8 @@ interface MultitagDisplayProps {
     selectedTags?: PostTag[];
     multiple?: boolean;
     onChange?: (selected: PostTag[]) => void;
-    header?: string
+    header?: string,
+    style?: React.CSSProperties;
 }
 
 const MultitagDisplay: React.FC<MultitagDisplayProps> = ({
@@ -17,7 +18,8 @@ const MultitagDisplay: React.FC<MultitagDisplayProps> = ({
     selectedTags = [],
     multiple = true,
     onChange,
-    header = ""
+    header = "",
+    style,
 }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     let isDown = false;
@@ -64,16 +66,17 @@ const MultitagDisplay: React.FC<MultitagDisplayProps> = ({
                         alignItems: "center",
                         width: "100%",
                         cursor: "grab",
+
                     }}
                 >
                     {tags.map((tag, index) => (
-                        <div key={index} style={{ flex: "0 0 auto" }}>
+                        <div key={index} style={{ flex: "0 0 auto", }}>
                             <TagButton tag={tag} />
                         </div>
                     ))}
                 </div>
             }
-            style={{ padding: 0, margin: 0, backgroundColor: "transparent", width: "100%" }}
+            style={{ padding: 0, margin: 0, backgroundColor: "transparent", maxWidth: "100%", ...style }}
         >
             <TagSelector
                 header={header}

@@ -65,3 +65,10 @@ An attempt to host the Kamerlink backend service from school.
 Set up logs and docs
 
 3 hours of work
+
+## 11/8/2025
+
+6:20 - ...
+
+Work on implementing the update/delete feature for comments and posts
+

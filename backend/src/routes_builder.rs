@@ -1,6 +1,6 @@
 use std::net::IpAddr;
 
-use axum::routing::{get, post};
+use axum::routing::{delete, get, patch, post};
 use axum::{Router, middleware};
 
 use tower_governor::GovernorError;
@@ -18,7 +18,7 @@ use crate::routes::post::comment::{
 
 use crate::routes::post::like::like_post;
 use crate::routes::post::points::{check_points, spend_points};
-use crate::routes::post::retrieve_posts;
+use crate::routes::post::{delete_post, retrieve_posts, update_post};
 use crate::routes::user::{retrieve_user_posts, retrieve_users};
 
 use axum::http::Request;
@@ -71,6 +71,8 @@ pub fn build_private_routes(state: &AppState) -> Router {
         .route("/post/comment/reply", post(add_reply_to_comment))
         .route("/post/comment", post(create_comment))
         .route("/post", post(create_post))
+        .route("/post", patch(update_post))
+        .route("/post", delete(delete_post))
         .layer(GovernorLayer::new(secure_governor_conf));
     let common_router = Router::new()
         .route("/gamble", post(gamble))

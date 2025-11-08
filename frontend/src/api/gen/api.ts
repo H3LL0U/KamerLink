@@ -31,10 +31,12 @@ export interface paths {
         get: operations["retrieve_posts"];
         put?: never;
         post: operations["create_post"];
-        delete?: never;
+        /** @description Deletes post if authorized */
+        delete: operations["delete_post"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** @description Updates a post if authorized */
+        patch: operations["update_post"];
         trace?: never;
     };
     "/api/post/comment": {
@@ -194,8 +196,25 @@ export interface components {
         };
         /** @enum {string} */
         GambleTypes: "Slots";
+        GenericDeleteItem: {
+            item_id: string;
+        };
         GenericLike: {
             _id: string;
+        };
+        GenericUpdateItem_PostDraft: {
+            old_item_id: string;
+            /** @description
+             *
+             *     Post request (creating a post)
+             *
+             *      */
+            update_draft: {
+                images: number[][];
+                message: string;
+                tags?: components["schemas"]["RequestPostTag"][] | null;
+                title: string;
+            };
         };
         GivePoints: {
             /** Format: int64 */
@@ -438,6 +457,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PostResponse"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenericDeleteItem"];
+            };
+        };
+        responses: {
+            /** @description Post deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenericUpdateItem_PostDraft"];
+            };
+        };
+        responses: {
+            /** @description Updates the post */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
                 };
             };
             /** @description Unauthorized - missing or invalid token */

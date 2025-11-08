@@ -1,7 +1,10 @@
 /// This file contains functions and structs that help with building some generic requests
 ///
 ///
-use crate::{AppState, database::schemas::user::User};
+use crate::{
+    AppState,
+    database::schemas::user::{self, User},
+};
 use axum::{
     extract::Extension,
     http::StatusCode,
@@ -12,12 +15,12 @@ use derive_builder::Builder;
 use futures::TryStreamExt;
 use mongodb::{
     Collection,
-    bson::{Document, doc, oid::ObjectId},
-    options::FindOptions,
+    bson::{Bson, Document, doc, oid::ObjectId, to_document},
+    options::{FindOptions, UpdateModifications},
 };
 use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 use serde::{Serialize, Serializer};
-use std::str::FromStr;
+use std::{fmt::Debug, str::FromStr};
 use utoipa::ToSchema;
 
 #[derive(Serialize, Debug, Clone, ToSchema)]
@@ -112,7 +115,7 @@ pub struct RetrieveItems<'a> {
 impl<'a> RetrieveItems<'_> {
     pub async fn run<T>(&self) -> Response
     where
-        T: DeserializeOwned + Unpin + Send + Sync + Serialize,
+        T: DeserializeOwned + Unpin + Send + Sync + Serialize + Debug,
     {
         retrieve_items::<T>(
             self.state.clone(),
@@ -142,7 +145,7 @@ pub async fn retrieve_items<T>(
     size_limit: Option<i64>,
 ) -> Response
 where
-    T: DeserializeOwned + Unpin + Send + Sync + Serialize,
+    T: DeserializeOwned + Unpin + Send + Sync + Serialize + Debug,
 {
     //check if the retrieval type is allowed
 
@@ -191,10 +194,10 @@ where
     };
 
     let mut items = Vec::new();
+
     while let Ok(Some(item)) = cursor.try_next().await {
         items.push(item);
     }
-
     axum::Json(PaginatedResponse { items }).into_response()
 }
 
@@ -314,6 +317,89 @@ pub async fn add_item(
 ) -> Result<mongodb::results::InsertOneResult, StatusCode> {
     let collection = state.db.collection::<Document>(collection);
     match collection.insert_one(document).await {
+        Ok(result) => Ok(result),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+pub trait CanEdit {
+    fn can_edit(&self, user: &User) -> bool;
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, ToSchema)]
+pub struct GenericDeleteItem {
+    pub item_id: String,
+}
+
+pub async fn delete_item<CollectionItem>(
+    Extension(state): Extension<AppState>,
+    collection: &str,
+    filter: &GenericDeleteItem,
+    user: &User,
+) -> Result<mongodb::results::DeleteResult, StatusCode>
+where
+    CollectionItem: CanEdit + DeserializeOwned + Unpin + Send + Sync + Serialize,
+{
+    let collection = state.db.collection::<CollectionItem>(collection);
+    let filter =
+        doc! { "_id": ObjectId::from_str(&filter.item_id).map_err(|_| StatusCode::BAD_REQUEST)? };
+
+    let _existing_item = match collection.find_one(filter.clone()).await {
+        Ok(k) => {
+            k.as_ref()
+                .ok_or(StatusCode::BAD_REQUEST)?
+                .can_edit(user)
+                .then(|| k)
+                .ok_or(StatusCode::FORBIDDEN)?;
+        }
+        Err(_) => return Err(StatusCode::BAD_REQUEST),
+    };
+
+    match collection.delete_one(filter).await {
+        Ok(result) => Ok(result),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+#[derive(Serialize, Deserialize, Debug, Clone, ToSchema)]
+pub struct GenericUpdateItem<T> {
+    pub old_item_id: String,
+    pub update_draft: T,
+}
+
+pub async fn update_item<CollectionItem, ItemDraft>(
+    Extension(state): Extension<AppState>,
+    collection: &str,
+    generic_update_item: &GenericUpdateItem<ItemDraft>,
+    user: &User,
+) -> Result<mongodb::results::UpdateResult, StatusCode>
+where
+    ItemDraft: DeserializeOwned + Unpin + Send + Sync + Serialize,
+    CollectionItem: CanEdit + DeserializeOwned + Unpin + Send + Sync + Serialize,
+{
+    let collection = state.db.collection::<CollectionItem>(collection);
+
+    let filter = doc! { "_id": ObjectId::from_str(&generic_update_item.old_item_id).map_err(|_| StatusCode::BAD_REQUEST)? };
+
+    // check if the item can be edited by the user
+
+    let _existing_item = match collection.find_one(filter.clone()).await {
+        Ok(k) => {
+            k.as_ref()
+                .ok_or(StatusCode::BAD_REQUEST)?
+                .can_edit(user)
+                .then(|| k)
+                .ok_or(StatusCode::FORBIDDEN)?;
+        }
+        Err(_) => return Err(StatusCode::BAD_REQUEST),
+    };
+    let update_draft_bson = match mongodb::bson::to_bson(&generic_update_item.update_draft) {
+        Ok(bson) => bson,
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+    match collection
+        .update_one(filter, doc! { "$set": update_draft_bson  })
+        .await
+    {
         Ok(result) => Ok(result),
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }

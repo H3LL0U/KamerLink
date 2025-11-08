@@ -27,11 +27,11 @@ use crate::routes::api::post::Search;
 use axum_extra::extract::Query;
 use chrono::Utc;
 use http::StatusCode;
-use mongodb::Database;
 use mongodb::bson::{Bson, Document, Regex};
 use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::results::InsertOneResult;
+use mongodb::{Collection, Database};
 use serde;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -169,9 +169,55 @@ pub async fn retrieve_tags_in_bulk(
 }
 
 pub async fn update_tags(
-    tags: Vec<RequestPostTag>,
+    mut tags: Vec<RequestPostTag>,
     db: Arc<Database>,
+    previous_tags: Option<Vec<ObjectId>>,
 ) -> Result<Vec<PostTag>, Error> {
+    fn remove_deduplicate_tags(tags: &mut Vec<RequestPostTag>) {
+        let mut seen = std::collections::HashSet::new();
+        tags.retain(|tag| seen.insert(tag.tag_name.clone()));
+    }
+
+    remove_deduplicate_tags(&mut tags);
+
+    let previous_tags: Option<Vec<PostTag>> = match previous_tags {
+        Some(prev_tag_ids) => {
+            let collection: Collection<PostTag> = db.collection("post_tags");
+
+            // Find all tags whose _id is in prev_tag_ids
+            let mut cursor = collection
+                .find(doc! { "_id": { "$in": prev_tag_ids } })
+                .await?;
+
+            let mut tags = Vec::new();
+            while let Some(tag) = cursor.try_next().await? {
+                tags.push(tag);
+            }
+
+            Some(tags)
+        }
+        None => None,
+    };
+
+    match previous_tags {
+        Some(prev_tags) => {
+            for prev_tag in prev_tags {
+                if !tags.iter().any(|t| {
+                    t.tag_name.to_lowercase().trim() == prev_tag.tag_name.to_lowercase().trim()
+                }) {
+                    // Decrement the uses count for tags that are no longer present
+                    let collection = db.collection::<PostTag>("post_tags");
+                    let filter = doc! { "tag_name": &prev_tag.tag_name.to_lowercase().trim() };
+                    let update = doc! {
+                        "$inc": { "uses": -1 }
+                    };
+                    let _ = collection.update_one(filter, update).await;
+                }
+            }
+        }
+        None => {}
+    }
+
     let collection = db.collection::<PostTag>("post_tags");
     let mut actual_tags: Vec<PostTag> = Vec::new();
 
@@ -185,7 +231,7 @@ pub async fn update_tags(
         }
     }
 
-    for tag in tags {
+    for tag in &tags {
         let filter = doc! { "tag_name": &tag.tag_name.to_lowercase().trim() };
         let update = doc! {
             "$setOnInsert": {

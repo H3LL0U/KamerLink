@@ -1,5 +1,6 @@
 pub mod api;
 pub mod request_builder;
+
 pub use api::gamble::*;
 pub use api::*;
 use serde::Serialize;
@@ -45,6 +46,8 @@ impl Modify for JwtAuth {
         gamble,//gamble path (post)
         post::create_post , // post path (post)
         post::retrieve_posts, // post path (get)
+        post::update_post, // post path (patch)
+        post::delete_post, // post path (delete)   
         post::like::like_post, // like path (post)
         post::points::spend_points, // give points path (post)
         post::points::check_points, // check how many points was given (get)

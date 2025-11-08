@@ -1,5 +1,6 @@
-use crate::database::ObjectIdSchema;
+use crate::database::schemas::user::Role;
 use crate::routes::api::post::tags::MAX_TAGS_PER_POST;
+use crate::{database::ObjectIdSchema, routes::request_builder::CanEdit};
 use derive_builder::Builder;
 use mongodb::{
     bson::{Document, doc, oid::ObjectId},
@@ -40,15 +41,26 @@ pub struct Comment {
     pub replies: Vec<Reply>, // Threaded comments might be implemented later (Vec<Comment> instead)
 }
 
+impl CanEdit for Comment {
+    fn can_edit(&self, user: &crate::database::schemas::user::User) -> bool {
+        match user.role {
+            Role::Admin => return true,
+            _ => return user._id.to_hex() == self.user_id,
+        }
+    }
+}
+#[substruct(EditPostDraft)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Builder, Validate)]
 pub struct KamerlinkPost {
     #[schema(value_type = ObjectIdSchema)]
     pub _id: ObjectId,
     pub user_id: String,    // Who made the post
     pub created_at: String, // when was the post created
+    #[substruct(EditPostDraft)]
     #[validate(length(min = 0, max = 100))]
     pub title: String,
     #[validate(length(min = 0, max = 5000))]
+    #[substruct(EditPostDraft)]
     pub message: String,
     #[validate(length(min = 0, max = 10))]
     pub img_urls: Vec<String>,
@@ -56,15 +68,27 @@ pub struct KamerlinkPost {
     pub likes: usize,
     #[builder(default)]
     pub points: usize,
-
+    #[substruct(EditPostDraft)]
     #[builder(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate(length(min = 0, max = 50))]
     #[schema(value_type = Option<Vec<ObjectIdSchema>>)]
     pub tags: Option<Vec<ObjectId>>,
 
+    #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub comment_count: Option<usize>,
 }
+
+impl CanEdit for KamerlinkPost {
+    fn can_edit(&self, user: &crate::database::schemas::user::User) -> bool {
+        match user.role {
+            Role::Admin => return true,
+            _ => return user._id.to_hex() == self.user_id,
+        }
+    }
+}
+
 #[substruct(RequestPostTag)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Validate)]
 
