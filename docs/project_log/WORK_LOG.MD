@@ -68,7 +68,9 @@ Set up logs and docs
 
 ## 11/8/2025
 
-6:20 - ...
+6:20PM - 8:00PM , 9:00 PM - 12PM
 
 Work on implementing the update/delete feature for comments and posts
+
+5 hours of work
 
