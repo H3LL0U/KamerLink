@@ -20,7 +20,7 @@ const CountButton: React.FC<LikeButtonProps> = ({ likes, onClick, style, classNa
                 fontFamily: 'inherit',
                 fontWeight: 500,
                 borderRadius: '8px',
-                padding: '0.6em 1.6em',
+                padding: '0.8em 1.2em',
                 ...style,
             }}
             className={className}

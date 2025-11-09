@@ -226,15 +226,73 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           {curPost.message}
         </p>
 
-        <div style={{ display: "flex", gap: "clamp(1.5rem, 2vw, 3rem)", marginTop: "1rem" }}>
-          <CountButton likes={likes} style={{ backgroundColor: scheme.first }} onClick={async e => {
-            e.stopPropagation();
-            const response = await likePost({ post_id: curPost._id.$oid });
-            setLikes(likes + (response.data.status === "Like" ? 1 : -1));
-          }} />
-          <CountButton likes={curPost.points} emoji={<img height={"30rem"} src={KamerlinkPoints}></img>} style={{ backgroundColor: scheme.first }} onClick={e => { e.stopPropagation(); setShowPointsPopup(true); }} />
-          <CountButton likes={curPost.comment_count ?? 0} emoji="💬" style={{ backgroundColor: scheme.first }} onClick={e => { e.stopPropagation(); window.location.href = `${window.location.origin}/posts/view?id=${curPost._id.$oid}`; }} />
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "left",
+            alignItems: "center",
+            gap: "clamp(0.5rem, 2vw, 1.5rem)",
+            marginTop: "1rem",
+            width: "100%",
+          }}
+        >
+          <CountButton
+            likes={likes}
+            style={{
+              backgroundColor: scheme.first,
+              width: "auto",
+              flex: "0 0 auto",
+              whiteSpace: "nowrap",
+              fontSize: "clamp(1rem, 2vw, 1.5rem)",
+            }}
+            onClick={async (e) => {
+              e.stopPropagation();
+              const response = await likePost({ post_id: curPost._id.$oid });
+              setLikes(likes + (response.data.status === "Like" ? 1 : -1));
+            }}
+          />
+
+          <CountButton
+            likes={curPost.points}
+            emoji={
+              <img
+                src={KamerlinkPoints}
+                alt="⭐"
+                style={{ height: "clamp(1.3rem, 2vw, 2.5rem)" }}
+              />
+            }
+            style={{
+              backgroundColor: scheme.first,
+              width: "auto",
+              flex: "0 0 auto",
+              whiteSpace: "nowrap",
+              fontSize: "clamp(1rem, 2vw, 1.5rem)",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowPointsPopup(true);
+            }}
+          />
+
+          <CountButton
+            likes={curPost.comment_count ?? 0}
+            emoji="💬"
+            style={{
+              backgroundColor: scheme.first,
+              width: "auto",
+              flex: "0 0 auto",
+              whiteSpace: "nowrap",
+              fontSize: "clamp(1rem, 2vw, 1.5rem)",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.location.href = `${window.location.origin}/posts/view?id=${curPost._id.$oid}`;
+            }}
+          />
         </div>
+
+
       </Card>
 
       {showPointsPopup && (
