@@ -5,7 +5,7 @@ import { defaultScheme } from "../../../main";
 import { type SpendPoints } from "../../../api/post";
 import { checkPoints } from "../../../api/post";
 import type { UserInfo } from "../../../api/user";
-
+import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
 interface PointsPopUpProps {
   remaining_points: number;
   post_id: string;
@@ -96,7 +96,10 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
           width: "100%",
         }}
       >
-        <h3 style={{ margin: 0, textAlign: "center" }}>Punten uitgeven ⭐</h3>
+
+        <h3 style={{ margin: 0, textAlign: "center" }}>Punten uitgeven
+          <img src={KamerlinkPoints} alt="⭐" height="50" style={{ verticalAlign: "middle", marginLeft: "0.3em" }} /></h3>
+
         <p style={{ margin: 0, textAlign: "center" }}>Nog punten: {remaining_points}</p>
 
         {/* Display the selected points */}

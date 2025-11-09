@@ -18,3 +18,6 @@ That includes subjects such as:
 
 - The project architecture
 - The project stack (i.e database, frontend, backend)
+- The main project idea
+- Problems that occurred during development
+- Sources

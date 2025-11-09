@@ -85,7 +85,7 @@ const PostDraftCard: React.FC<PostDraftCardProps> = ({
             <Card
                 style={{
                     position: "relative",
-                    padding: "2.5rem 2.5rem 2rem 2.5rem",
+                    padding: "1rem",
                     boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
                     borderRadius: "18px",
                     background: colorScheme.second,
@@ -96,39 +96,51 @@ const PostDraftCard: React.FC<PostDraftCardProps> = ({
                     ...style
                 }}
             >
-                {/* ✅ Show red X button if onCancel exists */}
-                {onCancel && (
-                    <button
-                        onClick={onCancel}
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            background: "none",
-                            border: "none",
-                            color: "#ef4444",
-                            fontSize: "1.5rem",
-                            cursor: "pointer",
-                            fontWeight: 700,
-                            lineHeight: 1,
-                        }}
-                        aria-label="Cancel"
-                    >
-                        ×
-                    </button>
-                )}
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        width: "100%",
+                    }}
+                >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <MultitagDisplay
+                            header="Verwijder tags"
+                            tags={selectedTags}
+                            onChange={(tagsToRemove: PostTag[]) =>
+                                setSelectedTags((prev: PostTag[]) =>
+                                    prev.filter(
+                                        (tag) =>
+                                            !tagsToRemove.some(
+                                                (removeTag) => removeTag._id.$oid === tag._id.$oid
+                                            )
+                                    )
+                                )
+                            }
+                        />
+                    </div>
 
-                <MultitagDisplay
-                    header="Verwijder tags"
-                    tags={selectedTags}
-                    onChange={(tagsToRemove: PostTag[]) =>
-                        setSelectedTags((prev: PostTag[]) =>
-                            prev.filter(
-                                (tag) => !tagsToRemove.some((removeTag) => removeTag._id.$oid === tag._id.$oid)
-                            )
-                        )
-                    }
-                />
+                    {onCancel && (
+                        <button
+                            onClick={onCancel}
+                            style={{
+                                flexShrink: 0,
+                                background: "none",
+                                border: "none",
+                                color: colorScheme.third,
+                                fontSize: "1.5rem",
+                                cursor: "pointer",
+                                fontWeight: 700,
+                                lineHeight: 1,
+                                padding: "0 0.25rem",
+                            }}
+                            aria-label="Cancel"
+                        >
+                            ×
+                        </button>
+                    )}
+                </div>
 
                 <h2
                     style={{
@@ -175,6 +187,7 @@ const PostDraftCard: React.FC<PostDraftCardProps> = ({
                         maxLength={5000}
                         style={{
                             width: "100%",
+                            height: "25vh",
                             marginBottom: 8,
                             padding: "12px 14px",
                             color: "black",

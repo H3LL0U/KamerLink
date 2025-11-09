@@ -74,9 +74,17 @@ export type PostTag = paths["/api/post/tags/{post_id}"]["get"]["responses"]["200
 
 export type RequestPostTag = components["schemas"]["RequestPostTag"];
 
-// set post_id  to "" in order to retrieve the 
+
 export const retrievePostTags = client.path("/api/post/tags/{post_id}").method("get").create()
 
 export const deletePost = client.path("/api/post").method("delete").create()
 
 export const editPost = client.path("/api/post").method("patch").create()
+
+
+
+export const editComment = client.path("/api/post/comment").method("patch").create()
+
+export const deleteComment = client.path("/api/post/comment").method("delete").create()
+
+

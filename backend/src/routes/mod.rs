@@ -57,7 +57,10 @@ impl Modify for JwtAuth {
         user::retrieve_users, // user path (get)
         user::retrieve_user_posts, // retrieves posts from a specific user (get)
         post::comment::add_reply_to_comment, // add a reply to a comment (post)
+        post::comment::update_comment, // update a comment (patch)
+        post::comment::delete_comment, // delete a comment (delete)
         post::tags::retrieve_tags // retrieve all tags (get)
+        
 
     ),
     components(
@@ -72,7 +75,7 @@ impl Modify for JwtAuth {
     ),
     modifiers(&JwtAuth),               
     security(("bearerAuth" = [])),
-    info(title = "InfraStemAPI", version = "1.0.0")
+    info(title = "KamerLinkAPI", version = "1.0.0")
 )]
 pub struct ApiDoc;
 

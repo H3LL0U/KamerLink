@@ -13,7 +13,8 @@ use crate::routes::api::post::create_post;
 use crate::routes::api::post::tags::retrieve_tags;
 use crate::routes::gamble;
 use crate::routes::post::comment::{
-    add_reply_to_comment, create_comment, like_comment, retrieve_comments,
+    add_reply_to_comment, create_comment, delete_comment, like_comment, retrieve_comments,
+    update_comment,
 };
 
 use crate::routes::post::like::like_post;
@@ -69,10 +70,18 @@ pub fn build_private_routes(state: &AppState) -> Router {
 
     let secure_router: Router = Router::new()
         .route("/post/comment/reply", post(add_reply_to_comment))
-        .route("/post/comment", post(create_comment))
-        .route("/post", post(create_post))
-        .route("/post", patch(update_post))
-        .route("/post", delete(delete_post))
+        //comment routes
+        .route(
+            "/post/comment",
+            post(create_comment)
+                .patch(update_comment)
+                .delete(delete_comment),
+        )
+        //post routes
+        .route(
+            "/post",
+            post(create_post).delete(delete_post).patch(update_post),
+        )
         .layer(GovernorLayer::new(secure_governor_conf));
     let common_router = Router::new()
         .route("/gamble", post(gamble))

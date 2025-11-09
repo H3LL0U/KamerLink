@@ -50,10 +50,12 @@ export interface paths {
         get: operations["retrieve_comments"];
         put?: never;
         post: operations["create_comment"];
-        delete?: never;
+        /** @description Deletes post if authorized */
+        delete: operations["delete_comment"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** @description Updates a comment if authorized */
+        patch: operations["update_comment"];
         trace?: never;
     };
     "/api/post/comment/like": {
@@ -188,6 +190,9 @@ export interface components {
             message: string;
             post_id: string;
         };
+        CommentEditDraft: {
+            message: string;
+        };
         Gamble: {
             gamble_type: components["schemas"]["GambleTypes"];
         };
@@ -201,6 +206,12 @@ export interface components {
         };
         GenericLike: {
             _id: string;
+        };
+        GenericUpdateItem_CommentEditDraft: {
+            old_item_id: string;
+            update_draft: {
+                message: string;
+            };
         };
         GenericUpdateItem_PostDraft: {
             old_item_id: string;
@@ -515,9 +526,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "text/plain": string;
-                };
+                content?: never;
             };
             /** @description Unauthorized - missing or invalid token */
             401: {
@@ -580,6 +589,64 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Comment"];
                 };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    delete_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenericDeleteItem"];
+            };
+        };
+        responses: {
+            /** @description Deletes a comment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_comment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenericUpdateItem_CommentEditDraft"];
+            };
+        };
+        responses: {
+            /** @description Updates the comment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unauthorized - missing or invalid token */
             401: {

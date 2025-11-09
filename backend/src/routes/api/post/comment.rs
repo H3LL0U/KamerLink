@@ -1,8 +1,9 @@
-use crate::database::schemas::post::Reply;
 use crate::database::schemas::post::{Comment, CommentBuilder, CommentDraft, ReplyBuilder};
+use crate::database::schemas::post::{CommentEditDraft, Reply};
 use crate::database::schemas::user;
 use crate::routes::request_builder::{
-    GenericLike, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder, toggle_like_generic,
+    self, GenericLike, GenericUpdateItem, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder,
+    delete_item, toggle_like_generic, update_item,
 };
 use crate::routes::request_builder::{
     PaginatedResponse, RetrieveBy, RetrievePaginated, retrieve_items,
@@ -270,6 +271,110 @@ pub async fn add_reply_to_comment(
 
         _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
+}
+
+#[utoipa::path(
+    patch,
+    path = "/api/post/comment",
+    responses(
+        (status = 200, description = "Updates the comment" ), 
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = GenericUpdateItem<CommentEditDraft>,
+
+    description = "Updates a comment if authorized"
+)]
+
+pub async fn update_comment(
+    Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
+    Json(input): Json<GenericUpdateItem<CommentEditDraft>>,
+) -> Response {
+    let user: User = match User::get_user_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+
+    return match update_item::<Comment, CommentEditDraft>(
+        Extension(state),
+        "comments",
+        &input,
+        &user,
+    )
+    .await
+    {
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+}
+
+#[utoipa::path(
+    delete,
+    path = "/api/post/comment",
+    responses(
+        (status = 200, description = "Deletes a comment" ), // The id of the new post gets returned
+        (status = 401, description = "Unauthorized - missing or invalid token")
+    ),
+    request_body = request_builder::GenericDeleteItem,
+
+    description = "Deletes post if authorized"
+)]
+pub async fn delete_comment(
+    Extension(state): Extension<AppState>,
+    Extension(sub): Extension<String>,
+    Json(input): Json<request_builder::GenericDeleteItem>,
+) -> Response {
+    let user = match User::get_user_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+
+    let comments_collection = state.db.collection::<Comment>("comments");
+
+    let post_id = match comments_collection
+        .find_one(doc! {"_id": match ObjectId::from_str(&input.item_id) {
+            Ok(k) => k,
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        }})
+        .await
+    {
+        Ok(k) => match k {
+            Some(k) => match ObjectId::from_str(&k.post_id) {
+                Ok(k) => k,
+                Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            },
+            None => return StatusCode::NOT_FOUND.into_response(),
+        },
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    match delete_item::<Comment>(Extension(state.clone()), "comments", &input, &user).await {
+        Ok(_) => {}
+        Err(e) => {
+            return e.into_response();
+        }
+    };
+
+    let posts_collection = state.db.collection::<KamerlinkPost>("posts");
+
+    match posts_collection
+        .update_one(
+            doc! {"_id": post_id},
+            doc! {"$inc": { "comment_count" : -1}},
+        )
+        .await
+    {
+        Ok(_) => {
+            return StatusCode::OK.into_response();
+        }
+        Err(_) => {
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
 }
 
 //In case there is a need to not retrieve all comments at once. for now replies will be fetched with the comment

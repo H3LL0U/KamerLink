@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use substruct::substruct;
 use utoipa::{ToSchema, openapi::Object};
 use validator::Validate;
-#[substruct(Reply, CommentDraft)]
+#[substruct(Reply, CommentDraft, CommentEditDraft)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Builder, Validate)]
 #[builder(setter(strip_option))]
 pub struct Comment {
@@ -25,7 +25,7 @@ pub struct Comment {
     #[substruct(CommentDraft)]
     pub post_id: String,
 
-    #[substruct(Reply, CommentDraft)]
+    #[substruct(Reply, CommentDraft, CommentEditDraft)]
     #[validate(length(min = 0, max = 5000))]
     pub message: String,
 

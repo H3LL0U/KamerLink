@@ -22,6 +22,7 @@ use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 use serde::{Serialize, Serializer};
 use std::{fmt::Debug, str::FromStr};
 use utoipa::ToSchema;
+use validator::Validate;
 
 #[derive(Serialize, Debug, Clone, ToSchema)]
 #[serde(untagged)]
@@ -373,9 +374,13 @@ pub async fn update_item<CollectionItem, ItemDraft>(
     user: &User,
 ) -> Result<mongodb::results::UpdateResult, StatusCode>
 where
-    ItemDraft: DeserializeOwned + Unpin + Send + Sync + Serialize,
+    ItemDraft: DeserializeOwned + Unpin + Send + Sync + Serialize + Validate,
     CollectionItem: CanEdit + DeserializeOwned + Unpin + Send + Sync + Serialize,
 {
+    generic_update_item
+        .update_draft
+        .validate()
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
     let collection = state.db.collection::<CollectionItem>(collection);
 
     let filter = doc! { "_id": ObjectId::from_str(&generic_update_item.old_item_id).map_err(|_| StatusCode::BAD_REQUEST)? };

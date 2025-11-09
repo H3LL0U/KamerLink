@@ -12,6 +12,8 @@ import MultitagDisplay from "../TagSelector/MultitagDisplay";
 import PostDraftCard from "../PostDraftCard/PostDraftCard";
 import Popup from "../../generic_components/PopUp/PopUp";
 import CountButton from "../../generic_components/CountButton/CountButton";
+import ActionMenuButton from "../../generic_components/ActionMenuButton/ActionMenuButton";
+import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
 
 interface PostCardProps {
   _post: Posts["items"][number];
@@ -149,70 +151,62 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           </div>
 
           {canEditOrDelete && (
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowActionButtons((prev) => !prev);
-                }}
-                style={{
-                  fontSize: "1.5rem",
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  padding: "0.2rem 0.5rem"
-                }}
-              >
-                ⋮
-              </button>
-
-              {showActionButtons && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    backgroundColor: scheme.second,
-                    border: `1px solid ${scheme.third}`,
-                    borderRadius: 8,
-                    overflow: "hidden",
-                    zIndex: 100
-                  }}
-                >
-                  <button
-                    style={{ padding: "0.5em 1em" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
+            <div style={{ marginLeft: "auto" }}>
+              <ActionMenuButton
+                scheme={scheme}
+                actions={[
+                  {
+                    label: "Bewerken",
+                    onClick: (e) => {
                       setIsEditing(true);
-                      setShowActionButtons(false);
-                    }}
-                  >
-                    Bewerken
-                  </button>
-                  <button
-                    style={{ padding: "0.5em 1em" }}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    },
+                  },
+                  {
+                    label: "Verwijderen",
+                    onClick: (e) => {
                       setShowDeletePopup(true);
-                      setShowActionButtons(false);
-                    }}
-                  >
-                    Verwijderen
-                  </button>
-                </div>
-              )}
+                    },
+                  },
+                ]}
+              />
             </div>
           )}
+
         </div>
 
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "clamp(1.1rem, 1.3vw, 1.3rem)", opacity: 0.85 }}>
-          {authorInfo ? (
-            <UserInfoCircle userInfo={authorInfo} behavior="redirectToUserPage" style={{ height: "60px", width: "60px" }} />
-          ) : (<span>👤</span>)}
-          <span style={{ fontSize: "0.80em" }}>{new Date(curPost.created_at).toLocaleDateString()}</span>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: "clamp(1.1rem, 1.3vw, 1.3rem)",
+            opacity: 0.85,
+          }}
+        >
+          {/* Left side: author info */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6em" }}>
+            {authorInfo ? (
+              <>
+                <UserInfoCircle
+                  userInfo={authorInfo}
+                  behavior="redirectToUserPage"
+                  style={{ height: "60px", width: "60px" }}
+                />
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontWeight: "600" }}>{authorInfo.nickname}</span>
+
+                </div>
+              </>
+            ) : (
+              <span>👤</span>
+            )}
+          </div>
+
+          {/* Right side: post date */}
+          <span style={{ fontSize: "0.80em" }}>
+            {new Date(curPost.created_at).toLocaleDateString()}
+          </span>
         </div>
 
         <h3 style={{ margin: 0, fontWeight: 700, fontSize: "clamp(2rem, 3vw, 2.8rem)", wordBreak: "break-word" }}>{curPost.title}</h3>
@@ -238,7 +232,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             const response = await likePost({ post_id: curPost._id.$oid });
             setLikes(likes + (response.data.status === "Like" ? 1 : -1));
           }} />
-          <CountButton likes={curPost.points} emoji="⭐" style={{ backgroundColor: scheme.first }} onClick={e => { e.stopPropagation(); setShowPointsPopup(true); }} />
+          <CountButton likes={curPost.points} emoji={<img height={"30rem"} src={KamerlinkPoints}></img>} style={{ backgroundColor: scheme.first }} onClick={e => { e.stopPropagation(); setShowPointsPopup(true); }} />
           <CountButton likes={curPost.comment_count ?? 0} emoji="💬" style={{ backgroundColor: scheme.first }} onClick={e => { e.stopPropagation(); window.location.href = `${window.location.origin}/posts/view?id=${curPost._id.$oid}`; }} />
         </div>
       </Card>

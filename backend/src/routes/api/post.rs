@@ -46,13 +46,17 @@ pub mod tags;
 ///
 ///
 
-#[derive(Serialize, Deserialize, Clone, ToSchema)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Validate)]
 
 pub struct PostDraft {
+    #[validate(length(min = 0, max = 100))]
     title: String,
+    #[validate(length(min = 0, max = 5000))]
     message: String,
+    #[validate(length(min = 0, max = 10))]
     #[schema(content_media_type = "application/octet-stream")]
     images: Vec<Vec<u8>>,
+    #[validate(length(min = 0, max = 50))]
     #[serde(skip_serializing_if = "Option::is_none")]
     tags: Option<Vec<RequestPostTag>>,
 }

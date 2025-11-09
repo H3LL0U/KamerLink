@@ -74,3 +74,10 @@ Work on implementing the update/delete feature for comments and posts
 
 5 hours of work
 
+## 11/9/2025
+
+5:40PM - 8:08PM
+
+Work on implementing comment modification/deletion
+
+2 hours of work
