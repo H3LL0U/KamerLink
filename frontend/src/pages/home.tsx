@@ -1,13 +1,10 @@
-import React, { useEffect } from 'react';
+
 import { useState } from 'react';
 import LoginButton from '../components/generic_components/Buttons/LoginButton/LoginButton';
-import LogoutButton from '../components/generic_components/LogoutButton/LogoutButton';
 import { useAuth0 } from '@auth0/auth0-react';
 import { kamerlinkScheme } from '../main';
 import Header from '../components/page_components/Header/Header';
-
 import type { components } from '../api/gen/api';
-import { type ColorScheme } from '../main';
 import ColorTransition from '../components/generic_components/ColorTransition/ColorTransition';
 import Card from '../components/generic_components/Card/Card';
 import TextImage from '../components/generic_components/TextImage/TextImage';

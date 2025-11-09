@@ -82,6 +82,6 @@ Work on implementing comment modification/deletion
 
 10:00PM - 11:00 PM
 
-Work on implementing the Color scheme change
+Work on implementing the Color scheme changes and minor refactoring
 
 3 hours of work
