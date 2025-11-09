@@ -80,4 +80,8 @@ Work on implementing the update/delete feature for comments and posts
 
 Work on implementing comment modification/deletion
 
-2 hours of work
+10:00PM - 11:00 PM
+
+Work on implementing the Color scheme change
+
+3 hours of work
