@@ -11,7 +11,7 @@ import InvalidEmail from "../../../pages/REPLACEMENTS/invalid_email";
 import { useScrollToBottom } from "../../../hooks/useScrollToBottom";
 import Header from "../Header/Header";
 import type { PostTag, RequestPostTag } from "../../../api/post";
-import PopUpButton from "../../generic_components/PopUpButton/PopUpButton";
+import PopUpButton from "../../generic_components/Buttons/PopUpButton/PopUpButton";
 import TagSelector from "../TagSelector/TagSelector";
 
 type Filter = "Nieuw" | "Likes" | "Punten";

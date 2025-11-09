@@ -35,7 +35,7 @@ function Dropdown<T extends string>({
       style={{
         padding: "8px 12px",
         borderRadius: "6px",
-        border: `1px solid ${scheme.third}`,
+
         backgroundColor: scheme.first,
         color: scheme.fourth,
         cursor: "pointer",

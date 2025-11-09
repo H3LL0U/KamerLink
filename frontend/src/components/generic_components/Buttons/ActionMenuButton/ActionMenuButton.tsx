@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import type { ColorScheme } from "../../../main";
+import type { ColorScheme } from "../../../../main";
 
 interface ActionItem {
     label: string;

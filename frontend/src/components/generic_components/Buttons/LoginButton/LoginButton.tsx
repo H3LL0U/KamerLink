@@ -1,14 +1,9 @@
 import React from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 
-import { type ColorScheme } from "../../../main";
+import { type ColorScheme } from "../../../../main";
 
-const defaultScheme = {
-  first: "#041562",
-  second: "#11468F",
-  third: "#DA1212",
-  fourth: "#EEEEEE",
-};
+import { defaultScheme } from "../../../../main";
 
 interface LoginButtonProps {
   style?: React.CSSProperties;
@@ -48,8 +43,8 @@ const LoginButton = ({
   const buttonText = isLoading
     ? loading_text
     : isAuthenticated
-    ? logout_text
-    : login_text;
+      ? logout_text
+      : login_text;
 
   return (
     <button

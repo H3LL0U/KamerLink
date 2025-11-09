@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Card from "../../generic_components/Card/Card";
 import { retrievePostTags, spendPoints, type Posts, type SpendPoints, likePost, deletePost, editPost } from "../../../api/post";
 import { type ColorScheme, defaultScheme } from "../../../main";
-import LikeButton from "../../generic_components/CountButton/CountButton";
+import LikeButton from "../../generic_components/Buttons/CountButton/CountButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
 import { type UserInfo } from "../../../api/user";
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
@@ -11,8 +11,8 @@ import type { PostDraft, PostTag } from "../../../api/post";
 import MultitagDisplay from "../TagSelector/MultitagDisplay";
 import PostDraftCard from "../PostDraftCard/PostDraftCard";
 import Popup from "../../generic_components/PopUp/PopUp";
-import CountButton from "../../generic_components/CountButton/CountButton";
-import ActionMenuButton from "../../generic_components/ActionMenuButton/ActionMenuButton";
+import CountButton from "../../generic_components/Buttons/CountButton/CountButton";
+import ActionMenuButton from "../../generic_components/Buttons/ActionMenuButton/ActionMenuButton";
 import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
 
 interface PostCardProps {

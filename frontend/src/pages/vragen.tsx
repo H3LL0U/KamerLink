@@ -1,10 +1,10 @@
 import { Accordion } from "../components/generic_components/Accordion/Accordion";
 import Card from "../components/generic_components/Card/Card";
 import ColorTransition from "../components/generic_components/ColorTransition/ColorTransition";
-import CrystalButton from "../components/generic_components/CrystalButton/CrystalButton";
+import CrystalButton from "../components/generic_components/Buttons/CrystalButton/CrystalButton";
 import Header from "../components/page_components/Header/Header";
 import { defaultScheme } from "../main";
-import LoginButton from "../components/generic_components/LoginButton/LoginButton";
+import LoginButton from "../components/generic_components/Buttons/LoginButton/LoginButton";
 // Images
 import LoginInstruction from "../assets/vragen/login.png";
 import PostInstruction from "../assets/vragen/post.png";

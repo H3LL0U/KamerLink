@@ -1,7 +1,7 @@
 import React from "react";
 import { defaultScheme } from "../../main";
 import { type ColorScheme } from "../../main";
-import LoginButton from "../../components/generic_components/LoginButton/LoginButton";
+import LoginButton from "../../components/generic_components/Buttons/LoginButton/LoginButton";
 import Header from "../../components/page_components/Header/Header";
 
 interface EmailNotVerifiedProps {

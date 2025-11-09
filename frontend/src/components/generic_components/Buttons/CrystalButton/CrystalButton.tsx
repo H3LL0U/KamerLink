@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { defaultScheme, type ColorScheme } from "../../../main";
+import { defaultScheme, type ColorScheme } from "../../../../main";
 
 interface CrystalButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;

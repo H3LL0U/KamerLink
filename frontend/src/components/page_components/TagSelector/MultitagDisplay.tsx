@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import PopupButton from "../../generic_components/PopUpButton/PopUpButton";
+import PopupButton from "../../generic_components/Buttons/PopUpButton/PopUpButton";
 import TagButton from "./TagButton";
 import TagSelector from "./TagSelector";
 import type { PostTag } from "../../../api/post";

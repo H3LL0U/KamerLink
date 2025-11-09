@@ -1,6 +1,6 @@
 import React, { useState, type DragEvent, type FormEvent } from "react";
 import Card from "../../generic_components/Card/Card";
-import PopupButton from "../../generic_components/PopUpButton/PopUpButton";
+import PopupButton from "../../generic_components/Buttons/PopUpButton/PopUpButton";
 import TagSelector from "../../page_components/TagSelector/TagSelector";
 import MultitagDisplay from "../../page_components/TagSelector/MultitagDisplay";
 import { type PostDraft, type PostTag } from "../../../api/post";
@@ -289,7 +289,7 @@ const PostDraftCard: React.FC<PostDraftCardProps> = ({
                             marginTop: 15,
                             padding: "12px 0",
                             width: "100%",
-                            background: "linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)",
+                            background: colorScheme.first,
                             color: "#fff",
                             fontWeight: 700,
                             fontSize: "1.15rem",

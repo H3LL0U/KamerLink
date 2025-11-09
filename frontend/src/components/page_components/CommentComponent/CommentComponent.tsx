@@ -3,12 +3,12 @@ import React, { useRef, useEffect, useState } from 'react';
 import Card from '../../generic_components/Card/Card';
 import type { ColorScheme } from '../../../main';
 import { defaultScheme } from '../../../main';
-import CountButton from '../../generic_components/CountButton/CountButton';
+import CountButton from '../../generic_components/Buttons/CountButton/CountButton';
 import type { UserInfo } from '../../../api/user';
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
 import { getUsers } from "../../../api/user";
 import CommentSubmit from './CommentSubmit';
-import ActionMenuButton from '../../generic_components/ActionMenuButton/ActionMenuButton';
+import ActionMenuButton from '../../generic_components/Buttons/ActionMenuButton/ActionMenuButton';
 import Popup from '../../generic_components/PopUp/PopUp';
 
 interface CommentComponentProps {

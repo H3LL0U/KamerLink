@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import LoginButton from '../components/generic_components/LoginButton/LoginButton';
+import LoginButton from '../components/generic_components/Buttons/LoginButton/LoginButton';
 import LogoutButton from '../components/generic_components/LogoutButton/LogoutButton';
 import { useAuth0 } from '@auth0/auth0-react';
-
+import { kamerlinkScheme } from '../main';
 import Header from '../components/page_components/Header/Header';
 
 import type { components } from '../api/gen/api';
@@ -18,6 +18,7 @@ import WithSmoothAppearance from '../components/animations/WithSmoothAppearance/
 import onderzoekimg from '../assets/onderzoek.jpg'
 import reageerimg from '../assets/Reageer.webp'
 import create_posts from '../assets/posts.webp'
+import { defaultScheme } from '../main';
 /*
 COLOR SCHEME
 
@@ -31,30 +32,24 @@ COLOR SCHEME
 const Home = () => {
   const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
   const [result, setResult] = useState<components["schemas"]["GambleResults"] | null>(null);
-  const defaultScheme: ColorScheme = {
-    first: '#041562',
-    second: '#11468F',
-    third: '#DA1212',
-    fourth: '#EEEEEE'
-  }
 
 
 
 
   return (
     <>
-      <div style={{ marginBottom: '50px' }}>
+      <div style={{ marginBottom: '50px', backgroundColor: defaultScheme.first }}>
         <Header></Header>
 
 
         <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
 
-          <Card style={{ width: "70%", backgroundColor: "white", padding: "10px", textAlign: "center", marginTop: "30px" }}>
-            <h2 style={{ color: "black" }}><span style={{ color: defaultScheme.second }}>Link</span> met jouw <span style={{ color: defaultScheme.third }}>kameraden</span></h2>
+          <Card style={{ width: "70%", backgroundColor: defaultScheme.fourth, padding: "10px", textAlign: "center", marginTop: "30px" }}>
+            <h2 style={{ color: "black" }}><span style={{ color: kamerlinkScheme.second }}>Link</span> met jouw <span style={{ color: kamerlinkScheme.third }}>kameraden</span></h2>
           </Card>
 
           <div style={{ width: "85%" }}>
-            <p style={{ textAlign: "center" }}><span style={{ color: defaultScheme.third }}>Kamer</span><span style={{ color: defaultScheme.second }}>Link</span> is een platform voor alle studenten en docenten van Kamerlingh Onnes. Hiermee deel en ontvang je nieuws over school en kun je initiatieven creëren om onze school te verbeteren.
+            <p style={{ textAlign: "center" }}><span style={{ color: defaultScheme.third }}>Kamer</span><span style={{ color: kamerlinkScheme.second }}>Link</span> is een platform voor alle studenten en docenten van Kamerlingh Onnes. Hiermee deel en ontvang je nieuws over school en kun je initiatieven creëren om onze school te verbeteren.
             </p>
           </div>
           <div style={{ margin: "20px" }}>

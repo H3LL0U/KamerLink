@@ -1,5 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import Sidebar from "../Sidebar/Sidebar";
+import { defaultScheme, kamerlinkScheme, darkScheme } from "../../../main";
+import SchemeCircle from "../../generic_components/SchemeCircle/SchemeCircle";
+import { changeScheme } from "../../../main";
 
 interface ColorScheme {
   first: string;
@@ -10,14 +13,8 @@ interface ColorScheme {
 
 interface HeaderProps {
   scheme?: ColorScheme;
+  onSchemeChange?: (scheme: ColorScheme) => void;
 }
-
-const defaultScheme: ColorScheme = {
-  first: "#041562",
-  second: "#11468F",
-  third: "#DA1212",
-  fourth: "#EEEEEE",
-};
 
 // Reusable menu item
 function MenuItem({
@@ -45,7 +42,9 @@ function MenuItem({
   );
 }
 
-function Header({ scheme = defaultScheme }: HeaderProps) {
+function Header({ scheme = defaultScheme, onSchemeChange = (scheme) => {
+  changeScheme(scheme);
+} }: HeaderProps) {
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState<number>(0);
   const [sidebarOffset, setSidebarOffset] = useState<number>(0);
@@ -65,6 +64,12 @@ function Header({ scheme = defaultScheme }: HeaderProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const availableSchemes: { name: string; scheme: ColorScheme }[] = [
+
+    { name: "KamerLink", scheme: kamerlinkScheme },
+    { name: "Dark", scheme: darkScheme },
+  ];
+
   return (
     <>
       <div
@@ -77,26 +82,47 @@ function Header({ scheme = defaultScheme }: HeaderProps) {
           backgroundColor: scheme.fourth,
           padding: "1rem",
           boxSizing: "border-box",
-          marginBottom: `${sidebarOffset}px`, // dynamically push content down
-          transition: "margin-bottom 0.3s ease", // smooth animation
+          marginBottom: `${sidebarOffset}px`,
+          transition: "margin-bottom 0.3s ease",
         }}
       >
         <a href="/" style={{ margin: 0, textAlign: "center", flexGrow: 1 }}>
           <h1 style={{ margin: 0, textAlign: "center", flexGrow: 1 }}>
-            <span style={{ color: scheme.third }}>Kamer</span>
-            <span style={{ color: scheme.second }}>Link</span>
+            <span style={{ color: kamerlinkScheme.third }}>Kamer</span>
+            <span style={{ color: kamerlinkScheme.second }}>Link</span>
           </h1>
         </a>
 
         <Sidebar
           sidebar_offset={`${headerHeight}px`}
-          onHeightChange={(height: number) => setSidebarOffset(height)} // track sidebar height
+          onHeightChange={(height: number) => setSidebarOffset(height)}
         >
           <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
             <MenuItem label="Profiel" link="/user/profile" bgColor={scheme.second} />
             <MenuItem label="Maak een post" link="/user/new_post" bgColor={scheme.second} />
             <MenuItem label="Bekijk posts" link="/posts" bgColor={scheme.second} />
             <MenuItem label="Vragen" link="/vragen" bgColor={scheme.second} />
+
+            {/* Scheme selector */}
+            <div
+              style={{
+                backgroundColor: scheme.second,
+
+                display: "flex",
+                justifyContent: "space-around",
+                padding: "0.5rem",
+                borderTop: "1px solid #ccc",
+              }}
+            >
+              {availableSchemes.map((item) => (
+                <SchemeCircle
+                  key={item.name}
+                  scheme={item.scheme}
+                  size={50}
+                  onClick={() => onSchemeChange?.(item.scheme)}
+                />
+              ))}
+            </div>
           </div>
         </Sidebar>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import PopUp from "../PopUp/PopUp";
-import type { ColorScheme } from "../../../main";
-import { defaultScheme } from "../../../main";
+import PopUp from "../../PopUp/PopUp";
+import type { ColorScheme } from "../../../../main";
+import { defaultScheme } from "../../../../main";
 
 interface PopupButtonProps {
     text?: React.ReactElement | string;
