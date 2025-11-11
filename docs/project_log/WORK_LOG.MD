@@ -85,3 +85,12 @@ Work on implementing comment modification/deletion
 Work on implementing the Color scheme changes and minor refactoring
 
 3 hours of work
+
+
+11/11/2025
+
+10:15PM - 11:15PM
+
+Issue definitions + improvements to home page and FAQ page. 
+
+1 hour of work

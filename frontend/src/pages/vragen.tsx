@@ -9,13 +9,14 @@ import LoginButton from "../components/generic_components/Buttons/LoginButton/Lo
 import LoginInstruction from "../assets/vragen/login.png";
 import PostInstruction from "../assets/vragen/post.png";
 import StatusBulb from "../components/generic_components/StatusBulb/StatusBulb";
+import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import { API_BASE_URL } from "../api/api";
-
-
-
+import puntenVoorbeeld from "../assets/vragen/punten_uitgeven_voorbeeld.png";
+import { useAuth0 } from "@auth0/auth0-react";
+import signUpVoorbeeld from "../assets/vragen/sign_up_example.png";
 const Vragen = () => {
   const scheme = defaultScheme;
-
+  const { isAuthenticated, } = useAuth0();
   return (
     <>
       <Header />
@@ -29,7 +30,7 @@ const Vragen = () => {
           boxSizing: "border-box",
         }}
       >
-        <h1>Vragen</h1>
+        <h1>Veelgestelde vragen</h1>
       </div>
 
       {/* Top Color Bar */}
@@ -48,15 +49,7 @@ const Vragen = () => {
           padding: "20px 0",
         }}
       >
-        <CrystalButton
-          text="Account"
-          hoverIntensity={0}
-          size={300}
-          onClick={() => {
-            const el = document.getElementById("account");
-            if (el) el.scrollIntoView({ behavior: "smooth" });
-          }}
-        />
+
 
         <CrystalButton
           text="Dienst"
@@ -67,6 +60,17 @@ const Vragen = () => {
             if (el) el.scrollIntoView({ behavior: "smooth" });
           }}
         />
+        <CrystalButton
+          text="Account"
+          hoverIntensity={0}
+          size={300}
+          onClick={() => {
+            const el = document.getElementById("account");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+
+
       </div>
 
       <ColorTransition
@@ -91,19 +95,20 @@ const Vragen = () => {
         >
           <Card style={{ textAlign: "left" }}>
             <ol style={{ textAlign: "left", paddingLeft: "1rem" }}>
-              <li><p>Log in met jouw school e-mail</p>
-                <p><LoginButton></LoginButton></p>
-                <p>Als hier Log uit staat dan ben je al ingelogd</p>
+              <li><p>Log in met jouw school e-mail als je dat nog niet gedaan hebt</p>
+
+                {!isAuthenticated && <LoginButton></LoginButton>}
+
                 <p>Als dat niet lukt bekijk ook <a href="#register">Hoe registreer ik een account</a></p>
 
               </li>
-              <li>Bezoek de "<a href="/user/new_post">maak een post</a>" pagina</li>
+              <li>Bezoek de <a href="/user/new_post">maak een post</a> pagina</li>
               <li>
-                <p>Beschrijf uw suggestie en selecteer de meest passende tags. (nog in ontwikkeling) </p>
-                <img src={PostInstruction} alt="Instructies om een post te maken" width={"100%"} />
+                <p>Beschrijf jouw suggestie en selecteer de meest passende tags. </p>
+                <img src={PostInstruction} alt="Instructies om een post te maken" width={"100%"} style={{ borderRadius: "5px" }} />
               </li>
               <li>
-                Als uw suggestie de website betreft, voeg een "Website suggestie" tag toe
+                Als jouw suggestie de website betreft, voeg een "Website suggestie" tag toe
               </li>
               <li>Klik op verstuur</li>
             </ol>
@@ -126,6 +131,29 @@ const Vragen = () => {
             </p>
           </Card>
         </Accordion>
+
+        <Accordion
+          title={<p style={{ margin: "0px" }}>Wat zijn Kamerlink-punten en hoe verkrijg ik ze?</p>}
+        >
+          <Card style={{ textAlign: "left" }}>
+
+            <p>
+              Kamerlink-punten zijn punten die je aan posts kunt uitgeven.
+            </p>
+            <img src={puntenVoorbeeld} alt="Punten voorbeeld" style={{ borderRadius: "5px", margin: "10px" }} />
+
+            <p>
+              Door punten uit te geven wordt het duidelijker welke ideeën leerlingen en docenten het beste vinden.
+              Ze vormen een alternatief voor likes. In plaats van simpelweg aan te geven of je een bericht leuk vindt of niet, kun je een waarde toewijzen die laat zien in welke mate je het ermee eens bent.
+
+            </p>
+            <p>
+              Kamerlink-punten worden elke dag om <strong >19:00</strong>  gereset tot <strong> 100 punten.</strong> (als je niet meer dan 100 punten hebt)
+            </p>
+          </Card>
+        </Accordion>
+
+
       </section>
 
       {/* Account Section */}
@@ -141,13 +169,18 @@ const Vragen = () => {
 
           <Card>
             <ol style={{ textAlign: "left", paddingLeft: "1rem" }}>
-              <li>Bezoek de login pagina</li>
+              <li>Bezoek de registreer pagina:
+                <br />
+                {!isAuthenticated && <div style={{ textAlign: "center" }}><LoginButton login_text="Registreren" style={{ margin: "auto", marginTop: "10px" }}></LoginButton></div>}
+                <div style={{ textAlign: "center" }}><img src={signUpVoorbeeld} style={{ borderRadius: "5px", margin: "auto", marginTop: "10px", maxWidth: "600px" }} alt="Instructies om een account te registreren" width={"100%"} /></div>
+              </li>
+
               <li>Klik op "Sign up"</li>
               <li>
-                Typ jouw school email in en selecteer een wachtwoord.
+                Typ jouw school e-mail in en selecteer een sterke wachtwoord.
                 <br />
                 <strong style={{ color: "red" }}>
-                  BELANGRIJK: gebruik jouw school e-mail dus een e-mail die eindigt op o2g2.nl
+                  BELANGRIJK: gebruik jouw school e-mail dus een e-mail die eindigt op o2g2.nl. Je kunt dus geen persoonlijke  e-mail gebruiken.
                 </strong>
               </li>
               <li>
@@ -156,7 +189,7 @@ const Vragen = () => {
               </li>
               <li>Je bent nu ingelogd en mag Kamerlink gebruiken</li>
               <li>
-                Als het niet lukt om in te kunnen loggen, stuur een email{" "}
+                Als het niet lukt om in te loggen, stuur een e-mail{" "}
                 <a href="mailto:3007651@leerling.o2g2.nl">hier</a>
               </li>
             </ol>
