@@ -70,8 +70,8 @@ pub struct User {
     pub role: Role,
 
     // Default false
-    #[builder(default)]
     #[substruct(UserInfo)]
+    #[builder(default)]
     pub is_validated: bool,
 
     // Default empty Vec
@@ -89,11 +89,21 @@ pub struct User {
     pub points_given_to: HashMap<ObjectId, i64>, // key = post_id, value = points
 
     #[builder(default)]
-    pub seen: Vec<String>,
+    pub seen: Vec<String>, //unused for now
 
-    #[builder(default = 100)]
     #[substruct(UserInfo)]
+    #[builder(default = 100)]
     pub points: i64,
+
+    #[substruct(UserInfo)]
+    #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub received_points: Option<i64>,
+
+    #[substruct(UserInfo)]
+    #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub received_likes: Option<i64>,
 }
 #[derive(Debug, serde::Deserialize)]
 struct UserIdOnly {
@@ -160,9 +170,10 @@ impl User {
             likes: Vec::new(),
             comment_likes: Vec::new(),
             points_given_to: HashMap::new(),
-
             seen: Vec::new(),
             points: 100,
+            received_likes: None,
+            received_points: None,
         }
     }
 

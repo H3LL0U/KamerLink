@@ -87,10 +87,19 @@ Work on implementing the Color scheme changes and minor refactoring
 3 hours of work
 
 
-11/11/2025
+# 11/11/2025
 
 10:15PM - 11:15PM
 
 Issue definitions + improvements to home page and FAQ page. 
+
+1 hour of work
+
+# 11/12/2025
+
+10:57PM - 11:47PM
+
+Add received_likes and received_points fields to database user schema
+(needed for later implementation of the leaderboard)
 
 1 hour of work

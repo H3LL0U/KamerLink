@@ -135,6 +135,10 @@ const UserInfoCircle: React.FC<UserInfoCircleProps> = ({
                     <p>Rol: {userInfo.role === "Teacher" ? "Docent" : userInfo.role}</p>
                     <hr />
                     <p>Punten: {userInfo.points}</p>
+                    <hr />
+                    <p>Gekregen Punten {userInfo.received_points ?? 0}</p>
+                    <hr />
+                    <p>Gekregen Likes {userInfo.received_likes ?? 0}</p>
                 </Popup>
             )}
         </>

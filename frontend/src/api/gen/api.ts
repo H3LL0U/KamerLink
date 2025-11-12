@@ -306,6 +306,10 @@ export interface components {
                 nickname: string;
                 /** Format: int64 */
                 points: number;
+                /** Format: int64 */
+                received_likes?: number | null;
+                /** Format: int64 */
+                received_points?: number | null;
                 role: components["schemas"]["Role"];
             }[];
         };
@@ -368,6 +372,10 @@ export interface components {
             nickname: string;
             /** Format: int64 */
             points: number;
+            /** Format: int64 */
+            received_likes?: number | null;
+            /** Format: int64 */
+            received_points?: number | null;
             role: components["schemas"]["Role"];
         };
     };

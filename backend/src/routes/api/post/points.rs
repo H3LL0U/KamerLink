@@ -11,6 +11,7 @@ use axum::{
 use axum_extra::extract::Query;
 use http::StatusCode;
 use mongodb::bson::{self, Bson, Document, doc, oid::ObjectId};
+use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{error::Error, str::FromStr};
@@ -119,13 +120,54 @@ pub async fn spend_points(
                     collection.update_one(filter, update_post).await?;
 
                     //update the ammount of points that a post has recieved
-                    let _ = posts_collection
+                    let post_doc = posts_collection
                         .find_one_and_update(
                             doc! {"_id": &post_id, },
                             doc! {"$inc": {"points": input.points as i64}},
                         )
+                        .with_options(
+                            FindOneAndUpdateOptions::builder()
+                                .return_document(ReturnDocument::After)
+                                .build(),
+                        )
                         .await?;
+                    //update the received points for the user of the post
+
+                    let user_id = match post_doc {
+                        Some(k) => match ObjectId::from_str(k.user_id.as_str()) {
+                            Ok(k) => k,
+                            Err(_) => {
+                                return Err(mongodb::error::Error::from(std::io::Error::new(
+                                    std::io::ErrorKind::Other,
+                                    "Bad user_id",
+                                )));
+                            }
+                        },
+                        None => {
+                            return Err(mongodb::error::Error::from(std::io::Error::new(
+                                std::io::ErrorKind::Other,
+                                "User does not exist",
+                            )));
+                        }
+                    };
+
+                    match collection
+                        .update_one(
+                            doc! {"_id": user_id},
+                            doc! {"$inc": {"received_points": input.points as i64}},
+                        )
+                        .await
+                    {
+                        Ok(k) => (),
+                        Err(_) => {
+                            return Err(mongodb::error::Error::from(std::io::Error::new(
+                                std::io::ErrorKind::Other,
+                                "could not update received_points",
+                            )));
+                        }
+                    }
                 }
+
                 Ok(None) => {
                     return Err(mongodb::error::Error::from(std::io::Error::new(
                         std::io::ErrorKind::Other,

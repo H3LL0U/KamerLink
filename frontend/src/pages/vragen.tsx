@@ -177,7 +177,7 @@ const Vragen = () => {
 
               <li>Klik op "Sign up"</li>
               <li>
-                Typ jouw school e-mail in en selecteer een sterke wachtwoord.
+                Typ jouw school e-mail in en selecteer een sterk wachtwoord.
                 <br />
                 <strong style={{ color: "red" }}>
                   BELANGRIJK: gebruik jouw school e-mail dus een e-mail die eindigt op o2g2.nl. Je kunt dus geen persoonlijke  e-mail gebruiken.

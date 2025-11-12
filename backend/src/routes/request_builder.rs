@@ -3,8 +3,12 @@
 ///
 use crate::{
     AppState,
-    database::schemas::user::{self, User},
+    database::schemas::{
+        post::KamerlinkPost,
+        user::{self, User},
+    },
 };
+
 use axum::{
     extract::Extension,
     http::StatusCode,
@@ -16,7 +20,7 @@ use futures::TryStreamExt;
 use mongodb::{
     Collection,
     bson::{Bson, Document, doc, oid::ObjectId, to_document},
-    options::{FindOptions, UpdateModifications},
+    options::{FindOneAndUpdateOptions, FindOptions, ReturnDocument, UpdateModifications},
 };
 use serde::{Deserialize, Deserializer, de::DeserializeOwned};
 use serde::{Serialize, Serializer};
@@ -225,17 +229,63 @@ pub struct GenericLike {
     pub _id: String,
 }
 
+async fn increment_like<UserObject>(
+    user_collection: Collection<UserObject>,
+    posts_collection: Collection<KamerlinkPost>,
+    increment_by: i64,
+    post_id: ObjectId,
+) -> Result<(), StatusCode>
+where
+    UserObject: Send + Sync,
+{
+    let post_like_update_filter = doc! {"_id": post_id};
+
+    let updated_post: KamerlinkPost = match posts_collection
+        .find_one_and_update(
+            post_like_update_filter,
+            doc! {"$inc": {"likes": increment_by}},
+        )
+        .with_options(
+            FindOneAndUpdateOptions::builder()
+                .return_document(ReturnDocument::After)
+                .build(),
+        )
+        .await
+    {
+        Ok(Some(doc)) => doc,
+        Ok(None) => return Err(StatusCode::NOT_FOUND),
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+
+    let user_id = match ObjectId::from_str(updated_post.user_id.as_str()) {
+        Ok(k) => k,
+        Err(_) => {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+
+    let user_like_update_filter = doc! {"_id": user_id};
+    if let Err(_) = user_collection
+        .update_one(
+            user_like_update_filter,
+            doc! {"$inc": {"received_likes": increment_by}},
+        )
+        .await
+    {
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    Ok(())
+}
+
 pub async fn toggle_like_generic(
     sub: &str,
     state: &AppState,
     item_id: &str,
-    collection_name: &str,
-
-    user_likes_field: &str,
+    collection_name: &str,  //posts
+    user_likes_field: &str, //likes
 ) -> Result<bool, StatusCode> {
-    let collection = state
-        .db
-        .collection::<mongodb::bson::Document>(collection_name);
+    let collection = state.db.collection::<KamerlinkPost>(collection_name);
     let users_collection = state.db.collection::<User>("users");
     let cur_user_id = match User::get_user_id_by_sub(&state.db, sub).await {
         Ok(k) => k,
@@ -268,13 +318,12 @@ pub async fn toggle_like_generic(
         {
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
         }
-        let filter = doc! {"_id": item_obj_id};
-        if let Err(_) = collection
-            .update_one(filter, doc! {"$inc": {"likes": -1}})
-            .await
-        {
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
-        }
+        match increment_like(users_collection, collection, -1, item_obj_id).await {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(e);
+            }
+        };
         Ok(false) // Now unliked
     } else {
         // Like: add to user, increment like counter
@@ -285,13 +334,12 @@ pub async fn toggle_like_generic(
         {
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
         }
-        let filter = doc! {"_id": item_obj_id};
-        if let Err(_) = collection
-            .update_one(filter, doc! {"$inc": {"likes": 1}})
-            .await
-        {
-            return Err(StatusCode::INTERNAL_SERVER_ERROR);
-        }
+        match increment_like(users_collection, collection, 1, item_obj_id).await {
+            Ok(_) => {}
+            Err(e) => {
+                return Err(e);
+            }
+        };
         Ok(true) // Now liked
     }
 }
