@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-
+import { defaultScheme } from "../../../main";
 interface ColorScheme {
   first: string;
   second: string;
@@ -7,12 +7,7 @@ interface ColorScheme {
   fourth: string;
 }
 
-const defaultScheme = {
-  first: "#041562",
-  second: "#11468F",
-  third: "#DA1212",
-  fourth: "#EEEEEE",
-};
+
 
 interface SideBarProps {
   children?: React.ReactNode;

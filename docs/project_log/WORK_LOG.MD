@@ -2,10 +2,10 @@
 
 # Arrangements with PWS mentor
 
-25/9/2025 - 1 hour
-9/10/2025 - 1 hour
-16/10/2025 - 1 hour
-
+9/25/2025 - 1 hour
+10/9/2025 - 1 hour
+10/16/2025 - 1 hour
+11/13/2025 - 2 hours
 
 # Direct work on the project
 
@@ -103,3 +103,15 @@ Add received_likes and received_points fields to database user schema
 (needed for later implementation of the leaderboard)
 
 1 hour of work
+
+# 19/12/2025
+
+11:00PM - 11:32PM
+
+Add Kamerlingh Onnes scheme (huisstijl) as one of the options for color schemes
+
+30 minutes of work
+
+
+
+

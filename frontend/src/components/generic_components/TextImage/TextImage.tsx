@@ -22,8 +22,8 @@ const TextImage: React.FC<TextImageProps> = ({
     imageAlign === "right"
       ? "flex-end"
       : imageAlign === "center"
-      ? "center"
-      : "flex-start";
+        ? "center"
+        : "flex-start";
 
   return (
     <div

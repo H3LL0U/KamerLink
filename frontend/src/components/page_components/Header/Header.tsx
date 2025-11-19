@@ -3,7 +3,7 @@ import Sidebar from "../Sidebar/Sidebar";
 import { defaultScheme, kamerlinkScheme, darkScheme } from "../../../main";
 import SchemeCircle from "../../generic_components/SchemeCircle/SchemeCircle";
 import { changeScheme } from "../../../main";
-
+import { nameToScheme } from "../../../main";
 interface ColorScheme {
   first: string;
   second: string;
@@ -64,11 +64,7 @@ function Header({ scheme = defaultScheme, onSchemeChange = (scheme) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const availableSchemes: { name: string; scheme: ColorScheme }[] = [
-
-    { name: "KamerLink", scheme: kamerlinkScheme },
-    { name: "Dark", scheme: darkScheme },
-  ];
+  const availableSchemes = nameToScheme
 
   return (
     <>
@@ -114,12 +110,12 @@ function Header({ scheme = defaultScheme, onSchemeChange = (scheme) => {
                 borderTop: "1px solid #ccc",
               }}
             >
-              {availableSchemes.map((item) => (
+              {[...availableSchemes].map(([name, scheme]) => (
                 <SchemeCircle
-                  key={item.name}
-                  scheme={item.scheme}
+                  key={name}
+                  scheme={scheme}
                   size={50}
-                  onClick={() => onSchemeChange?.(item.scheme)}
+                  onClick={() => onSchemeChange?.(scheme)}
                 />
               ))}
             </div>

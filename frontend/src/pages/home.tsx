@@ -46,7 +46,7 @@ const Home = () => {
           </Card>
 
           <div style={{ width: "85%" }}>
-            <p style={{ textAlign: "center" }}><span style={{ color: defaultScheme.third }}>Kamer</span><span style={{ color: kamerlinkScheme.second }}>Link</span> is een platform voor alle studenten en docenten van Kamerlingh Onnes. Hiermee deel en ontvang je nieuws over school en kun je initiatieven creëren om onze school te verbeteren.
+            <p style={{ textAlign: "center" }}><span style={{ color: kamerlinkScheme.third }}>Kamer</span><span style={{ color: kamerlinkScheme.second }}>Link</span> is een platform voor alle studenten en docenten van Kamerlingh Onnes. Hiermee deel en ontvang je nieuws over school en kun je initiatieven creëren om onze school te verbeteren.
             </p>
           </div>
           <div style={{ margin: "20px", marginBottom: "20px" }}>

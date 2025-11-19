@@ -96,15 +96,18 @@ li {
   font-size: clamp(1.3125rem,
       2.25vw + 0.75rem,
       2rem);
-  color: rgba(255, 255, 255, 0.87);
+
 }
+
+
+
 
 h1 {
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
   font-size: clamp(3rem, 6vw + 1.5rem, 6rem);
-  /* 2*1.5, 4*1.5, 4*1.5 */
+
 }
 
 h2 {

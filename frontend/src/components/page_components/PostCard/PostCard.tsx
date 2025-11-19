@@ -133,6 +133,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           position: "relative",
           fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
           fontSize: "clamp(1.25rem, 2vw, 2.2rem)",
+          color: "black",
           ...(full_view ? { width: "100%", margin: 0, marginTop: "5%" } : {}),
         }}
       >
