@@ -98,8 +98,9 @@ fn validate_retrieve_by(req: &RetrieveBy, allowed: &[RetrieveBy]) -> Result<(), 
 }
 
 ///Can be used to build the retrieve items function
-#[builder(setter(strip_option))]
+
 #[derive(Clone, Builder)]
+#[builder(setter(strip_option))]
 pub struct RetrieveItems<'a> {
     state: Extension<AppState>,
     sub: Extension<String>,
