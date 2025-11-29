@@ -20,7 +20,7 @@ use crate::routes::post::comment::{
 use crate::routes::post::like::like_post;
 use crate::routes::post::points::{check_points, spend_points};
 use crate::routes::post::{delete_post, retrieve_posts, update_post};
-use crate::routes::user::{retrieve_user_posts, retrieve_users};
+use crate::routes::user::{ban_user, retrieve_user_posts, retrieve_users};
 
 use axum::http::Request;
 use tower_governor::key_extractor::KeyExtractor;
@@ -82,6 +82,7 @@ pub fn build_private_routes(state: &AppState) -> Router {
             "/post",
             post(create_post).delete(delete_post).patch(update_post),
         )
+        .route("/user/ban/{ban_user_id}", post(ban_user))
         .layer(GovernorLayer::new(secure_governor_conf));
     let common_router = Router::new()
         .route("/gamble", post(gamble))

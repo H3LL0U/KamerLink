@@ -56,10 +56,12 @@ impl Modify for JwtAuth {
         post::comment::like_comment, // like/unlike a comment (post)
         user::retrieve_users, // user path (get)
         user::retrieve_user_posts, // retrieves posts from a specific user (get)
+        user::ban_user, // ban a user (post)
         post::comment::add_reply_to_comment, // add a reply to a comment (post)
         post::comment::update_comment, // update a comment (patch)
         post::comment::delete_comment, // delete a comment (delete)
         post::tags::retrieve_tags // retrieve all tags (get)
+
         
 
     ),

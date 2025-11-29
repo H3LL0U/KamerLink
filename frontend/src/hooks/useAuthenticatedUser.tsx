@@ -5,7 +5,7 @@ import { useState, useEffect, type JSX } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { configureClient } from "../api/gen/clients";
 import { getUsers, type UserInfo } from "../api/user";
-
+import UserBanned from "../pages/REPLACEMENTS/user_banned";
 import NotLoggedIn from "../pages/REPLACEMENTS/not_logged_in";
 import EmailNotVerified from "../pages/REPLACEMENTS/email_not_verified";
 import LoadingPage from "../pages/REPLACEMENTS/loading";
@@ -30,11 +30,17 @@ export function useAuthenticatedUser() {
     } else if (responseStatus && retryCount >= 3) {
 
       // After 3 failures, fall back to EmailNotVerified
-      alert(responseStatus)
+      if (responseStatus === 423) {
+
+
+        setAuthReplacement(<UserBanned userInfo={userInfo} />)
+      }
+
       if (responseStatus === 403) {
         setAuthReplacement(<EmailNotVerified />);
         return
       }
+
       setAuthReplacement(<UnexpectedError />);
     } else {
       setAuthReplacement(null); // User can see content

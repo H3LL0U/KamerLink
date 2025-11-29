@@ -156,6 +156,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/user/ban/{ban_user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ban_user"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/user/{user_id}/posts": {
         parameters: {
             query?: never;
@@ -177,6 +193,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        BanStatus: {
+            banned_by?: string | null;
+            /** Format: int64 */
+            banned_until: number;
+            description: string;
+        };
         Comment: {
             _id: components["schemas"]["ObjectIdSchema"];
             created_at: string;
@@ -302,6 +324,7 @@ export interface components {
         PaginatedResponse_UserInfo: {
             items: {
                 _id: components["schemas"]["ObjectIdSchema"];
+                ban_status?: null | components["schemas"]["BanStatus"];
                 is_validated: boolean;
                 nickname: string;
                 /** Format: int64 */
@@ -366,8 +389,30 @@ export interface components {
         };
         /** @enum {string} */
         Role: "Student" | "Teacher" | "Admin";
+        User: {
+            _id: components["schemas"]["ObjectIdSchema"];
+            ban_status?: null | components["schemas"]["BanStatus"];
+            comment_likes: string[];
+            email: string;
+            is_validated: boolean;
+            likes: string[];
+            nickname: string;
+            /** Format: int64 */
+            points: number;
+            points_given_to: {
+                [key: string]: number;
+            };
+            /** Format: int64 */
+            received_likes?: number | null;
+            /** Format: int64 */
+            received_points?: number | null;
+            role: components["schemas"]["Role"];
+            seen: string[];
+            user_subs: components["schemas"]["UserSub"][];
+        };
         UserInfo: {
             _id: components["schemas"]["ObjectIdSchema"];
+            ban_status?: null | components["schemas"]["BanStatus"];
             is_validated: boolean;
             nickname: string;
             /** Format: int64 */
@@ -377,6 +422,10 @@ export interface components {
             /** Format: int64 */
             received_points?: number | null;
             role: components["schemas"]["Role"];
+        };
+        UserSub: {
+            sub: string;
+            type: string;
         };
     };
     responses: never;
@@ -872,6 +921,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedResponse_UserInfo"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ban_user: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the user to ban */
+                ban_user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BanStatus"];
+            };
+        };
+        responses: {
+            /** @description User is banned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["User"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

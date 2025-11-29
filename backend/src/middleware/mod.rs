@@ -66,12 +66,23 @@ pub async fn check_user(
         }
     };
 
-    // Count matching documents
-    let count = collection.count_documents(filter).await?;
+    let user = match collection.find_one(filter).await {
+        Ok(k) => k,
+        Err(e) => return Err(anyhow!("Database error: {}", e)),
+    };
+
+    let is_banned = user
+        .as_ref()
+        .and_then(|u| u.ban_status.as_ref())
+        .map(|b| b.is_active())
+        .unwrap_or(false);
+    if is_banned {
+        return Err(anyhow!("User is banned"));
+    }
 
     // if no user with the sub exists get the email to validate further
 
-    if count == 0 {
+    if user.is_none() {
         // Extract the 'aud' claim array
         let aud_array = token_data
             .claims
@@ -183,6 +194,9 @@ pub async fn token_validation_middleware(
                     }
                 }
                 Err(e) => {
+                    if e.to_string().ends_with("banned") {
+                        return StatusCode::LOCKED.into_response();
+                    }
                     return StatusCode::FORBIDDEN.into_response();
                 }
             };

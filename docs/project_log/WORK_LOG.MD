@@ -95,7 +95,7 @@ Issue definitions + improvements to home page and FAQ page.
 
 1 hour of work
 
-# 11/12/2025
+# 11/11/2025
 
 10:57PM - 11:47PM
 
@@ -104,7 +104,7 @@ Add received_likes and received_points fields to database user schema
 
 1 hour of work
 
-# 19/12/2025
+# 19/11/2025
 
 11:00PM - 11:32PM
 
@@ -112,6 +112,10 @@ Add Kamerlingh Onnes scheme (huisstijl) as one of the options for color schemes
 
 30 minutes of work
 
+# 29/11/2025
 
+4:00PM - ...
+
+Add ban feature
 
 

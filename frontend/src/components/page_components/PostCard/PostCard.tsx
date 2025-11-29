@@ -4,7 +4,7 @@ import { retrievePostTags, spendPoints, type Posts, type SpendPoints, likePost, 
 import { type ColorScheme, defaultScheme } from "../../../main";
 import LikeButton from "../../generic_components/Buttons/CountButton/CountButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
-import { type UserInfo } from "../../../api/user";
+import { isHigherRole, roleToPriority, type UserInfo } from "../../../api/user";
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
 import { getUsers } from "../../../api/user";
 import type { PostDraft, PostTag } from "../../../api/post";
@@ -14,6 +14,7 @@ import Popup from "../../generic_components/PopUp/PopUp";
 import CountButton from "../../generic_components/Buttons/CountButton/CountButton";
 import ActionMenuButton from "../../generic_components/Buttons/ActionMenuButton/ActionMenuButton";
 import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
+import BanUserPopUp from "../PopUps/BanUserPopUp";
 
 interface PostCardProps {
   _post: Posts["items"][number];
@@ -24,16 +25,22 @@ interface PostCardProps {
 }
 
 function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo = null, full_view = false }: PostCardProps) {
+  const [showPointsPopup, setShowPointsPopup] = useState(false);
+  const [showBanPopup, setShowBanPopup] = useState(false);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+
   const [curPost, setCurPost] = useState(_post);
   const [likes, setLikes] = useState(curPost.likes);
-  const [showPointsPopup, setShowPointsPopup] = useState(false);
   const [authorInfo, setAuthorInfo] = useState<UserInfo | null>(null);
   const [postTags, setPostTags] = useState<PostTag[]>([]);
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [showDeletePopup, setShowDeletePopup] = useState(false);
+
   const [isDeleted, setIsDeleted] = useState(false);
   const canEditOrDelete = userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id;
+
+
+
 
 
 
@@ -151,27 +158,34 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             <MultitagDisplay tags={postTags} />
           </div>
 
-          {canEditOrDelete && (
-            <div style={{ marginLeft: "auto" }}>
-              <ActionMenuButton
-                scheme={scheme}
-                actions={[
-                  {
-                    label: "Bewerken",
-                    onClick: (e) => {
-                      setIsEditing(true);
+          {authorInfo &&
+            userInfo &&
+            (canEditOrDelete || isHigherRole(userInfo.role, authorInfo.role)) && (
+              <div style={{ marginLeft: "auto" }}>
+                <ActionMenuButton
+                  scheme={scheme}
+                  actions={[
+                    {
+                      label: "Bewerken",
+                      onClick: () => setIsEditing(true),
                     },
-                  },
-                  {
-                    label: "Verwijderen",
-                    onClick: (e) => {
-                      setShowDeletePopup(true);
+                    {
+                      label: "Verwijderen",
+                      onClick: () => setShowDeletePopup(true),
                     },
-                  },
-                ]}
-              />
-            </div>
-          )}
+                    // Dynamically add "Verbannen" only if author role > user role
+                    ...(isHigherRole(userInfo.role, authorInfo.role)
+                      ? [
+                        {
+                          label: "Verbannen",
+                          onClick: () => setShowBanPopup(true),
+                        },
+                      ]
+                      : []),
+                  ]}
+                />
+              </div>
+            )}
 
         </div>
 
@@ -317,6 +331,17 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
           </div>
         </Popup>
       )}
+      {showBanPopup &&
+        authorInfo &&
+        userInfo &&
+        setUserInfo &&
+        isHigherRole(userInfo.role, authorInfo.role) && (
+          <BanUserPopUp
+            userInfo={authorInfo}
+            onClose={() => setShowBanPopup(false)}
+          />
+        )}
+
     </>
   );
 }

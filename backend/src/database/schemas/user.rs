@@ -1,7 +1,6 @@
-use std::{collections::HashMap, sync::Arc};
-
 use crate::database::ObjectIdSchema;
 use anyhow::{Context, Result, anyhow};
+use chrono::Utc;
 use derive_builder::Builder;
 use mongodb::{
     Database,
@@ -9,8 +8,10 @@ use mongodb::{
     options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
 };
 use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, sync::Arc};
 use substruct::substruct;
 use utoipa::{OpenApi, ToSchema};
+use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]
 pub struct UserSub {
@@ -46,6 +47,41 @@ pub enum Role {
     Admin,
 }
 
+impl Role {
+    fn user_role_value(&self) -> i32 {
+        match self {
+            Role::Student => 1,
+            Role::Teacher => 2,
+            Role::Admin => 3,
+        }
+    }
+
+    fn is_higher_than(&self, other: &Role) -> bool {
+        self.user_role_value() > other.user_role_value()
+    }
+}
+#[substruct(BanStatusDraft)]
+#[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Validate)]
+pub struct BanStatus {
+    #[substruct(BanStatusDraft)]
+    #[validate(length(min = 0, max = 1000))]
+    pub description: String,
+    #[substruct(BanStatusDraft)]
+    pub banned_until: i64, //utc timestamp
+    #[validate(length(min = 0, max = 100))]
+    pub banned_by: Option<String>, //id
+}
+
+impl BanStatus {
+    pub fn is_active(&self) -> bool {
+        let current_timestamp = Utc::now().timestamp();
+        self.banned_until > current_timestamp
+    }
+}
+
+pub trait CanBan {
+    fn can_ban(&self, user: &User) -> bool;
+}
 #[substruct(UserInfo)] // Defines a safe struct that only contains public user info
 #[derive(Serialize, Deserialize, Clone, ToSchema, Builder, Debug)]
 #[builder(pattern = "owned")]
@@ -104,7 +140,22 @@ pub struct User {
     #[builder(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub received_likes: Option<i64>,
+
+    #[substruct(UserInfo)]
+    #[builder(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ban_status: Option<BanStatus>,
 }
+
+impl CanBan for User {
+    fn can_ban(&self, user_to_ban: &User) -> bool {
+        if user_to_ban.role.is_higher_than(&self.role) || user_to_ban._id == self._id {
+            return false;
+        }
+        true
+    }
+}
+
 #[derive(Debug, serde::Deserialize)]
 struct UserIdOnly {
     #[serde(rename = "_id")]
@@ -174,6 +225,7 @@ impl User {
             points: 100,
             received_likes: None,
             received_points: None,
+            ban_status: None,
         }
     }
 
@@ -219,6 +271,24 @@ impl User {
                     "sub": &user_sub.sub
                 }
             }
+        };
+
+        let user = collection
+            .find_one(filter)
+            .await
+            .with_context(|| "Failed to query users collection")?;
+
+        Ok(user.ok_or(anyhow!("No user found"))?)
+    }
+
+    pub async fn get_user_by_id(db: &Arc<Database>, user_id: &str) -> Result<User> {
+        let collection = db.collection::<User>("users");
+
+        let oid = ObjectId::parse_str(user_id)
+            .with_context(|| format!("Failed to parse user_id `{}` as ObjectId", user_id))?;
+
+        let filter = doc! {
+            "_id": oid
         };
 
         let user = collection
