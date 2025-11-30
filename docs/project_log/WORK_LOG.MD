@@ -114,8 +114,19 @@ Add Kamerlingh Onnes scheme (huisstijl) as one of the options for color schemes
 
 # 29/11/2025
 
-4:00PM - ...
+4:00PM - 9PM
 
-Add ban feature
+11:00 - 12:00
 
+Add ban feature + allow all users to view posts/comments (without needing to log in)
+
+6 hours of work
+
+# 29/11/2025
+
+5:30 PM - 6:00 PM
+
+Add user_id for originally created tag to track who created a tag first
+
+30 minutes of work
 

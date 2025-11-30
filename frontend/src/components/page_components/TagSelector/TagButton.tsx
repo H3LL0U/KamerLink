@@ -42,7 +42,7 @@ const TagButton: React.FC<TagButtonProps> = ({ tag, onSelect, style, selectable 
     const textColor = getContrastingTextColor(backgroundColor);
 
     return (
-        <div
+        <div title={tag.created_by ? `Aangemaakt door: ${tag.created_by}` : ""}
             style={{
 
                 backgroundColor,
@@ -59,6 +59,7 @@ const TagButton: React.FC<TagButtonProps> = ({ tag, onSelect, style, selectable 
                 cursor: "pointer",
                 userSelect: "none",
                 fontSize: "0.7rem",
+
                 ...style,
             }}
             onClick={() => onSelect?.(tag)}

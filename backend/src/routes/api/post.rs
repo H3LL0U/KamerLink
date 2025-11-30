@@ -93,6 +93,10 @@ pub async fn create_post(
     Extension(state): Extension<AppState>,
     mut multipart: Multipart,
 ) -> Response {
+    let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
+        Ok(k) => k,
+        Err(_) => return StatusCode::UNAUTHORIZED.into_response(),
+    };
     let mut title = String::new();
     let mut message = String::new();
     let mut images: Vec<Vec<u8>> = vec![];
@@ -126,7 +130,7 @@ pub async fn create_post(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    let tags = match update_tags(tags, state.db.clone(), None).await {
+    let tags = match update_tags(tags, state.db.clone(), None, Some(user_id.to_hex())).await {
         Ok(k) => k,
         Err(_) => {
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -307,6 +311,7 @@ pub async fn update_post(
         input.update_draft.tags.unwrap_or(Vec::new()),
         state.db.clone(),
         previous_tags,
+        Some(cur_user._id.to_hex()),
     )
     .await
     {
@@ -363,6 +368,7 @@ pub async fn delete_post(
             return StatusCode::FORBIDDEN.into_response();
         }
     };
+
     match request_builder::delete_item::<KamerlinkPost>(
         Extension(state),
         "posts",

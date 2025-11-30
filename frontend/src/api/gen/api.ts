@@ -322,6 +322,7 @@ export interface components {
                 _id: components["schemas"]["ObjectIdSchema"];
                 base_tag: boolean;
                 color: string;
+                created_by?: string | null;
                 tag_name: string;
                 uses: number;
             }[];
@@ -359,6 +360,7 @@ export interface components {
             _id: components["schemas"]["ObjectIdSchema"];
             base_tag: boolean;
             color: string;
+            created_by?: string | null;
             tag_name: string;
             uses: number;
         };
@@ -394,27 +396,6 @@ export interface components {
         };
         /** @enum {string} */
         Role: "Student" | "Teacher" | "Admin";
-        User: {
-            _id: components["schemas"]["ObjectIdSchema"];
-            ban_status?: null | components["schemas"]["BanStatus"];
-            comment_likes: string[];
-            email: string;
-            is_validated: boolean;
-            likes: string[];
-            nickname: string;
-            /** Format: int64 */
-            points: number;
-            points_given_to: {
-                [key: string]: number;
-            };
-            /** Format: int64 */
-            received_likes?: number | null;
-            /** Format: int64 */
-            received_points?: number | null;
-            role: components["schemas"]["Role"];
-            seen: string[];
-            user_subs: components["schemas"]["UserSub"][];
-        };
         UserInfo: {
             _id: components["schemas"]["ObjectIdSchema"];
             ban_status?: null | components["schemas"]["BanStatus"];
@@ -427,10 +408,6 @@ export interface components {
             /** Format: int64 */
             received_points?: number | null;
             role: components["schemas"]["Role"];
-        };
-        UserSub: {
-            sub: string;
-            type: string;
         };
     };
     responses: never;
@@ -959,7 +936,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["User"];
+                    "application/json": components["schemas"]["BanStatus"];
                 };
             };
             /** @description Unauthorized - missing or invalid token */

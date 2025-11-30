@@ -234,7 +234,12 @@ impl User {
             ban_status: None,
         }
     }
-
+    pub fn is_banned(&self) -> bool {
+        match &self.ban_status {
+            Some(ban_status) => ban_status.is_active(),
+            None => false,
+        }
+    }
     pub async fn get_user_id_by_sub(
         db: &Arc<Database>,
         user_sub: impl TryInto<UserSub, Error = anyhow::Error>,

@@ -65,6 +65,11 @@ const Profile = () => {
   if (!isLoading && !isAuthenticated && displayUserInfo === null) {
     return (<NotLoggedIn />)
   }
+  if (AuthReplacement) {
+    return <>
+      <Header></Header>
+      {AuthReplacement}</>;
+  }
 
   return (
     <>
@@ -74,7 +79,7 @@ const Profile = () => {
         userInfo={displayUserInfo}
         img_src={
           <div style={{ display: "inline-block", cursor: "pointer" }}>
-            <UserInfoCircle userInfo={displayUserInfo} />
+            <UserInfoCircle userInfo={displayUserInfo ?? null} />
           </div>
         }
       >

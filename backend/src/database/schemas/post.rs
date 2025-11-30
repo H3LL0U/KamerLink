@@ -103,6 +103,9 @@ pub struct PostTag {
     pub color: String,
     pub base_tag: bool,
     pub uses: usize,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_by: Option<String>, // user id
 }
 
 impl Into<PostTag> for RequestPostTag {
@@ -113,6 +116,7 @@ impl Into<PostTag> for RequestPostTag {
             color: self.color,
             base_tag: false,
             uses: 1,
+            created_by: None,
         }
     }
 }

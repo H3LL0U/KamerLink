@@ -172,6 +172,7 @@ pub async fn update_tags(
     mut tags: Vec<RequestPostTag>,
     db: Arc<Database>,
     previous_tags: Option<Vec<ObjectId>>,
+    user_id: Option<String>,
 ) -> Result<Vec<PostTag>, Error> {
     fn remove_deduplicate_tags(tags: &mut Vec<RequestPostTag>) {
         let mut seen = std::collections::HashSet::new();
@@ -239,6 +240,7 @@ pub async fn update_tags(
                 "tag_name": &tag.tag_name.to_lowercase().trim(),
                 "color": &tag.color,
                 "base_tag": false,
+                "created_by": &user_id
             },
             "$inc": { "uses": 1 }
         };

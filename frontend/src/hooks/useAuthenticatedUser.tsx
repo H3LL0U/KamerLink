@@ -10,6 +10,7 @@ import NotLoggedIn from "../pages/REPLACEMENTS/not_logged_in";
 import EmailNotVerified from "../pages/REPLACEMENTS/email_not_verified";
 import LoadingPage from "../pages/REPLACEMENTS/loading";
 import UnexpectedError from "../pages/REPLACEMENTS/unexpected_error";
+import InvalidEmail from "../pages/REPLACEMENTS/invalid_email";
 export function useAuthenticatedUser(showHeader = true) {
   const { getAccessTokenSilently, isAuthenticated, isLoading, user } = useAuth0();
 
@@ -83,9 +84,13 @@ export function useAuthenticatedUser(showHeader = true) {
     //else if (!isAuthenticated) {
     //setAuthReplacement(<NotLoggedIn />);
     //} 
-    //else if (!user?.email_verified) {
-    //  setAuthReplacement(<EmailNotVerified />);
-    //} 
+    else if (!user?.email_verified && isAuthenticated) {
+      setAuthReplacement(<EmailNotVerified />);
+    }
+    else if (!userInfo && isAuthenticated && retryCount >= 3) {
+
+      setAuthReplacement(<InvalidEmail showHeader={showHeader} />);
+    }
 
     else if (responseStatus && retryCount >= 3) {
 
