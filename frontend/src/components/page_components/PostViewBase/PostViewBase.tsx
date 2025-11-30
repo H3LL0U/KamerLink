@@ -46,11 +46,10 @@ export default function PostViewBase({
 
 
     const { userInfo, accessToken, AuthReplacement, setUserInfo, isAuthenticated } =
-        useAuthenticatedUser();
+        useAuthenticatedUser(showHeader);
 
     const fetchPosts = useCallback(async () => {
-        if (loading || !hasMore || !accessToken || fetchAttempts >= 3 || !atTheEnd)
-            return;
+        if (fetchAttempts >= 3 || !hasMore || AuthReplacement) { return; }
 
         setLoading(true);
         try {
@@ -78,25 +77,26 @@ export default function PostViewBase({
             }
         } catch (err) {
             console.error(err);
+
             setError("Failed to fetch posts.");
             setFetchAttempts((prev) => prev + 1);
         } finally {
             setLoading(false);
         }
-    }, [hasMore, accessToken, filter, page, atTheEnd, fetchAttempts, loading, fetchFunction]);
+    }, [hasMore, accessToken, filter, page, atTheEnd, fetchAttempts, loading, fetchFunction, atTheEnd],);
 
-    useScrollToBottom(() => setAtTheEnd(true), 200);
+
 
     // Initial fetch
     useEffect(() => {
-        if (isAuthenticated && accessToken) {
+        if (atTheEnd && !loading) {
             fetchPosts();
         }
-    }, [fetchPosts, isAuthenticated, accessToken]);
-
+    }, [atTheEnd, fetchPosts]);
+    useScrollToBottom(() => setAtTheEnd(true), 100);
     // Filter change
     useEffect(() => {
-        if (!isAuthenticated || !accessToken) return;
+
 
         const fetchFilteredPosts = async () => {
             setLoading(true);
@@ -137,7 +137,7 @@ export default function PostViewBase({
     }, [filter, isAuthenticated, accessToken, fetchFunction, tags]);
 
     if (AuthReplacement) return AuthReplacement;
-    if (error) return <InvalidEmail />;
+    if (error) return <InvalidEmail showHeader={showHeader} />;
 
     return (
         <>

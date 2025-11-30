@@ -37,7 +37,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
   const [isEditing, setIsEditing] = useState(false);
 
   const [isDeleted, setIsDeleted] = useState(false);
-  const canEditOrDelete = userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id;
+  let canEditOrDelete = userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id;
 
 
 
@@ -89,6 +89,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
       if (_post.user_id && (!authorInfo || authorInfo._id.$oid !== _post.user_id)) {
         const res = await getUsers({ type: _post.user_id, page: 0 });
         if (res.data.items?.length) setAuthorInfo(res.data.items[0]);
+
       }
     };
     fetchAuthor();
@@ -158,22 +159,28 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             <MultitagDisplay tags={postTags} />
           </div>
 
-          {authorInfo &&
-            userInfo &&
-            (canEditOrDelete || isHigherRole(userInfo.role, authorInfo.role)) && (
+          {authorInfo && userInfo &&
+            ((canEditOrDelete || isHigherRole(userInfo.role, authorInfo.role) || (userInfo._id.$oid === authorInfo._id.$oid)))
+            && (
               <div style={{ marginLeft: "auto" }}>
                 <ActionMenuButton
                   scheme={scheme}
                   actions={[
-                    {
-                      label: "Bewerken",
-                      onClick: () => setIsEditing(true),
-                    },
-                    {
-                      label: "Verwijderen",
-                      onClick: () => setShowDeletePopup(true),
-                    },
-                    // Dynamically add "Verbannen" only if author role > user role
+                    // Only include content editing if canEditOrDelete is true
+                    ...(canEditOrDelete
+                      ? [
+                        {
+                          label: "Bewerken",
+                          onClick: () => setIsEditing(true),
+                        },
+                        {
+                          label: "Verwijderen",
+                          onClick: () => setShowDeletePopup(true),
+                        },
+                      ]
+                      : []),
+
+                    // Include ban functionality if role is higher
                     ...(isHigherRole(userInfo.role, authorInfo.role)
                       ? [
                         {
@@ -263,8 +270,14 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             }}
             onClick={async (e) => {
               e.stopPropagation();
-              const response = await likePost({ post_id: curPost._id.$oid });
-              setLikes(likes + (response.data.status === "Like" ? 1 : -1));
+              try {
+                const response = await likePost({ post_id: curPost._id.$oid });
+                setLikes(likes + (response.data.status === "Like" ? 1 : -1));
+              } catch {
+                setShowPointsPopup(true);
+              }
+
+
             }}
           />
 

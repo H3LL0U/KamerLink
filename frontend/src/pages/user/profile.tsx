@@ -12,6 +12,8 @@ import { retrieveUserPosts } from "../../api/user";
 import type { Posts, RetrievePost } from "../../api/post";
 import { useAuthenticatedUser } from "../../hooks/useAuthenticatedUser";
 import type { components } from "../../api/gen/api";
+import NotLoggedIn from "../REPLACEMENTS/not_logged_in";
+import LoadingPage from "../REPLACEMENTS/loading";
 
 type UserInfo = components["schemas"]["UserInfo"];
 
@@ -19,7 +21,7 @@ function buildUserPostFetcher(userInfo: UserInfo) {
   return async (request: RetrievePost): Promise<{ data: Posts }> => {
     const { page, type, search } = request;
     const params = new URLSearchParams(window.location.search);
-    const userId = params.get("type") ?? userInfo._id.$oid;
+    const userId = params.get("type") ?? userInfo?._id.$oid;
     if (!userId) throw new Error("User ID not found");
 
     const data = await retrieveUserPosts({
@@ -36,13 +38,12 @@ function buildUserPostFetcher(userInfo: UserInfo) {
 }
 
 const Profile = () => {
-  const { user, isAuthenticated, AuthReplacement, userInfo } =
-    useAuthenticatedUser();
+  const { user, isAuthenticated, AuthReplacement, userInfo, isLoading } = useAuthenticatedUser(false);
   const [overrideUserInfo, setOverrideUserInfo] = useState<UserInfo | null>(null);
   const location = useLocation();
 
   useEffect(() => {
-    if (!userInfo) return;
+    //if (!userInfo) return;
 
     const params = new URLSearchParams(location.search);
     const type = params.get("type");
@@ -58,16 +59,18 @@ const Profile = () => {
     fetchUser();
   }, [location.search, userInfo]);
 
-  if (AuthReplacement) return AuthReplacement;
+
 
   const displayUserInfo = overrideUserInfo || userInfo;
-  if (!isAuthenticated || !displayUserInfo) return AuthReplacement;
+  if (!isLoading && !isAuthenticated && displayUserInfo === null) {
+    return (<NotLoggedIn />)
+  }
 
   return (
     <>
       <Header />
       <UserHeader
-        name={displayUserInfo.nickname ?? "Aan het laden"}
+        name={displayUserInfo?.nickname ?? "Aan het laden"}
         userInfo={displayUserInfo}
         img_src={
           <div style={{ display: "inline-block", cursor: "pointer" }}>
@@ -82,8 +85,8 @@ const Profile = () => {
         to={defaultScheme.first}
         height="5px"
       />
-
-      <PostViewBase fetchFunction={buildUserPostFetcher(displayUserInfo)} />
+      {displayUserInfo && <PostViewBase fetchFunction={buildUserPostFetcher(displayUserInfo)} showHeader={false} />}
+      {!displayUserInfo && <LoadingPage showHeader={false} />}
     </>
   );
 };

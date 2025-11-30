@@ -6,14 +6,21 @@ function Redirect() {
   const { isLoading } = useAuth0();
 
   useEffect(() => {
-    if (isLoading) return ; // wait until Auth0 is ready
+    if (isLoading) return; // wait until Auth0 is ready
 
     // Read the redirect_to cookie
     const cookies = document.cookie.split(";").map(c => c.trim());
     const redirectCookie = cookies.find(c => c.startsWith("redirect_to="));
-    let redirectPath = redirectCookie?.split("=")[1] || "/";
+    let redirectPath = "/";
+    if (redirectCookie) {
+      const eqIndex = redirectCookie.indexOf("=");
+      if (eqIndex !== -1) {
+        redirectPath = redirectCookie.substring(eqIndex + 1);
+      }
+    }
 
     // Decode URI component
+
     redirectPath = decodeURIComponent(redirectPath);
 
     // Ensure redirect is internal

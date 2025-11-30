@@ -199,6 +199,11 @@ export interface components {
             banned_until: number;
             description: string;
         };
+        BanStatusDraft: {
+            /** Format: int64 */
+            banned_until: number;
+            description: string;
+        };
         Comment: {
             _id: components["schemas"]["ObjectIdSchema"];
             created_at: string;
@@ -944,7 +949,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BanStatus"];
+                "application/json": components["schemas"]["BanStatusDraft"];
             };
         };
         responses: {

@@ -6,6 +6,7 @@ import { type SpendPoints } from "../../../api/post";
 import { checkPoints } from "../../../api/post";
 import type { UserInfo } from "../../../api/user";
 import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
+import LoginButton from "../../generic_components/Buttons/LoginButton/LoginButton";
 interface PointsPopUpProps {
   remaining_points: number;
   post_id: string;
@@ -18,7 +19,7 @@ interface PointsPopUpProps {
 
 function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = defaultScheme, userInfo = null, setUserInfo = null }: PointsPopUpProps) {
   const [selectedPoints, setSelectedPoints] = useState(0);
-  const [pointsOnPost, setPointsOnPost] = useState<{ points_given: number; limit: number } | null>(null);
+  const [pointsOnPost, setPointsOnPost] = useState<{ points_given: number; limit: number } | null | undefined>(undefined);
 
 
 
@@ -31,13 +32,13 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
         setSelectedPoints(response.data.points_given);
       } catch (err) {
         console.error("Failed to fetch points_on_post:", err);
-        setPointsOnPost({ points_given: 0, limit: remaining_points }); // fallback
+        setPointsOnPost(null); // fallback value
       }
     }
     fetchPoints();
   }, [post_id, remaining_points]);
 
-  if (!pointsOnPost) {
+  if (pointsOnPost === undefined) {
     return (
       <div
         style={{
@@ -68,6 +69,57 @@ function PointsPopUp({ post_id, remaining_points, onConfirm, onClose, scheme = d
         </Card>
       </div>
     );
+  }
+  if (pointsOnPost === null) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}
+      >
+        <Card
+          style={{
+            backgroundColor: scheme.second,
+            padding: "2rem",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            maxWidth: "400px",
+            width: "100%",
+          }}
+        >
+          <p>U bent helaas niet ingelogd om punten te kunnen uitgeven :(</p>
+          <div style={{ display: "flex", justifyContent: "space-evenly", width: "100%" }}>
+            <LoginButton style={{ backgroundColor: scheme.first }}></LoginButton>
+            <button
+              style={{
+                flex: 1,
+                backgroundColor: "#ccc",
+                border: "none",
+                padding: "0.75rem",
+                borderRadius: "0.75rem",
+                cursor: "pointer",
+                fontSize: "1rem",
+                color: "black",
+                maxWidth: "100px",
+              }}
+              onClick={onClose}
+            >
+              Annuleren
+            </button>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   return (

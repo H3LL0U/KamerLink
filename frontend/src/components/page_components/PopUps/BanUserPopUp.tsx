@@ -28,17 +28,9 @@ const BanUserPopUp: React.FC<BanUserPopUpProps> = ({
             return;
         }
 
-        // Convert datetime-local string to UTC timestamp in seconds
-        const localDate = new Date(banDateTime);
-        const timestampSecondsUTC = Math.floor(
-            Date.UTC(
-                localDate.getFullYear(),
-                localDate.getMonth(),
-                localDate.getDate(),
-                localDate.getHours(),
-                localDate.getMinutes()
-            ) / 1000
-        );
+
+
+        const timestampSecondsUTC = Math.floor(new Date(banDateTime).getTime() / 1000);
 
         if (onConfirm) {
             onConfirm(userInfo._id.$oid, timestampSecondsUTC, reason);
@@ -67,7 +59,7 @@ const BanUserPopUp: React.FC<BanUserPopUpProps> = ({
                         type="datetime-local"
                         value={banDateTime}
                         onChange={(e) => setBanDateTime(e.target.value)}
-                        style={{ marginLeft: 10 }}
+                        style={{ marginLeft: 10, color: "black" }}
                     />
                 </label>
 

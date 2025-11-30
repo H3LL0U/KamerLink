@@ -10,46 +10,21 @@ import NotLoggedIn from "../pages/REPLACEMENTS/not_logged_in";
 import EmailNotVerified from "../pages/REPLACEMENTS/email_not_verified";
 import LoadingPage from "../pages/REPLACEMENTS/loading";
 import UnexpectedError from "../pages/REPLACEMENTS/unexpected_error";
-export function useAuthenticatedUser() {
+export function useAuthenticatedUser(showHeader = true) {
   const { getAccessTokenSilently, isAuthenticated, isLoading, user } = useAuth0();
 
   const [accessToken, setAccessToken] = useState<string>("");
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [responseStatus, setResponseStatus] = useState<number | null>(null);
-  const [AuthReplacement, setAuthReplacement] = useState<JSX.Element | null>(<LoadingPage />);
+  const [AuthReplacement, setAuthReplacement] = useState<JSX.Element | null>(<LoadingPage showHeader={showHeader} />);
   const [retryCount, setRetryCount] = useState(0);
 
   // Determine which replacement to show
-  useEffect(() => {
-    if (isLoading) {
-      setAuthReplacement(<LoadingPage />);
-    } else if (!isAuthenticated) {
-      setAuthReplacement(<NotLoggedIn />);
-    } else if (!user?.email_verified) {
-      setAuthReplacement(<EmailNotVerified />);
-    } else if (responseStatus && retryCount >= 3) {
 
-      // After 3 failures, fall back to EmailNotVerified
-      if (responseStatus === 423) {
-
-
-        setAuthReplacement(<UserBanned userInfo={userInfo} />)
-      }
-
-      if (responseStatus === 403) {
-        setAuthReplacement(<EmailNotVerified />);
-        return
-      }
-
-      setAuthReplacement(<UnexpectedError />);
-    } else {
-      setAuthReplacement(null); // User can see content
-    }
-  }, [isLoading, isAuthenticated, user?.email_verified, responseStatus, retryCount]);
 
   // Fetch access token only if user is authenticated and email verified
   useEffect(() => {
-    if (!isAuthenticated || !user?.email_verified || accessToken || retryCount > 3) return;
+    if (!isAuthenticated || !user?.email_verified || accessToken || retryCount > 3 || userInfo) return;
 
     const fetchToken = async () => {
       try {
@@ -75,7 +50,10 @@ export function useAuthenticatedUser() {
       try {
         const response = await getUsers({ type: "_Self", page: 0 });
         setResponseStatus(response.status);
+
         setUserInfo(response.data.items[0]);
+
+
 
 
       } catch (err: any) {
@@ -90,5 +68,41 @@ export function useAuthenticatedUser() {
     fetchUserInfo();
   }, [isAuthenticated, user?.email_verified, accessToken, userInfo, retryCount]);
 
-  return { accessToken, userInfo, AuthReplacement, responseStatus, user, setUserInfo, isAuthenticated };
+
+
+  useEffect(() => {
+
+    if (responseStatus === 423 || (userInfo && userInfo.ban_status?.banned_until && new Date(userInfo.ban_status.banned_until * 1000) > new Date())) {
+
+
+      setAuthReplacement(<UserBanned userInfo={userInfo} showHeader={showHeader} />)
+    }
+    else if (isLoading) {
+      setAuthReplacement(<LoadingPage showHeader={showHeader} />);
+    }
+    //else if (!isAuthenticated) {
+    //setAuthReplacement(<NotLoggedIn />);
+    //} 
+    //else if (!user?.email_verified) {
+    //  setAuthReplacement(<EmailNotVerified />);
+    //} 
+
+    else if (responseStatus && retryCount >= 3) {
+
+      // After 3 failures, fall back to EmailNotVerified
+
+
+      if (responseStatus === 403) {
+        setAuthReplacement(<EmailNotVerified showHeader={showHeader} />);
+        return
+      }
+
+      setAuthReplacement(<UnexpectedError showHeader={showHeader} />);
+    } else {
+      setAuthReplacement(null); // User can see content
+    }
+  }, [isLoading, isAuthenticated, user?.email_verified, responseStatus, retryCount, userInfo, setUserInfo]);
+
+
+  return { accessToken, userInfo, AuthReplacement, responseStatus, user, isLoading, setUserInfo, isAuthenticated };
 }

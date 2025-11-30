@@ -57,7 +57,7 @@ pub const MAX_TAGS_PER_POST: i64 = 50;
     description = "Retrieves the most used tags with tags that have base_tag set true being first. Changes behavior if post_id is supplied. In that case will return the tags of that specific post"
 )]
 pub async fn retrieve_tags(
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Extension(state): Extension<AppState>,
     post_id: Option<Path<String>>,
     Query(input): Query<RetrievePaginated>,

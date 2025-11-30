@@ -103,7 +103,7 @@ fn validate_retrieve_by(req: &RetrieveBy, allowed: &[RetrieveBy]) -> Result<(), 
 #[builder(setter(strip_option))]
 pub struct RetrieveItems<'a> {
     state: Extension<AppState>,
-    sub: Extension<String>,
+    sub: Extension<Option<String>>,
     req: Query<RetrievePaginated>,
     collection: &'a str,
 
@@ -142,7 +142,7 @@ impl<'a> RetrieveItems<'_> {
 /// it returns a response where the body is PaginatedResponse<T>
 pub async fn retrieve_items<T>(
     Extension(state): Extension<AppState>,
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Query(req): Query<RetrievePaginated>,
     collection: &str,
     allowed_retrieval_types: &[RetrieveBy], //Each request has specific retrieval types which it supports which should be specified here.
@@ -181,6 +181,12 @@ where
 
     let mut filter = match req.r#type {
         RetrieveBy::_Self => {
+            let sub = match sub {
+                Some(k) => k,
+                None => {
+                    return StatusCode::FORBIDDEN.into_response();
+                }
+            };
             let cur_user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
                 Ok(k) => k,
                 Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
@@ -232,7 +238,7 @@ pub struct GenericLike {
 
 async fn increment_like<UserObject>(
     user_collection: Collection<UserObject>,
-    posts_collection: Collection<KamerlinkPost>,
+    posts_collection: Collection<Bson>,
     increment_by: i64,
     post_id: ObjectId,
 ) -> Result<(), StatusCode>
@@ -241,7 +247,7 @@ where
 {
     let post_like_update_filter = doc! {"_id": post_id};
 
-    let updated_post: KamerlinkPost = match posts_collection
+    let updated_post: Document = match posts_collection
         .find_one_and_update(
             post_like_update_filter,
             doc! {"$inc": {"likes": increment_by}},
@@ -253,12 +259,29 @@ where
         )
         .await
     {
-        Ok(Some(doc)) => doc,
+        Ok(Some(bson)) => {
+            let doc = match bson {
+                Bson::Document(d) => d,
+                other => {
+                    dbg!(other);
+                    return Err(StatusCode::INTERNAL_SERVER_ERROR);
+                }
+            };
+            doc
+        }
         Ok(None) => return Err(StatusCode::NOT_FOUND),
-        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(e) => {
+            dbg!(e);
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
     };
-
-    let user_id = match ObjectId::from_str(updated_post.user_id.as_str()) {
+    let user_id_string = match updated_post.get("user_id") {
+        Some(Bson::String(s)) => s.clone(),
+        _ => {
+            return Err(StatusCode::INTERNAL_SERVER_ERROR);
+        }
+    };
+    let user_id = match ObjectId::from_str(user_id_string.as_str()) {
         Ok(k) => k,
         Err(_) => {
             return Err(StatusCode::INTERNAL_SERVER_ERROR);
@@ -286,7 +309,7 @@ pub async fn toggle_like_generic(
     collection_name: &str,  //posts
     user_likes_field: &str, //likes
 ) -> Result<bool, StatusCode> {
-    let collection = state.db.collection::<KamerlinkPost>(collection_name);
+    let collection = state.db.collection::<Bson>(collection_name);
     let users_collection = state.db.collection::<User>("users");
     let cur_user_id = match User::get_user_id_by_sub(&state.db, sub).await {
         Ok(k) => k,

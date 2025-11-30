@@ -17,7 +17,7 @@ use axum::{Extension, response::Response};
 use axum_extra::extract::Query;
 use http::StatusCode;
 use mongodb::bson::oid::ObjectId;
-use mongodb::bson::{self, doc};
+use mongodb::bson::{self, doc, to_document};
 use mongodb::results::UpdateResult;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -36,7 +36,7 @@ use validator::Validate;
 )]
 pub async fn retrieve_users(
     Extension(state): Extension<AppState>,
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Query(req): Query<RetrievePaginated>,
 ) -> Response {
     crate::routes::request_builder::RetrieveItemsBuilder::default()
@@ -88,7 +88,7 @@ impl From<RetrievePosts> for RetrievePaginated {
 )]
 pub async fn retrieve_user_posts(
     Extension(state): Extension<AppState>,
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Path(user_id): Path<String>,
     Query(req): Query<RetrievePaginated>,
     Query(search): Query<Search>,
@@ -138,13 +138,13 @@ pub async fn retrieve_user_posts(
     path = "/api/user/ban/{ban_user_id}",
     security(("bearerAuth" = [])),
     responses(
-        (status = 200, description = "User is banned", body = User),
+        (status = 200, description = "User is banned", body = BanStatus),
         (status = 401, description = "Unauthorized - missing or invalid token")
     ),
     params (
         ("ban_user_id" = String,  Path, description = "The id of the user to ban")
     ),
-    request_body = BanStatus
+    request_body = BanStatusDraft
 )]
 
 pub async fn ban_user(
@@ -181,16 +181,11 @@ pub async fn ban_user(
         description: ban_status_draft.description,
         banned_by: Some(cur_user._id.to_hex()),
     };
-    let ban_status_bson = match bson::to_bson(&ban_status) {
-        Ok(k) => k,
-        Err(_) => {
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        }
-    };
+    let ban_status_doc = to_document(&ban_status).expect("Failed to convert to BSON document");
 
     let update = doc! {
         "$set": {
-            "ban_status":ban_status_bson
+            "ban_status":ban_status_doc
         }
     };
     match user_collection.update_one(filter, update).await {
@@ -199,6 +194,6 @@ pub async fn ban_user(
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    ban_user.ban_status = Some(ban_status);
-    return Json(ban_user).into_response();
+
+    return Json(ban_status).into_response();
 }

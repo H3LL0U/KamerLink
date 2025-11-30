@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../components/page_components/Header/Header";
 import PostFormCard from "../../components/page_components/PostDraftCard/PostDraftCard";
 import { createPost, type PostDraft } from "../../api/post";
+import NotLoggedIn from "../REPLACEMENTS/not_logged_in";
 
 function PostPage() {
-  const { AuthReplacement, user } = useAuthenticatedUser();
+  const { AuthReplacement, user, isLoading } = useAuthenticatedUser();
   const { getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
 
@@ -24,7 +25,9 @@ function PostPage() {
       console.error("Failed to create post", response);
     }
   };
-
+  if (!user && !isLoading) {
+    return <NotLoggedIn />
+  }
   return (
     <>
       <Header />

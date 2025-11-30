@@ -9,6 +9,7 @@ import CommentSubmit from '../../components/page_components/CommentComponent/Com
 import { defaultScheme } from '../../main';
 import { addReplyToComment } from '../../api/post';
 import { useScrollToBottom } from '../../hooks/useScrollToBottom';
+import LoginButton from '../../components/generic_components/Buttons/LoginButton/LoginButton';
 type Post = Posts["items"][0];
 
 function ViewPost() {
@@ -17,7 +18,7 @@ function ViewPost() {
     const location = useLocation();
     const post_id = useMemo(() => new URLSearchParams(location.search).get("id") ?? "", [location.search]);
 
-    const { AuthReplacement, isAuthenticated, accessToken, userInfo, setUserInfo } = useAuthenticatedUser();
+    const { AuthReplacement, isAuthenticated, accessToken, userInfo, setUserInfo, isLoading } = useAuthenticatedUser();
 
     const [post, setPost] = useState<Post | undefined>(undefined);
     const [comments, setComments] = useState<PostComment[]>([]);
@@ -28,13 +29,13 @@ function ViewPost() {
 
     // Fetch the post
     useEffect(() => {
-        if (!post_id || !isAuthenticated || !accessToken) return;
+        if (!post_id) return;
         const fetchPost = async () => {
             const posts = await retrievePosts({ type: post_id, page: 0 });
             setPost(posts.data.items[0]);
         };
         fetchPost();
-    }, [post_id, isAuthenticated, accessToken]);
+    }, [post_id]);
 
     // Fetch comments
     useEffect(() => {
@@ -88,23 +89,34 @@ function ViewPost() {
                         {post && (
                             <PostCard _post={post} full_view={true} userInfo={userInfo} setUserInfo={setUserInfo} />
                         )}
+                        {!isLoading && isAuthenticated && (
+                            <>
+                                {/* Comment input */}
+                                <CommentSubmit
+                                    onSubmit={handleCreateComment}
+                                    color_scheme={defaultScheme}
+                                    disabled={!accessToken} // maybe still disable if no token
+                                />
 
-                        {/* Comment input */}
-                        <CommentSubmit
-                            onSubmit={handleCreateComment}
-                            color_scheme={defaultScheme}
-                            disabled={!isAuthenticated || !accessToken}
-                        />
+                                {/* Comments list */}
+                                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%", maxWidth: "1000px" }}>
+                                    {comments.map(comment => (
+                                        <CommentComponent key={comment._id.$oid} comment={comment} userInfo={userInfo} />
+                                    ))}
+                                </div>
+                            </>
+                        )}
 
-                        {/* Comments list */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", width: "100%", maxWidth: "1000px" }}>
-                            {comments.map(comment => (
-                                <CommentComponent key={comment._id.$oid} comment={comment} userInfo={userInfo} />
-                            ))}
-                        </div>
+                        {(!isAuthenticated || !accessToken) && (
+                            <>
+                                <div><p>Log in om reacties te bekijken</p></div>
+                                <LoginButton />
+                            </>
+                        )}
                     </div>
                 </>
-            )}
+            )
+            }
         </>
     );
 }

@@ -18,6 +18,11 @@ pub struct UserSub {
     pub r#type: String,
     pub sub: String,
 }
+impl UserSub {
+    pub fn to_string(&self) -> String {
+        format!("{}|{}", self.r#type, self.sub)
+    }
+}
 
 impl TryFrom<&str> for UserSub {
     type Error = anyhow::Error;
@@ -75,6 +80,7 @@ pub struct BanStatus {
 impl BanStatus {
     pub fn is_active(&self) -> bool {
         let current_timestamp = Utc::now().timestamp();
+
         self.banned_until > current_timestamp
     }
 }

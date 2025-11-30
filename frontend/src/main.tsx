@@ -36,8 +36,8 @@ export const darkScheme = {
 
 export const nameToScheme = new Map<string, ColorScheme>([
   ["dark", darkScheme],
-  ["kamerlink", kamerlinkScheme],
-  ["default", kamerlinghOnnesScheme],
+  ["kamerlink", kamerlinghOnnesScheme],
+  ["default", kamerlinkScheme],
 ]);
 
 const schemeToName = new Map<ColorScheme, string>(

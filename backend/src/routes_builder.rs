@@ -8,7 +8,7 @@ use tower_governor::governor::GovernorConfig;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 
 use crate::AppState;
-use crate::middleware::token_validation_middleware;
+use crate::middleware::{Strict, strict_except_get_middleware, token_validation_middleware};
 use crate::routes::api::post::create_post;
 use crate::routes::api::post::tags::retrieve_tags;
 use crate::routes::gamble;
@@ -103,7 +103,7 @@ pub fn build_private_routes(state: &AppState) -> Router {
         .merge(common_router)
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
-            token_validation_middleware,
+            strict_except_get_middleware,
         ))
 }
 

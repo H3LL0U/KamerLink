@@ -15,8 +15,6 @@ pub mod routes_builder;
 pub mod test_utils;
 use mongodb::{self, ClientSession, Database};
 
-// /gamble
-
 pub async fn get_jwks() -> Result<JwkSet> {
     let issuer = env::var("ISSUER").context("Environment variable ISSUER is not set")?;
 

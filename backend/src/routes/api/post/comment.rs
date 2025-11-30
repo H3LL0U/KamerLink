@@ -137,7 +137,7 @@ impl RetrieveComment {
 )]
 pub async fn retrieve_comments(
     Extension(state): Extension<AppState>,
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Query(req): Query<RetrieveComment>,
 ) -> Response {
     let post_id = match ObjectId::from_str(&req.post_id) {

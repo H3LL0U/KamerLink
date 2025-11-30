@@ -207,7 +207,7 @@ pub struct Search {
 )]
 pub async fn retrieve_posts(
     Extension(state): Extension<AppState>,
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Query(req): Query<RetrievePaginated>,
     Query(search): Query<Search>,
 ) -> Response {

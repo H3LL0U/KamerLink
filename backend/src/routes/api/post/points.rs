@@ -219,10 +219,17 @@ struct GivenPoints {
     ),
 )]
 pub async fn check_points(
-    Extension(sub): Extension<String>,
+    Extension(sub): Extension<Option<String>>,
     Extension(state): Extension<AppState>,
     Query(req): Query<CheckPointsQuery>,
 ) -> Response {
+    let sub = match sub {
+        Some(k) => k,
+        None => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+
     let cur_user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),

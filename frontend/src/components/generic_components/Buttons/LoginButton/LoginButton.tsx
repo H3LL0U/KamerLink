@@ -29,10 +29,10 @@ const LoginButton = ({
 
     if (isAuthenticated) {
       // Logout with returnTo as current page
-      logout({ logoutParams: { returnTo: window.location.href } });
+      logout({ logoutParams: { returnTo: window.location.origin } });
     } else {
       // Save current page in cookie
-      document.cookie = `redirect_to=${window.location.pathname}; path=/;`;
+      document.cookie = `redirect_to=${window.location.pathname + window.location.search}; path=/;`;
 
       // Trigger login redirect
       loginWithRedirect();
