@@ -179,6 +179,13 @@ pub async fn update_tags(
         tags.retain(|tag| seen.insert(tag.tag_name.clone()));
     }
 
+    fn in_tag_list(tag: &RequestPostTag, tag_list: Option<&Vec<PostTag>>) -> bool {
+        match tag_list {
+            Some(tags) => tags.iter().any(|t| t.tag_name == tag.tag_name),
+            None => false,
+        }
+    }
+
     remove_deduplicate_tags(&mut tags);
 
     let previous_tags: Option<Vec<PostTag>> = match previous_tags {
@@ -200,7 +207,7 @@ pub async fn update_tags(
         None => None,
     };
 
-    match previous_tags {
+    match &previous_tags {
         Some(prev_tags) => {
             for prev_tag in prev_tags {
                 if !tags.iter().any(|t| {
@@ -234,7 +241,8 @@ pub async fn update_tags(
 
     for tag in &tags {
         let filter = doc! { "tag_name": &tag.tag_name.to_lowercase().trim() };
-        let update = doc! {
+
+        let mut update = doc! {
             "$setOnInsert": {
                 "_id": ObjectId::new(),
                 "tag_name": &tag.tag_name.to_lowercase().trim(),
@@ -244,6 +252,19 @@ pub async fn update_tags(
             },
             "$inc": { "uses": 1 }
         };
+        //only increment when not in previous tags
+        if in_tag_list(tag, previous_tags.as_ref()) {
+            update = doc! {
+                "$setOnInsert": {
+                    "_id": ObjectId::new(),
+                    "tag_name": &tag.tag_name.to_lowercase().trim(),
+                    "color": &tag.color,
+                    "base_tag": false,
+                    "created_by": &user_id
+                },
+                "$inc": { "uses": 0 }
+            };
+        }
 
         // Return the document *after* update
         let options = FindOneAndUpdateOptions::builder()
