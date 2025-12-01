@@ -4,7 +4,7 @@ import { retrievePostTags, spendPoints, type Posts, type SpendPoints, likePost, 
 import { type ColorScheme, defaultScheme } from "../../../main";
 import LikeButton from "../../generic_components/Buttons/CountButton/CountButton";
 import PointsPopUp from "../PointsPopUp/PointsPopUp";
-import { isHigherRole, roleToPriority, type UserInfo } from "../../../api/user";
+import { isBanned, isHigherRole, roleToPriority, type UserInfo } from "../../../api/user";
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
 import { getUsers } from "../../../api/user";
 import type { PostDraft, PostTag } from "../../../api/post";
@@ -15,6 +15,7 @@ import CountButton from "../../generic_components/Buttons/CountButton/CountButto
 import ActionMenuButton from "../../generic_components/Buttons/ActionMenuButton/ActionMenuButton";
 import KamerlinkPoints from "../../../assets/KamerlinkLogo.png"
 import BanUserPopUp from "../PopUps/BanUserPopUp";
+import PostActionMenu from "../../generic_components/Buttons/ActionMenuButton/PostActionMenu";
 
 interface PostCardProps {
   _post: Posts["items"][number];
@@ -37,7 +38,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
   const [isEditing, setIsEditing] = useState(false);
 
   const [isDeleted, setIsDeleted] = useState(false);
-  let canEditOrDelete = userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id;
+  const [canEditOrDelete, setCanEditOrDelete] = useState<null | boolean>(null)
 
 
 
@@ -89,7 +90,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
       if (_post.user_id && (!authorInfo || authorInfo._id.$oid !== _post.user_id)) {
         const res = await getUsers({ type: _post.user_id, page: 0 });
         if (res.data.items?.length) setAuthorInfo(res.data.items[0]);
-
+        setCanEditOrDelete(userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id)
       }
     };
     fetchAuthor();
@@ -104,7 +105,7 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
   }, [_post, authorInfo]);
 
   if (isDeleted) return null;
-
+  if (isBanned(authorInfo)) return null;
   if (isEditing) {
     return (
       <>
@@ -159,38 +160,19 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
             <MultitagDisplay tags={postTags} />
           </div>
 
-          {authorInfo && userInfo &&
-            ((canEditOrDelete || isHigherRole(userInfo.role, authorInfo.role) || (userInfo._id.$oid === authorInfo._id.$oid)))
-            && (
+          {authorInfo && userInfo && !(canEditOrDelete === null) &&
+            (
               <div style={{ marginLeft: "auto" }}>
-                <ActionMenuButton
+                <PostActionMenu
                   scheme={scheme}
-                  actions={[
-                    // Only include content editing if canEditOrDelete is true
-                    ...(canEditOrDelete
-                      ? [
-                        {
-                          label: "Bewerken",
-                          onClick: () => setIsEditing(true),
-                        },
-                        {
-                          label: "Verwijderen",
-                          onClick: () => setShowDeletePopup(true),
-                        },
-                      ]
-                      : []),
-
-                    // Include ban functionality if role is higher
-                    ...(isHigherRole(userInfo.role, authorInfo.role)
-                      ? [
-                        {
-                          label: "Verbannen",
-                          onClick: () => setShowBanPopup(true),
-                        },
-                      ]
-                      : []),
-                  ]}
+                  userInfo={userInfo}
+                  authorInfo={authorInfo}
+                  canEditOrDelete={canEditOrDelete}
+                  onEdit={() => setIsEditing(true)}
+                  onDelete={() => setShowDeletePopup(true)}
+                  onBan={() => setShowBanPopup(true)}
                 />
+
               </div>
             )}
 

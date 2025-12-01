@@ -21,4 +21,12 @@ export const isHigherRole = (roleA: UserInfo["role"], roleB: UserInfo["role"]): 
     return (roleToPriority.get(roleA) ?? 0) > (roleToPriority.get(roleB) ?? 99);
 }
 
+export const isBanned = (userInfo: UserInfo | null | undefined): boolean => {
+
+    if (!userInfo) return false;
+    const bannedUntil = userInfo.ban_status?.banned_until;
+    if (!bannedUntil) return false;
+
+    return new Date(bannedUntil * 1000) > new Date();
+};
 

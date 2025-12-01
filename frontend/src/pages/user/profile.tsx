@@ -82,6 +82,7 @@ const Profile = () => {
             <UserInfoCircle userInfo={displayUserInfo ?? null} />
           </div>
         }
+        curUser={userInfo}
       >
 
       </UserHeader>

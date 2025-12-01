@@ -1,11 +1,14 @@
 import "./header.css";
-import React, { type ReactElement } from "react";
+import React, { useState, type ReactElement } from "react";
 import { defaultScheme, type ColorScheme } from "../../../main";
 import { type UserInfo } from "../../../api/user";
-
+import { banUser } from "../../../api/user";
+import PostActionMenu from "../../generic_components/Buttons/ActionMenuButton/PostActionMenu";
+import BanUserPopUp from "../PopUps/BanUserPopUp";
 type HeaderProps = {
   name: string;
   userInfo?: UserInfo | null;
+  curUser?: UserInfo | null;
   children?: React.ReactNode;
   style?: React.CSSProperties;
   img_src?: string | ReactElement; // <--- allow SVG or URL
@@ -17,9 +20,12 @@ function Header({
   children,
   style = {},
   img_src,
+  curUser = null,
   userInfo,
   scheme = defaultScheme,
 }: HeaderProps) {
+  const [showBanPopup, setShowBanPopup] = useState(false);
+
   const fallbackSVG = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -61,11 +67,27 @@ function Header({
         )}
         <p>{userInfo?.role === "Teacher" ? "Docent" : userInfo?.role ?? "Student"}</p>
       </div>
+      {curUser && userInfo && (
+        <div className="post-action-menu-container">
+          <PostActionMenu
+            authorInfo={userInfo}
+            userInfo={curUser}
+            canEditOrDelete={false}
+            onBan={() => setShowBanPopup(true)}
+          />
+        </div>
+      )}
 
       <div className="header-container">
         <h3 style={{ display: "block", width: "100%", marginBottom: "10px" }}>{name}</h3>
+
         {children}
       </div>
+
+      {showBanPopup && userInfo && <BanUserPopUp userInfo={userInfo} onClose={() => { setShowBanPopup(false) }} />}
+
+
+
     </header>
   );
 }

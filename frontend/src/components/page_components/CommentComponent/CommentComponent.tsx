@@ -6,10 +6,12 @@ import { defaultScheme } from '../../../main';
 import CountButton from '../../generic_components/Buttons/CountButton/CountButton';
 import type { UserInfo } from '../../../api/user';
 import UserInfoCircle from "../UserInfoCircle/UserInfoCircle";
-import { getUsers } from "../../../api/user";
+import { getUsers, isBanned, isHigherRole } from "../../../api/user";
 import CommentSubmit from './CommentSubmit';
 import ActionMenuButton from '../../generic_components/Buttons/ActionMenuButton/ActionMenuButton';
 import Popup from '../../generic_components/PopUp/PopUp';
+import PostActionMenu from '../../generic_components/Buttons/ActionMenuButton/PostActionMenu';
+import BanUserPopUp from '../PopUps/BanUserPopUp';
 
 interface CommentComponentProps {
     comment: PostComment;
@@ -34,6 +36,8 @@ const CommentComponent: React.FC<CommentComponentProps> = ({
     const repliesRef = useRef<HTMLDivElement>(null);
     const [deleted, setDeleted] = useState(false);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
+    const [showBanPopup, setShowBanPopup] = useState(false)
+
     // Fetch author info
     useEffect(() => {
         const fetchAuthor = async () => {
@@ -128,7 +132,7 @@ const CommentComponent: React.FC<CommentComponentProps> = ({
     const canEditOrDelete = userInfo && (userInfo._id.$oid === curComment.user_id || userInfo.role === "Admin");
 
     if (deleted) { return null; }
-
+    if (authorInfo && isBanned(authorInfo)) return null
 
 
     return (
@@ -173,20 +177,15 @@ const CommentComponent: React.FC<CommentComponentProps> = ({
                                 {new Date(curComment.created_at).toLocaleString("nl-NL")}
                             </span>
 
-                            {canEditOrDelete && !isEditing && (
-                                <ActionMenuButton
+                            {!(canEditOrDelete === null) && !isEditing && authorInfo && userInfo && (
+                                <PostActionMenu
+                                    canEditOrDelete={canEditOrDelete}
+                                    userInfo={userInfo}
+                                    authorInfo={authorInfo}
                                     scheme={color_scheme}
-                                    actions={[
-                                        {
-                                            label: "Bewerken",
-                                            onClick: () => setIsEditing(true),
-                                        },
-                                        {
-                                            label: "Verwijderen",
-                                            onClick: () => setShowDeletePopup(true),
-                                        },
-                                    ]}
-                                />
+                                    onEdit={() => setIsEditing(true)}
+                                    onDelete={() => setShowDeletePopup(true)}
+                                    onBan={() => { setShowBanPopup(true) }} />
                             )}
                         </div>
 
@@ -326,6 +325,16 @@ const CommentComponent: React.FC<CommentComponentProps> = ({
                     </div>
                 </Popup>
             )}
+            {showBanPopup &&
+                authorInfo &&
+                userInfo &&
+                userInfo &&
+                isHigherRole(userInfo.role, authorInfo.role) && (
+                    <BanUserPopUp
+                        userInfo={authorInfo}
+                        onClose={() => setShowBanPopup(false)}
+                    />
+                )}
 
         </>
     );
