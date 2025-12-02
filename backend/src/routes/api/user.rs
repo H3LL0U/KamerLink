@@ -44,12 +44,16 @@ pub async fn retrieve_users(
         .sub(Extension(sub))
         .req(Query(req))
         .collection("users")
+        //type SortKey = "MostPoints" | "MostReceivedLikes" | "MostReceivedPoints";
         .allowed_retrieval_types(&[
             RetrieveBy::_Self,
             RetrieveBy::Id("".to_string()),
             RetrieveBy::MostPoints,
+            RetrieveBy::MostReceivedLikes,
+            RetrieveBy::MostReceivedPoints,
         ])
         .base_query(doc! {})
+        .size_limit(10)
         .build()
         .unwrap()
         .run::<UserInfo>()

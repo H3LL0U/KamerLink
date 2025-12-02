@@ -136,5 +136,16 @@ Add user_id for originally created tag to track who created a tag first
 
 Ban feature fully integrated
 
+# 1/12/2025
+
+11:32PM - 2:27AM
+
+Leaderboard implemented
+
+3 hours of work
+
+
+
+
 
 

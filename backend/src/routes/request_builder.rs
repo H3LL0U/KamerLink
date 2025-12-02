@@ -53,6 +53,10 @@ pub enum RetrieveBy {
 
     /// Retrieves the items that have "uses" set to the highest value. the values that have "base_tag" set to true and then uses in descending order
     MostUses,
+
+    // fields for received_likes and received points
+    MostReceivedLikes,
+    MostReceivedPoints,
 }
 
 impl<'de> Deserialize<'de> for RetrieveBy {
@@ -68,6 +72,8 @@ impl<'de> Deserialize<'de> for RetrieveBy {
             "MostPoints" => Ok(RetrieveBy::MostPoints),
             "MostRecent" => Ok(RetrieveBy::MostRecent),
             "MostUses" => Ok(RetrieveBy::MostUses),
+            "MostReceivedLikes" => Ok(RetrieveBy::MostReceivedLikes),
+            "MostReceivedPoints" => Ok(RetrieveBy::MostReceivedPoints),
             other => Ok(RetrieveBy::Id(other.to_string())),
         }
     }
@@ -169,12 +175,14 @@ where
         .skip(Some(skip as u64))
         .limit(limit)
         .sort(match req.r#type {
-            RetrieveBy::MostLikes => doc! { "likes": -1 },
-            RetrieveBy::MostPoints => doc! { "points": -1 },
-            RetrieveBy::MostRecent => doc! { "created_at": -1 },
-            RetrieveBy::MostUses => doc! { "base_tag":-1, "uses": -1 },
+            RetrieveBy::MostLikes => doc! { "likes": -1, "_id": -1 },
+            RetrieveBy::MostPoints => doc! { "points": -1 ,"_id": -1  },
+            RetrieveBy::MostRecent => doc! { "created_at": -1, "_id": -1  },
+            RetrieveBy::MostUses => doc! { "base_tag":-1, "uses": -1 , "_id": -1 },
+            RetrieveBy::MostReceivedLikes => doc! {"received_likes": -1, "_id": -1 },
+            RetrieveBy::MostReceivedPoints => doc! {"received_points" : -1, "_id": -1 },
 
-            _ => doc! {},
+            _ => doc! {"_id": -1 },
         })
         .projection(projection)
         .build();

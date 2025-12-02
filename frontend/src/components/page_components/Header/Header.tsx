@@ -97,6 +97,7 @@ function Header({ scheme = defaultScheme, onSchemeChange = (scheme) => {
             <MenuItem label="Profiel" link="/user/profile" bgColor={scheme.second} />
             <MenuItem label="Maak een post" link="/user/new_post" bgColor={scheme.second} />
             <MenuItem label="Bekijk posts" link="/posts" bgColor={scheme.second} />
+            <MenuItem label="Leaderboard" link="/leaderboard" bgColor={scheme.second} />
             <MenuItem label="Vragen" link="/vragen" bgColor={scheme.second} />
 
             {/* Scheme selector */}

@@ -10,6 +10,7 @@ import Redirect from './pages/redirect';
 import Vragen from './pages/vragen';
 import ViewPost from './pages/posts/view';
 import { defaultScheme } from './main';
+import Leaderboard from './pages/leaderboard';
 
 
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/user/new_post" element={<PostPage />} />
           <Route path="/vragen" element={<Vragen />} />
           <Route path="/redirect" element={<Redirect />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
       </div>
     </BrowserRouter>
