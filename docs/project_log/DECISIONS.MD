@@ -4,9 +4,23 @@
 
 The users of the websites are teachers and students of Kamerlingh Onnes. (Anyone that has a o2g2 email)
 
+## Language usage
+
+Even though the project itself is for Dutch user base, I have chosen to write the documentation using English because it is a standard in software development. It makes sure that any developer can understand the documentation. The website itself (namely frontend) is of course using dutch because that's the language that the main user base prefers.
+
 ## Scale
 
 The project has a limited scale since it is meant to be used by users from a singular school which is a maximum of around 2000 people. The website's endpoints do not perform any complex operations (mostly database queries). For that reason I've chosen to not outsource the computational power to other providers (the backend) to minimize operational costs. Also, for the same reason, there is only a singular server, which in my expectation should be able to handle the load.
+
+## Marketing/Advertisement
+
+Because the user base was clear it was my plan to advertise the website on school grounds in order to get early feedback and improve the presentability of the end product during the "Meesterwerk festival" event (A product which already has active users is better than a product without users). I had several ideas to advertise the product:
+
+1. Create an article in "Weekbericht" to advertise to teachers
+2. Advertise by using the screens that are located across the whole school
+3. Create flyers and spread them across the school
+
+However, some ideas could not be realized before the event. Ideas 1 and 2 relied on cooperation with the school which unfortunately could not be done because of reasonable concerns ( issue #18). By the time I implemented the new requirements The deadline was already quite close. If I communicated my idea early on I would have received the requirements earlier and subsequently work on them earlier.
 
 ## Architecture
 
@@ -84,7 +98,12 @@ I had prior experience with both languages, with more extensive backend developm
 
 
 [^1]: https://community.vercel.com/t/visit-limits-on-a-static-website/1346
+Trustworthy official site of vercel
 [^2]: https://dashboard.render.com/
+Trustworthy official site of render
 [^3]: https://www.mongodb.com/pricing
+Trustworthy official site of mongoDB
 [^4]: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/
-[^5]: https://pullflow.com/blog/go-vs-python-vs-rust-complete-performance-comparison
+Trustworthy official site of cloudflare
+[^5]: https://www.oliant.io/articles/python-vs-rust-differences
+Trustworthy as it lists general knowledge
