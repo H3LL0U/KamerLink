@@ -1,30 +1,26 @@
 use std::str::FromStr;
 
-use anyhow::Context;
 use axum::{
     Json,
-    extract::{Extension, Multipart, Request},
+    extract::{Extension, Multipart},
     response::{IntoResponse, Response},
 };
 use axum_extra::extract::Query;
-use futures::TryStreamExt;
-use http::{StatusCode, status};
+use http::StatusCode;
 
 use serde::{Deserialize, Serialize};
 use serde_json::from_str;
-use substruct::substruct;
 use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
 use crate::{
     AppState,
-    database::schemas::{post::EditPostDraft, user::Role},
+    database::schemas::post::EditPostDraft,
     routes::request_builder::{self, GenericDeleteItem, GenericUpdateItem, update_item},
 };
-use crate::{database::schemas::post::Comment, routes::request_builder::retrieve_items};
 use crate::{
     database::schemas::{
-        post::{KamerlinkPostBuilder, PostTag, RequestPostTag},
+        post::{KamerlinkPostBuilder, RequestPostTag},
         user::User,
     },
     routes::post::tags::update_tags,
@@ -32,10 +28,6 @@ use crate::{
 use chrono::Utc;
 use request_builder::PaginatedResponse;
 use request_builder::{RetrieveBy, RetrievePaginated};
-use utoipa::{
-    OpenApi,
-    openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
-};
 pub mod comment;
 pub mod like;
 pub mod points;
@@ -68,9 +60,8 @@ pub struct PostResponse {
 
 use crate::database::schemas::post::KamerlinkPost;
 use mongodb::{
-    self, Database,
-    bson::{self, Document, doc, oid::ObjectId},
-    options::{FindOptions, InsertOneOptions},
+    self,
+    bson::{doc, oid::ObjectId},
 };
 
 #[utoipa::path(
@@ -93,7 +84,7 @@ pub async fn create_post(
     Extension(state): Extension<AppState>,
     mut multipart: Multipart,
 ) -> Response {
-    let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
+    let _user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
         Err(_) => return StatusCode::UNAUTHORIZED.into_response(),
     };
@@ -339,7 +330,7 @@ pub async fn update_post(
     )
     .await
     {
-        Ok(k) => return StatusCode::OK.into_response(),
+        Ok(_) => return StatusCode::OK.into_response(),
         Err(_) => {
             return StatusCode::FORBIDDEN.into_response();
         }

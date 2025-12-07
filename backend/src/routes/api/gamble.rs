@@ -1,14 +1,10 @@
-use axum::http::StatusCode;
 use axum::{
     Json,
-    extract::State,
     response::{IntoResponse, Response},
 };
-use axum_extra::extract::cookie::CookieJar;
-use utoipa::openapi::security::{HttpAuthScheme, SecurityScheme};
 
 use serde::{Deserialize, Serialize};
-use utoipa::{OpenApi, ToSchema};
+use utoipa::ToSchema;
 
 use rand;
 use rand::Rng;

@@ -5,12 +5,11 @@ use derive_builder::Builder;
 use mongodb::{
     Database,
     bson::{doc, oid::ObjectId},
-    options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc};
 use substruct::substruct;
-use utoipa::{OpenApi, ToSchema};
+use utoipa::ToSchema;
 use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug)]

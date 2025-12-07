@@ -6,12 +6,9 @@ use mongodb::Database;
 use mongodb::bson::{Document, doc, to_document};
 use serde::{Deserialize, Serialize};
 
-use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
-use std::time::{self, SystemTime, UNIX_EPOCH};
-use tokio::time::{Instant, sleep_until};
-use utoipa::ToSchema;
+use std::time::SystemTime;
 
 const RESET_POINTS_COUNT: i64 = 100;
 
@@ -95,8 +92,8 @@ pub async fn trigger_reset(db: Arc<Database>) {
         .replace_one(doc! {}, next_reset_time_doc)
         .await
     {
-        Ok(k) => (),
-        Err(e) => {
+        Ok(_) => (),
+        Err(_e) => {
             dbg!("could not update the reset counter");
             return ();
         }

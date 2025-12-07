@@ -1,20 +1,10 @@
-use crate::database::schemas::post::{
-    self, Comment, CommentBuilder, CommentDraft, ReplyBuilder, RequestPostTag,
-};
-use crate::database::schemas::post::{PostTag, Reply};
-use crate::database::schemas::user;
-use crate::routes::request_builder::{
-    GenericLike, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder, toggle_like_generic,
-};
+use crate::database::schemas::post::PostTag;
+use crate::database::schemas::post::RequestPostTag;
+use crate::routes::request_builder::RetrieveItemsBuilder;
 
-use crate::routes::request_builder::{
-    PaginatedResponse, RetrieveBy, RetrievePaginated, retrieve_items,
-};
-use crate::{
-    AppState,
-    database::schemas::{post::KamerlinkPost, user::User},
-};
-use axum::extract::{Path, Request};
+use crate::AppState;
+use crate::routes::request_builder::{PaginatedResponse, RetrieveBy, RetrievePaginated};
+use axum::extract::Path;
 use axum::{
     Extension, Json,
     response::{IntoResponse, Response},
@@ -25,18 +15,13 @@ use regex::escape;
 
 use crate::routes::api::post::Search;
 use axum_extra::extract::Query;
-use chrono::Utc;
 use http::StatusCode;
 use mongodb::bson::{Bson, Document, Regex};
 use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
-use mongodb::results::InsertOneResult;
 use mongodb::{Collection, Database};
-use serde;
-use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use std::sync::Arc;
-use utoipa::{IntoParams, ToSchema};
 use validator::Validate;
 
 pub const MAX_TAGS_PER_POST: i64 = 50;
@@ -232,7 +217,7 @@ pub async fn update_tags(
     // Validate each tag before inserting
     for tag in &tags {
         match tag.validate() {
-            Ok(k) => {}
+            Ok(_) => {}
             Err(e) => {
                 return Err(Error::from(mongodb::error::ErrorKind::Custom(Arc::new(e))));
             }

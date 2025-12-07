@@ -179,7 +179,7 @@ See issue #18 and #19
 
 6 hours of work
 
-## 29/11/2025
+## 30/11/2025
 
 5:30 PM - 6:00 PM
 
@@ -225,6 +225,17 @@ Part of the PWS requirement and improved overview of work done.
 2.5 hours of work
 
 
+## 7/12/2025
+
+0:00 AM - 3:21 AM
+
+What is done:
+Code base cleanup to remove compiler warnings, create marketing material (flyers and screen advertisements), further correspondence with school administration
+
+Reason:
+1. This hinders an ability to review errors if they arrive when compiling
+2. Needed to create a user base that uses the site
+3. To place the advertisements in the first place and to get more feedback on the project idea
 
 
 

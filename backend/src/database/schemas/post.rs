@@ -1,14 +1,10 @@
 use crate::database::schemas::user::Role;
-use crate::routes::api::post::tags::MAX_TAGS_PER_POST;
 use crate::{database::ObjectIdSchema, routes::request_builder::CanEdit};
 use derive_builder::Builder;
-use mongodb::{
-    bson::{Document, doc, oid::ObjectId},
-    options::{CreateCollectionOptions, ValidationAction, ValidationLevel},
-};
+use mongodb::bson::{doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};
 use substruct::substruct;
-use utoipa::{ToSchema, openapi::Object};
+use utoipa::ToSchema;
 use validator::Validate;
 #[substruct(Reply, CommentDraft, CommentEditDraft)]
 #[derive(Serialize, Deserialize, Clone, ToSchema, Debug, Builder, Validate)]

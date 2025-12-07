@@ -3,19 +3,17 @@ use crate::{
     AppState,
     database::schemas::{post::KamerlinkPost, user::User},
 };
-use anyhow::anyhow;
 use axum::{
     Extension, Json,
     response::{IntoResponse, Response},
 };
 use axum_extra::extract::Query;
 use http::StatusCode;
-use mongodb::bson::{self, Bson, Document, doc, oid::ObjectId};
+use mongodb::bson::{Bson, Document, doc, oid::ObjectId};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::{error::Error, str::FromStr};
-use tower_http::limit;
+use std::str::FromStr;
 use utoipa::ToSchema;
 
 pub const MAX_POINTS_ALLOWED: usize = 100;
@@ -158,7 +156,7 @@ pub async fn spend_points(
                         )
                         .await
                     {
-                        Ok(k) => (),
+                        Ok(_) => (),
                         Err(_) => {
                             return Err(mongodb::error::Error::from(std::io::Error::new(
                                 std::io::ErrorKind::Other,

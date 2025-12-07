@@ -1,4 +1,4 @@
-use crate::{AppState, database::schemas::user::UserSub, get_jwks};
+use crate::{AppState, database::schemas::user::UserSub};
 use anyhow::Result;
 use dotenv::dotenv;
 

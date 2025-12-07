@@ -1,16 +1,13 @@
 use crate::{
     AppState,
-    database::schemas::{post::KamerlinkPost, user::User},
     routes::request_builder::toggle_like_generic,
 };
 use axum::{
     Extension, Json,
     response::{IntoResponse, Response},
 };
-use http::StatusCode;
-use mongodb::bson::{doc, oid::ObjectId};
+use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, Clone, ToSchema)]

@@ -1,18 +1,14 @@
 use crate::database::schemas::post::{Comment, CommentBuilder, CommentDraft, ReplyBuilder};
 use crate::database::schemas::post::{CommentEditDraft, Reply};
-use crate::database::schemas::user;
 use crate::routes::request_builder::{
-    self, GenericLike, GenericUpdateItem, LikeStatus, ResponseGenericLike, RetrieveItemsBuilder,
-    delete_item, toggle_like_generic, update_item,
+    self, GenericLike, GenericUpdateItem, LikeStatus, ResponseGenericLike, delete_item,
+    toggle_like_generic, update_item,
 };
-use crate::routes::request_builder::{
-    PaginatedResponse, RetrieveBy, RetrievePaginated, retrieve_items,
-};
+use crate::routes::request_builder::{PaginatedResponse, RetrieveBy, RetrievePaginated};
 use crate::{
     AppState,
     database::schemas::{post::KamerlinkPost, user::User},
 };
-use axum::extract::Path;
 use axum::{
     Extension, Json,
     response::{IntoResponse, Response},
@@ -21,9 +17,7 @@ use axum::{
 use axum_extra::extract::Query;
 use chrono::Utc;
 use http::StatusCode;
-use mongodb::bson::Document;
 use mongodb::bson::{doc, oid::ObjectId};
-use mongodb::results::InsertOneResult;
 use serde;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -85,7 +79,7 @@ pub async fn create_comment(
             return StatusCode::INTERNAL_SERVER_ERROR.into_response();
         }
     };
-    let id = match comment_id.inserted_id.as_object_id() {
+    let _id = match comment_id.inserted_id.as_object_id() {
         Some(k) => k,
         None => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };

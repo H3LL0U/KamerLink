@@ -1,16 +1,8 @@
-use anyhow::{Context, Result};
 use axum::Extension;
-use axum::extract::State;
-use axum::routing::{Route, get};
-use axum::{Router, routing::post};
-use backend::routes::post::comment::create_comment;
-use backend::routes::post::like::like_post;
-use backend::routes::post::points::check_points;
+use axum::Router;
 use backend::{AppState, get_jwks};
 use dotenv::dotenv;
 use http::HeaderValue;
-use jsonwebtoken::jwk::JwkSet;
-use mongodb::options::ClientOptions;
 use std::env;
 use std::fs;
 use std::net::SocketAddr;
@@ -25,22 +17,9 @@ pub mod routes;
 pub mod routes_builder;
 pub mod test_utils;
 pub mod utils;
-use crate::routes::api::post::create_post;
-use crate::routes::post::comment::retrieve_comments;
-use crate::routes::post::points::spend_points;
-use crate::routes::post::retrieve_posts;
-use crate::routes::user::retrieve_users;
 use crate::routes_builder::{build_private_routes, build_public_routes};
-use axum::{
-    extract::Request,
-    http::StatusCode,
-    middleware::Next,
-    response::{IntoResponse, Response},
-};
-use middleware::token_validation_middleware;
-use mongodb::{self, Client, Database};
+use mongodb::{self, Client};
 use routes::ApiDoc;
-use routes::*;
 use tower_http::limit::RequestBodyLimitLayer;
 use utils::reset;
 #[tokio::main]

@@ -1,9 +1,7 @@
 use anyhow::{Context, Result};
 use jsonwebtoken::jwk::JwkSet;
-use tokio::sync::Mutex;
 pub mod utils;
 
-use std::collections::HashMap;
 use std::env;
 use std::sync::Arc;
 

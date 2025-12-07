@@ -3,8 +3,7 @@ use std::str::FromStr;
 use crate::database::schemas::post::KamerlinkPost;
 use crate::database::schemas::user::{BanStatus, BanStatusDraft, CanBan};
 use crate::routes::post::Search;
-use crate::routes::request_builder::{RetrieveBy, RetrievePaginated, retrieve_items};
-use crate::test_utils::setup_test_state;
+use crate::routes::request_builder::{RetrieveBy, RetrievePaginated};
 use crate::{
     AppState,
     database::schemas::user::{User, UserInfo},
@@ -17,8 +16,7 @@ use axum::{Extension, response::Response};
 use axum_extra::extract::Query;
 use http::StatusCode;
 use mongodb::bson::oid::ObjectId;
-use mongodb::bson::{self, doc, to_document};
-use mongodb::results::UpdateResult;
+use mongodb::bson::{doc, to_document};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
@@ -168,7 +166,7 @@ pub async fn ban_user(
         Ok(k) => k,
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
-    let mut ban_user = match User::get_user_by_id(&state.db, &ban_user_id.as_str()).await {
+    let ban_user = match User::get_user_by_id(&state.db, &ban_user_id.as_str()).await {
         Ok(k) => k,
         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
     };

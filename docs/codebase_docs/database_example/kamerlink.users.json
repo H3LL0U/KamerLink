@@ -1,0 +1,25 @@
+[
+  {
+    "_id": {
+      "$oid": "68ce9f7c44b4f576f9cd1fe9"
+    },
+    "email": "testmail@gmail.com",
+    "nickname": "DisplayName",
+    "role": "Student",
+    "is_validated": true,
+    "user_subs": [],
+    "likes": [],
+    "points_given_to": {},
+    "seen": [],
+    "points": {
+      "$numberLong": "100"
+    },
+    "comment_likes": [],
+    "received_likes": {
+      "$numberLong": "0"
+    },
+    "received_points": {
+      "$numberLong": "0"
+    }
+  }
+]

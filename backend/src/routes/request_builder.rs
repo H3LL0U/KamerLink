@@ -3,10 +3,7 @@
 ///
 use crate::{
     AppState,
-    database::schemas::{
-        post::KamerlinkPost,
-        user::{self, User},
-    },
+    database::schemas::user::User,
 };
 
 use axum::{
@@ -19,11 +16,11 @@ use derive_builder::Builder;
 use futures::TryStreamExt;
 use mongodb::{
     Collection,
-    bson::{Bson, Document, doc, oid::ObjectId, to_document},
-    options::{FindOneAndUpdateOptions, FindOptions, ReturnDocument, UpdateModifications},
+    bson::{Bson, Document, doc, oid::ObjectId},
+    options::{FindOneAndUpdateOptions, FindOptions, ReturnDocument},
 };
 use serde::{Deserialize, Deserializer, de::DeserializeOwned};
-use serde::{Serialize, Serializer};
+use serde::Serialize;
 use std::{fmt::Debug, str::FromStr};
 use utoipa::ToSchema;
 use validator::Validate;

@@ -1,14 +1,13 @@
 use std::net::IpAddr;
 
-use axum::routing::{delete, get, patch, post};
+use axum::routing::{get, post};
 use axum::{Router, middleware};
 
 use tower_governor::GovernorError;
-use tower_governor::governor::GovernorConfig;
 use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 
 use crate::AppState;
-use crate::middleware::{Strict, strict_except_get_middleware, token_validation_middleware};
+use crate::middleware::strict_except_get_middleware;
 use crate::routes::api::post::create_post;
 use crate::routes::api::post::tags::retrieve_tags;
 use crate::routes::gamble;

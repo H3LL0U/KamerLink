@@ -3,7 +3,7 @@ use anyhow::{Context, Result, anyhow};
 use axum::{
     extract::{Request, State},
     middleware::Next,
-    response::{self, IntoResponse, Response},
+    response::{IntoResponse, Response},
 };
 use http::{HeaderValue, StatusCode};
 use jsonwebtoken::{self, DecodingKey, TokenData, Validation, decode, decode_header, jwk::JwkSet};
@@ -208,7 +208,7 @@ pub trait TokenBehavior: 'static + Send + Sync {
     type Output: 'static + Send + Sync + Clone;
 
     fn wrap_sub(sub: &str) -> Self::Output;
-    fn ensure_extension_present(req: &mut Request, default_value: Option<String>) {}
+    fn ensure_extension_present(_req: &mut Request, _default_value: Option<String>) {}
     fn handle_error(is_banned: bool, sub_missing: bool) -> Option<Response>;
 }
 pub struct Regular;
@@ -294,7 +294,7 @@ pub async fn token_validation_middleware<T: TokenBehavior>(
 
 pub async fn strict_except_get_middleware(
     State(state): State<AppState>,
-    mut req: Request,
+    req: Request,
     next: Next,
 ) -> Response {
     if req.method() == http::Method::GET {
