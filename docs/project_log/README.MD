@@ -9,6 +9,7 @@ Contains the following for different dates
 - The time when the work was being done
 - How much time was spent
 - What was done in that period of time
+- The reasoning behind the work
 
 ## DECISIONS.MD
 
@@ -21,3 +22,7 @@ That includes subjects such as:
 - The main project idea
 - Problems that occurred during development
 - Sources
+
+## PROJECT.MD
+
+Describes the project as a whole and answers the questions that were raised during development.

@@ -15,6 +15,7 @@ import puntenVoorbeeld from "../assets/vragen/punten_uitgeven_voorbeeld.png";
 import { useAuth0 } from "@auth0/auth0-react";
 import signUpVoorbeeld from "../assets/vragen/sign_up_example.png";
 const Vragen = () => {
+  const contactEmail = "3007651@leerling.o2g2.nl"
   const scheme = defaultScheme;
   const { isAuthenticated, } = useAuth0();
   return (
@@ -85,6 +86,68 @@ const Vragen = () => {
         <h2 id="dienst" style={{ margin: "50px auto" }}>
           Dienst
         </h2>
+
+        <Accordion
+          title={
+            <p style={{ margin: "0px" }}>
+              Algemene voorwaarden
+            </p>
+          }
+        >
+          <Card style={{ textAlign: "left" }}>
+            <h4>Algemene voorwaarden voor het gebruik van de website</h4>
+            <br />
+            <p>
+              Als een gebruiker van de website, gaat u akkoord met de volgende gedragsvoorwaarden:
+            </p>
+
+            <ol>
+              <li>
+                Een gebruiker moet geen haatvolle, illegale berichten creëren tegen individu of individuen op de website.
+                Dit heeft betrekking tot comments/posts en andere onderdelen van de website waar tekst geschreven of andere data geplaatst kan worden.
+              </li>
+              <li>
+                Een gebruiker is zelf verantwoordelijk voor het bewaken van zijn inloggegevens.
+              </li>
+              <li>
+                Een gebruiker is ermee eens om geen misbruik te maken van de website.
+                Voorbeelden van misbruik zijn: spam, cyberaanval en impersonatie.
+              </li>
+              <li>
+                Wanneer een gebruiker een kwetsbaarheid vindt, dient hij/zij deze te melden aan de websitebeheerders en de procedures en richtlijnen voor responsible disclosure te volgen.
+                U kunt kwetsbaarheden melden via de volgende e-mail: <a href={"mailto:" + contactEmail}>{contactEmail}</a>
+              </li>
+              <li>
+                Een gebruiker geeft toestemming voor de verwerking van de gegevens (met betrekking tot e-mail en naam).
+              </li>
+            </ol>
+
+            <p>
+              Als een gebruiker deze voorwaarden overtreedt, zijn er meerdere mogelijke acties die kunnen worden genomen:
+            </p>
+
+            <ol>
+              <li>
+                Verbanning van een account tot een specifiek tijdstip gebaseerd op de ernst van de overtreding.
+              </li>
+              <li>
+                Verwijdering van informatie van het account van een gebruiker die een overtreding bevat.
+              </li>
+              <li>
+                Terminatie van het account van een gebruiker.
+              </li>
+              <li>
+                Andere acties die discretionair door school worden genomen.
+              </li>
+            </ol>
+
+            <p>
+              De website biedt geen garanties voor het volledig en continu opslaan van gebruikersgegevens
+              (zoals oude berichten of posts).
+            </p>
+          </Card>
+        </Accordion>
+
 
         <Accordion
           title={
@@ -190,7 +253,7 @@ const Vragen = () => {
               <li>Je bent nu ingelogd en mag Kamerlink gebruiken</li>
               <li>
                 Als het niet lukt om in te loggen, stuur een e-mail{" "}
-                <a href="mailto:3007651@leerling.o2g2.nl">hier</a>
+                <a href={"mailto:" + contactEmail}>hier</a>
               </li>
             </ol>
           </Card>

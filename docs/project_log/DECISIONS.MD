@@ -22,6 +22,33 @@ Because the user base was clear it was my plan to advertise the website on schoo
 
 However, some ideas could not be realized before the event. Ideas 1 and 2 relied on cooperation with the school which unfortunately could not be done because of reasonable concerns ( issue #18). By the time I implemented the new requirements The deadline was already quite close. If I communicated my idea early on I would have received the requirements earlier and subsequently work on them earlier.
 
+
+## Planning and Methodology 
+
+For this project I used a mix of ideas from multiple software development methodologies. [^6]
+
+### Ideas from kanban methodology
+I took the idea of the kanban board and used it to implement the features.
+
+![Description](/docs/assets/img/kanban_bord.png)
+<sub>Example of a kanban board</sub>
+
+I defined no more than 5 issues at once (WIP-limit) and worked on them one by one to maintain focus on prioritized features.
+
+### Sprint review (Agile Scrum)
+
+On each meeting with the PWS mentor I got feedback on the added features and the progress as a whole. 
+My goal before every meeting was to complete a selected set of backlog items so that I could gather feedback and ideas for the next iteration.
+In practice this created a cycle of 1–2-week "sprints" during which I implemented several features before the next review session.
+( examples of issues that I created based on feedback were:  #18, #16 and #14. Though, issue #18 wasn't created by a planned meeting )
+
+Unfortunately, I could not plan far ahead because of the changing requirements and new feedback. So the planning was relatively short term based on the sprints. (Add as many useful features before the deadline). Because of that I also find that long term planning was not applicable for this project. 
+
+
+### User stories
+
+Most of the issues were formulated as user stories, which provided a clear description of the desired functionality and a concrete definition of when an issue could be considered complete and ready to be marked as Done.
+
 ## Architecture
 
 ### First iteration
@@ -30,7 +57,10 @@ The first iteration of the architecture looked as demonstrated bellow
 
 ![Description](/docs/assets/img/architecture1.png)
 
-#### Four main components (1st iteration)
+#### Five main components (1st iteration)
+
+- DNS
+Used to create a easily identifiable domain for the service (kamer-link.nl). The domain was bought on vimexx.nl and uses the cloudflare's nameservers. (The transition to cloudflare nameservers was required in order to setup the cloudflare tunnel. See third iteration)
 
 - Authentication
 Uses Auth0 for authentication. I chose to use it because of it's easy integration with typescript and because it's free tier allows 25,000 monthly active users which more than enough for the scale. [^1]
@@ -107,3 +137,6 @@ Trustworthy official site of mongoDB
 Trustworthy official site of cloudflare
 [^5]: https://www.oliant.io/articles/python-vs-rust-differences
 Trustworthy as it lists general knowledge
+[^6]:  https://www.vanharen.store/agile-scrum-handboek-3de-druk  
+Agile Scrum Handboek – 3de druk Boek van Nader K. Rad
+Trustworthy: Was part of my software engineering course by NHA 

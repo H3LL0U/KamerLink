@@ -237,7 +237,18 @@ Reason:
 2. Needed to create a user base that uses the site
 3. To place the advertisements in the first place and to get more feedback on the project idea
 
+3 hours of work
 
+5:25 PM - 11:04PM
+
+What is done:
+Add terms of service to the FAQ page, Expand PROJECT.MD
+
+Reason: 
+1. One of the requirements of issue #18 (and issue #20). 
+2. It is a (PWS) requirement that I answer the main question and sub-questions of the project.
+
+6 hours of work
 
 
 
