@@ -10,6 +10,8 @@ import { defaultScheme } from '../../main';
 import { addReplyToComment } from '../../api/post';
 import { useScrollToBottom } from '../../hooks/useScrollToBottom';
 import LoginButton from '../../components/generic_components/Buttons/LoginButton/LoginButton';
+import { c } from 'openapi-typescript';
+import NotFound from '../REPLACEMENTS/not_found';
 type Post = Posts["items"][0];
 
 function ViewPost() {
@@ -25,16 +27,35 @@ function ViewPost() {
     const [page, setPage] = useState(0);
     const [allLoaded, setAllLoaded] = useState(false);
     const allLoadedRef = useRef(allLoaded);
+    const [exists, setExists] = useState(true)
     useEffect(() => { allLoadedRef.current = allLoaded; }, [allLoaded]);
 
     // Fetch the post
     useEffect(() => {
-        if (!post_id) return;
-        const fetchPost = async () => {
-            const posts = await retrievePosts({ type: post_id, page: 0 });
-            setPost(posts.data.items[0]);
+        if (!post_id) {
+            setExists(false)
+            return
         };
+
+        const fetchPost = async () => {
+            try {
+                const posts = await retrievePosts({ type: post_id, page: 0 });
+                const post = posts.data.items[0]
+                if (!post) {
+                    throw ("No post found")
+                }
+                setPost(post)
+
+            }
+            catch {
+                setExists(false)
+            }
+        };
+
+
         fetchPost();
+
+
     }, [post_id]);
 
     // Fetch comments
@@ -77,7 +98,7 @@ function ViewPost() {
         const res = await createComment({ message: msg, post_id });
         setComments(prev => [res.data, ...prev]);
     };
-
+    if (!exists) return <NotFound />
     return (
         <>
             {AuthReplacement ? (

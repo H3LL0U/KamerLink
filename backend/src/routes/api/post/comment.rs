@@ -17,6 +17,7 @@ use axum::{
 use axum_extra::extract::Query;
 use chrono::Utc;
 use http::StatusCode;
+use mongodb::bson::Document;
 use mongodb::bson::{doc, oid::ObjectId};
 use serde;
 use serde::{Deserialize, Serialize};
@@ -42,6 +43,18 @@ pub async fn create_comment(
         Ok(k) => k,
         Err(_) => return StatusCode::BAD_REQUEST.into_response(),
     };
+
+    let post_collection = state.db.collection::<Document>("posts");
+
+    //check if the post exists before placing the comment
+    let comment_post = match post_collection.find_one(doc! {"_id" : post_id}).await {
+        Ok(k) => k,
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if comment_post.is_none() {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
 
     let collection = state.db.collection::<Comment>("comments");
     let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {

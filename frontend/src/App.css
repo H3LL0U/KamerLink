@@ -107,7 +107,6 @@ h1 {
   line-height: 1.2;
   margin: 0;
   font-size: clamp(3rem, 6vw + 1.5rem, 6rem);
-
 }
 
 h2 {

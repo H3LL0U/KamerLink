@@ -11,6 +11,7 @@ import Vragen from './pages/vragen';
 import ViewPost from './pages/posts/view';
 import { defaultScheme } from './main';
 import Leaderboard from './pages/leaderboard';
+import NotFound from './pages/REPLACEMENTS/not_found';
 
 
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/vragen" element={<Vragen />} />
           <Route path="/redirect" element={<Redirect />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </BrowserRouter>

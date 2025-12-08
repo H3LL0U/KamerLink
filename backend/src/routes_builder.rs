@@ -54,7 +54,7 @@ pub fn build_private_routes(state: &AppState) -> Router {
     //Posts that need to have rate limiting set up
 
     let secure_governor_conf = GovernorConfigBuilder::default()
-        .per_second(10)
+        .per_second(30)
         .burst_size(3)
         .key_extractor(AuthHeaderKeyExtractor)
         .finish()

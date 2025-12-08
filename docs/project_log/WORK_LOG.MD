@@ -11,14 +11,14 @@
 
 # Direct work on the project
 
-## < 10/6/2025
+## < 6/10/2025
 
 More than 25 hours  of work
 
 - Research into the project idea
 - Build the "Walking Skeleton"
 
-## 10/6/2025
+## 6/10/2025
 6:44 PM - 10:12 PM 
 
 3 hours of work
@@ -31,7 +31,7 @@ To ensure that users could not abuse the API-endpoints by spamming them.
 Also makes sure that some requests sent by users don't cause issues later on. 
 
 
-## 10/7/2025
+## 7/10/2025
 8:22 PM - 11:33 PM
 
 3 hours of work
@@ -42,7 +42,7 @@ Work on the Post tag system
 Reason: 
 See issue #12
 
-## 10/8/2025
+## 8/10/2025
 7:00 - 9:34 PM
 and 
 10:00 PM - ~00:00
@@ -55,7 +55,7 @@ Fully implement Post tag system
 Reason:
 See issue #12
 
-## 10/12/2025
+## 12/10/2025
 4:11 PM - 6:12PM
 
 What is done:
@@ -74,7 +74,7 @@ Ensures improved user experience
 
 3 hours of work
 
-## 10/13/2025
+## 13/10/2025
 8:30 – 10:30
 
 What is done:
@@ -85,7 +85,7 @@ If backend is hosted on school grounds it can be maintained more easily and ther
 
 2 hours of work
 
-## 11/5/2025
+## 5/11/2025
 7:00PM - 10:16PM
 
 What is done:
@@ -96,7 +96,7 @@ It is one of the requirements for the "PWS". It also gives an overview on what i
 
 3 hours of work
 
-## 11/8/2025
+## 8/11/2025
 
 6:20PM - 8:00PM , 9:00 PM - 12PM
 
@@ -108,7 +108,7 @@ See issue #15
 
 5 hours of work
 
-## 11/9/2025
+## 9/11/2025
 
 5:40PM - 8:08PM
 
@@ -142,7 +142,7 @@ Improvements to home page and FAQ page create better user experience.
 
 1 hour of work
 
-## 11/11/2025
+## 12/11/2025
 
 10:57PM - 11:47PM
 
@@ -249,6 +249,18 @@ Reason:
 2. It is a (PWS) requirement that I answer the main question and sub-questions of the project.
 
 6 hours of work
+
+## 8/12/2025
+
+9:27 - ... 11:02
+
+What is done:
+
+Minor bug fixes (issue #21, issue #22, issue #23 )
+
+Reason:
+
+Makes sure that there is less exploitation on the site and improves user experience.
 
 
 

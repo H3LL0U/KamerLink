@@ -50,7 +50,7 @@ pub async fn retrieve_users(
             RetrieveBy::MostReceivedLikes,
             RetrieveBy::MostReceivedPoints,
         ])
-        .base_query(doc! {})
+        .base_query(doc! {"is_validated": true}) // only fetch the users that have their e-mail verified
         .size_limit(10)
         .build()
         .unwrap()

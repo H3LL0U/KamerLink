@@ -1,8 +1,8 @@
 # Project definition
 
-The goal of the project is to create a valuable social media website/platform which can be used by students and teachers of Kamerlingh Onnes to share ideas/news and other school related content. 
-The main question that needs to be answered is:
+The goal of the project is to create a valuable social media website/platform which can be used by students and teachers of Kamerlingh Onnes to share ideas/news and other school related content without introducing high operational costs.
 
+The main question that needs to be answered is:
 **What is needed to create a social media platform?**
 
 Sub-questions that arose during the development
@@ -11,7 +11,7 @@ Sub-questions that arose during the development
 
 and
 
-**How does the Authentication work on a site**
+**How does the Authentication work on a site?**
 
 
 # Answering the sub-questions
@@ -32,7 +32,7 @@ Initially in this project it was configured in my router settings:
 ![Description](/docs/assets/img/example_kpn_portforwarding.png)
 
 But it was later changed to a different method.
-Because of how direct port forwarding is because it brings it has a lot of disadvantages this method would probably not allowed to be used on a restricted network. ( for more information see Architecture in DECISIONS.MD).
+Because of how direct port forwarding is, it brings a lot of disadvantages. This method would probably not allowed to be used on a restricted network. ( for more information see Architecture in DECISIONS.MD).
 
 
 ### Reverse proxy
@@ -48,9 +48,10 @@ Unfortunately, to implement a reverse proxy the access to port forwarding is sti
 
 ### Access through a remote access VPN
 
-A remote access VPN server works by allowing user to connect to it and essentially making the user appear as if he is in the same private network. When The user is connected to a VPN he can thus access resources that are only available on that private network. Most of the time the connection between the user and the VPN are also encrypted.
+A remote access VPN server works by allowing user to connect to it and essentially making the user appear as if he is in the same private network (because the user now possesses the IP-address of the remote VPN server). When The user is connected to a VPN he can thus access resources that are only available on that private network. Most of the time the connection between the user and the VPN is also encrypted.
 
-![Description](/docs/assets/img/remote_access_vpn.png)
+![Description](/docs/assets/img/remote_access_vpn.png) 
+
 <sub>Example of where a user is accessing a private network by connecting to a VPN server [^5]</sub> 
 
 This is not viable for the following reasons:
@@ -60,7 +61,7 @@ This is not viable for the following reasons:
 
 ### Tunneling technologies (cloudflare tunnel)
 
-A tunnel works by first establishing a connection between the server on which the site is hosted (host machine) and the cloudflare Edge server with an outbound connection (most likely a websocket using HTTPS protocol which is not blocked on most networks). When a user sends a request to the cloudflare Edge server it sends the request to the host server through a "tunnel" that was established before. The "cloudflared" daemon (that was used to establish the connection in the first place) then forwards the user requests to the local endpoint on the host machine. The response from the host-machine then gets sent back through the tunnel and back to the user.
+A tunnel works by first establishing a connection between the server on which the site is hosted (host machine) and the cloudflare Edge server with an outbound connection (a websocket using HTTPS protocol which is not blocked on networks that have access to the internet). When a user sends a request to the cloudflare Edge server it sends the request to the host server through a "tunnel" that was established before. The "cloudflared" daemon (that was used to establish the connection in the first place) then forwards the user requests to the local endpoint on the host machine. The response from the host-machine then gets sent back through the tunnel and back to the user.
 
 ![Description](/docs/assets/img/cloudflare_tunnel.webp)
 <sub>Diagram showing the workings of a cloudflare tunnel [^6]</sub>
@@ -158,7 +159,7 @@ At the end I chose to outsource the authentication to Auth0 (See architecture fi
 Authentication on a site can be implemented using numerous ways. Most of them fall in a category of Server stored and stateless. Each of these approaches has its advantages and disadvantages. Server stored sessions are a lot easier to implement, but requires extra resources compared to token-based approach. There is also a question of whether authentication should be outsourced to an authentication provider. In summary, choosing the best method depends on your project needs and scale.
 
 # Answering the main question
-
+... (TODO:)
 
 
 
@@ -174,7 +175,7 @@ The other feature that could have been added is a caching layer between the data
 <sub>Example of architecture where a caching layer is applied</sub> [^2]
 
 ## Communication
-The biggest improvement would have been an early and extensive communication with the school administration . What I wanted to do after most of the core functionality was implemented is to advertise the project on school grounds (See marketing field in DECISIONS.MD). However, because I didn't communicate with the school administration early I couldn't advertise the product before the "Meesterwerk festival".
+The biggest improvement would have been an early and extensive communication with the school administration. What I wanted to do after most of the core functionality was implemented is to advertise the project on school grounds as early as possible (See marketing field in DECISIONS.MD). However, because I didn't communicate with the school administration early enough I couldn't advertise the product before the "Meesterwerk festival".
 
 ## Lack of automated testing
 Each endpoint was tested manually instead of creating unit tests or integration tests for each endpoint. This is not optimal because it might lead to unexpected bugs in the future and will make it harder to maintain. Adding these tests would have been a big improvement to the codebase.

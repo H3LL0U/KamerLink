@@ -85,24 +85,63 @@ function PostCard({ _post, scheme = defaultScheme, userInfo = null, setUserInfo 
     if (full_view) window.location.href = "/";
   };
 
+  // useEffect(() => {
+  //   const fetchAuthor = async () => {
+  //     if (_post.user_id && (!authorInfo || authorInfo._id.$oid !== _post.user_id)) {
+  //       const res = await getUsers({ type: _post.user_id, page: 0 });
+  //       if (res.data.items?.length) setAuthorInfo(res.data.items[0]);
+
+  //       setCanEditOrDelete(userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id)
+  //       alert("set to " + (userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id))
+  //     }
+  //   };
+  //   fetchAuthor();
+
+  //   if (_post.tags && _post._id) {
+  //     const fetchPostTags = async () => {
+  //       const res = await retrievePostTags({ post_id: _post._id.$oid, page: 0, type: "MostUses" });
+  //       if (res.data.items?.length) setPostTags(res.data.items);
+  //     };
+  //     fetchPostTags();
+  //   }
+  // }, [_post, authorInfo, userInfo]);
+
   useEffect(() => {
     const fetchAuthor = async () => {
-      if (_post.user_id && (!authorInfo || authorInfo._id.$oid !== _post.user_id)) {
+      if (_post.user_id) {
         const res = await getUsers({ type: _post.user_id, page: 0 });
         if (res.data.items?.length) setAuthorInfo(res.data.items[0]);
-        setCanEditOrDelete(userInfo?.role === "Admin" || userInfo?._id.$oid === curPost.user_id)
       }
     };
-    fetchAuthor();
 
-    if (_post.tags && _post._id) {
-      const fetchPostTags = async () => {
-        const res = await retrievePostTags({ post_id: _post._id.$oid, page: 0, type: "MostUses" });
-        if (res.data.items?.length) setPostTags(res.data.items);
-      };
-      fetchPostTags();
-    }
-  }, [_post, authorInfo]);
+    fetchAuthor();
+  }, [_post.user_id]);
+
+  useEffect(() => {
+    if (!userInfo || !_post.user_id) return;
+
+    const canEdit =
+      userInfo.role === "Admin" ||
+      userInfo._id.$oid === _post.user_id;
+
+    setCanEditOrDelete(canEdit);
+  }, [userInfo, _post.user_id]);
+
+  useEffect(() => {
+    if (!_post._id) return;
+
+    const fetchTags = async () => {
+      const res = await retrievePostTags({
+        post_id: _post._id.$oid,
+        page: 0,
+        type: "MostUses",
+      });
+      if (res.data.items?.length) setPostTags(res.data.items);
+    };
+
+    fetchTags();
+  }, [_post._id]);
+
 
   if (isDeleted) return null;
   if (isBanned(authorInfo)) return null;

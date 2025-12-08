@@ -61,7 +61,7 @@ pub struct PostResponse {
 use crate::database::schemas::post::KamerlinkPost;
 use mongodb::{
     self,
-    bson::{doc, oid::ObjectId},
+    bson::{Document, doc, oid::ObjectId},
 };
 
 #[utoipa::path(
@@ -84,10 +84,6 @@ pub async fn create_post(
     Extension(state): Extension<AppState>,
     mut multipart: Multipart,
 ) -> Response {
-    let _user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
-        Ok(k) => k,
-        Err(_) => return StatusCode::UNAUTHORIZED.into_response(),
-    };
     let mut title = String::new();
     let mut message = String::new();
     let mut images: Vec<Vec<u8>> = vec![];
@@ -116,6 +112,18 @@ pub async fn create_post(
             _ => {}
         }
     }
+    // Not very efficient
+    let post_draft = PostDraft {
+        tags: Some(tags.clone()),
+        title: title.clone(),
+        message: message.clone(),
+        images: images.clone(),
+    };
+
+    match post_draft.validate() {
+        Ok(k) => k,
+        Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+    };
 
     let user_id = match User::get_user_id_by_sub(&state.db, sub.as_str()).await {
         Ok(k) => k,
@@ -358,6 +366,18 @@ pub async fn delete_post(
         Err(_) => {
             return StatusCode::FORBIDDEN.into_response();
         }
+    };
+
+    // Deleting the comments that were under the post as well
+
+    let comment_collection = state.db.collection::<Document>("comments");
+
+    let _ = match comment_collection
+        .delete_many(doc! {"post_id": &input.item_id})
+        .await
+    {
+        Ok(_) => {}
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
     match request_builder::delete_item::<KamerlinkPost>(

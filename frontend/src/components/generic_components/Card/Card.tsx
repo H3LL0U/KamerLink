@@ -19,6 +19,7 @@ const Card: React.FC<CardProps> = ({ title = "", children, style = {}, onClick =
     alignContent: "center",
     flexDirection: "column",
     margin: "5%",
+    overflow: "hidden",
     cursor: onClick ? "pointer" : "default", // pointer only if clickable
     ...style,
   };
