@@ -7,10 +7,8 @@ import Header from '../../components/page_components/Header/Header';
 import CommentComponent from '../../components/page_components/CommentComponent/CommentComponent';
 import CommentSubmit from '../../components/page_components/CommentComponent/CommentSubmit';
 import { defaultScheme } from '../../main';
-import { addReplyToComment } from '../../api/post';
 import { useScrollToBottom } from '../../hooks/useScrollToBottom';
 import LoginButton from '../../components/generic_components/Buttons/LoginButton/LoginButton';
-import { c } from 'openapi-typescript';
 import NotFound from '../REPLACEMENTS/not_found';
 type Post = Posts["items"][0];
 
