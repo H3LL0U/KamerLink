@@ -3,22 +3,22 @@
 The goal of the project is to create a valuable social media website/platform which can be used by students and teachers of Kamerlingh Onnes to share ideas/news and other school related content without introducing high operational costs.
 
 The main question that needs to be answered is:
-**What is needed to create a social media platform?**
+**What technical and architectural components are required to design and maintain a modern social media platform?**
 
 Sub-questions that arose during the development
 
-**How can a website be made accessible from the internet while hosted on a private or restricted network?** 
+**What mechanisms enable externally accessible web services to operate from within private or restricted networks?** 
 
 and
 
-**How does the Authentication work on a site?**
+**What authentication models are used to securely verify user identities in web applications?**
 
 
 # Answering the sub-questions
 
-## How can a website be made accessible from the internet while hosted on a private and restricted network?
+## What mechanisms enable externally accessible web services to operate from within private or restricted networks?
 
-There are several ways to make a website accessible to the users that are connected to the internet. 
+There are several mechanisms that make a website accessible to the users that are connected to the internet. But not all of them are viable on a restrictive network.
 Here I will describe 4 of them: Port forwarding, reverse proxies, remote access VPNs, and Tunneling technologies.
 
 ### Port forwarding/mapping
@@ -69,13 +69,13 @@ A tunnel works by first establishing a connection between the server on which th
 Because there is no need to configure the network (gateway) in any way and the only requirement is that the network has an outbound connection to the internet this is a perfect way to make a site accessible on the internet on a restrictive network.
 
 ### Conclusion
-Because other methods that I have reviewed require some sort of network configuration which is not allowed on a restrictive network, it seems that a tunnel is the only viable option.
+Methods such as port forwarding reverse proxy and VPN allow direct access to the web service hosted on the private network, but because they all require some sort of network configuration they are not viable to be used in a restrictive network. The best mechanism to use in the case of a restrictive private network looks to be a tunnel.
 
-## How does authentication work on a site?
+## What authentication models are used to securely verify user identities in web applications?
 
-There are numerous ways on how a site can implement authentication. Here I will review:
+There are numerous ways on how a site can implement authentication. Here I will review two models that are the most common:
 1. Session based Authentication (Server stored)
-3. Token based authentication (Stateless JWT)
+2. Token based authentication (Stateless JWT)
 
 
 ### Session based Authentication
@@ -159,16 +159,55 @@ At the end I chose to outsource the authentication to Auth0 (See architecture fi
 Authentication on a site can be implemented using numerous ways. Most of them fall in a category of Server stored and stateless. Each of these approaches has its advantages and disadvantages. Server stored sessions are a lot easier to implement, but requires extra resources compared to token-based approach. There is also a question of whether authentication should be outsourced to an authentication provider. In summary, choosing the best method depends on your project needs and scale.
 
 # Answering the main question
-... (TODO:)
+
+## What technical and architectural components are required to design and maintain a modern social media platform?
+
+### Architectural components [^11]
+
+A typical architecture of a web service (which is applicable for a social media platform) can be divided into several components:
+
+#### Presentation layer (frontend)
+This layer makes the service accessible to the user (for example by using a browser). This layer is what user sees directly when accessing the service. UI elements and other components are accessible to the user through this layer. This layer is also used to make the user communicate with the business layer by for example making a user send a request when certain action is done by them.
+
+##### Technical implementation
+This layer can be implemented very differently based on the requirements of the project. For example it can either use server-side rendering (SSR) or client-side rendering (CSR). When SSR is used each page is being fetched separately only when the user needs it and the content is being generated on the server first before being sent to the user. When CSR is used the initial bundle is loaded that is then used to build the pages that the user visits. So the server does not need to (in other words the page is being built by the client). CSR can be practical if the site's users switch between pages a lot because the load time for pages is practically instant after the first fetch. 
+
+#### Business layer (backend)
+This layer's purpose is to accept and process the request sent by the user. For example: a valid user sends a request to the business layer to retrieve some user information. This request gets processed by querying the data persistence for the user data. After the data from the data persistence layer is retrieved it gets sent to the user in some format as a response. And so the user can communicate with the service.
+
+##### Technical implementation
+
+There are a lot of different ways that a business layer can be implemented. For example it can be a singular server which receives all of the requests. However, this might not be practical if a service is having a lot of users (a singular server might not be enough to handle the load). Another way to implement this layer is by using a load balancer which spreads the requests evenly across the servers. Business layer can also consist out of microservices. Microservices are mini-servers that are responsible for executing a specific task. The API then makes sure that each microservice only receives requests for their task. This layer can also be outsourced (serverless architecture).
+
+#### Data persistence layer (Database and object storage)
+
+This layer actually stores the data that is needed for the service to function (such as user data from the previous example). It can only (most of the time) be accessed by the business layer in order to ensure that the data is only accessible to the users that have authority to access the data.
+
+##### Technical implementation
+When implementing the Data persistence layer it is important to take into consideration the aspect of scaling. Sometimes only a singular database is needed to store all operational data. However, sometimes one server is not enough. There are different approaches to this they all fall into the category of vertical and horizontal scaling (this concept is also applicable to other layers). Vertical scaling means making the existing servers more powerful, for example by upgrading the hardware. Horizontal scaling means adding more servers to spread the load across multiple servers. There are different approaches to horizontal scaling. [^12]
+
+###### Sharding
+Sharding works by assigning some value, called a shard key, to a piece of data (in the case of MongoDB a document). This shard key is then used to assign some server to store that data. The data is then spread across multiple servers (shards). [^13]
+
+###### Replication
+Replication works by first assigning a primary database. From this database replicas are created which contain a copy of the data from the primary database. They are updated dynamically as the primary database updates. The data can then be read from the replicas which reduces load to the primary database. The write operations are still only received by the primary database so this technique is mostly used for read heavy applications. If write operations need horizontal scaling the master-master (multi-master) replication can be used. In this system there are multiple primary databases that can accept write operations. [^14]
 
 
+#### Cross-cutting concerns and third party integrations
+
+Cross-cutting code is used to handle non-functional requirements of the site (cross-cutting concerns). It is not confined to a singular part of the architecture, but is spread across of them. It is applicable to a verity of tasks such as: logging, monitoring, caching and a lot more. It can improve site's performance (for example by caching) or act as additional security measures. [^10]
+
+Third party integrations are processes that are outsourced to some other party which is not your company. For example Auth0's services can be used to implement authentication without needing to do it from scratch for your own service.
+
+### Conclusion
+The main three most important technical and architectural components of a social media platform are: presentation layer, business layer and data persistence layer. Presentation layer is used to make the user able to interact with the site. The business layer is used to accept and process the user request and communicate with the data persistence layer. The data persistence layer is used to store data needed for the social media operations (such as user data and media). 
 
 # What could have been done better
 
 
 ## Missing features
 There are a lot of things that could have been done better during the project. Firstly some of the core functionality is missing. For instance an ability to add images to user posts ( issue #11 ). Unfortunately, I chose to not implement it because it required a lot of resources which might increase operational costs. Additionally, it can be complex to implement based on the approach. To implement this feature there is either a need for an image storage provider or store them on the backend directly. Use of an image storage provider can be quite costly, though there are providers that can be perfect for the scale of this project for example Cloudflare R2 it is still increases complexity because of further reliance om external services. [^1] Storing images directly on the backend will not be viable long term because of the storage constraints on school grounds. It would have been a major user experience feature.
-The other feature that could have been added is a caching layer between the database and the backend which would have improved performance for frequently accessed endpoints. Even though, it might be an overkill for this project's scale it would still be nice to have.
+The other feature that could have been added to the project's architecture is a caching layer between the database and the backend which would have improved performance for frequently accessed endpoints. Even though, it might be an overkill for this project's scale it would still be nice to have.
 
 
 ![Description](/docs/assets/img/Cache-Working.jpg)
@@ -186,7 +225,7 @@ Each endpoint was tested manually instead of creating unit tests or integration 
 Official cloudflare website so it can be trusted
 
 [^2]: https://www.geeksforgeeks.org/system-design/caching-system-design-concept-for-beginners/
-Trustworthy educational site that focuses on software engineering. So the example can be trusted.
+Trustworthy and established educational site that focuses on software engineering. So the example can be trusted.
 
 [^3]: https://en.wikipedia.org/wiki/Port_forwarding
 Trustworthy resource because it mostly contains generic information and multiple trustworthy references.
@@ -209,3 +248,18 @@ Trustworthy site of the Authentication provider that I used for this project.
 
 [^9]: https://www.jwt.io/introduction#what-is-json-web-token-structure
 An established website that focuses on JWT debugging which is endorsed by Auth0, an established authentication provider, (which I also used in this project) so it can be trusted
+
+[^10]: https://www.geeksforgeeks.org/system-design/cross-cutting-concerns-in-distributed-system/
+Trustworthy and established educational site that focuses on software engineering. So it can be trusted
+
+[^11]: https://www.spaceotechnologies.com/blog/web-application-architecture/
+Even though it is a blog it was created by a person with more than 15 years of experience in the field. So it can be trusted
+
+[^12]: https://www.geeksforgeeks.org/system-design/system-design-horizontal-and-vertical-scaling/
+Trustworthy and established educational site that focuses on software engineering. So it can be trusted
+
+[^13]: https://www.mongodb.com/docs/manual/sharding/
+Trustworthy official docs of mongoDB. This database uses sharding as scaling strategy
+
+[^14]: https://www.geeksforgeeks.org/system-design/database-replication-and-their-types-in-system-design/
+Trustworthy and established educational site that focuses on software engineering. So it can be trusted

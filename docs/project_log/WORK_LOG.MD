@@ -169,7 +169,7 @@ Reason: Improves user experience. (Was suggested by M.V Bakker)
 
 4:00PM - 9PM
 
-11:00 - 12:00
+11:00PM - 0:00AM
 
 What is done:
 Add ban feature + allow all users to view posts/comments (without needing to log in)
@@ -252,16 +252,29 @@ Reason:
 
 ## 8/12/2025
 
-9:27 - ... 11:02
+9:27PM - 11:02PM
 
 What is done:
 
 Minor bug fixes (issue #21, issue #22, issue #23 )
 
 Reason:
-
 Makes sure that there is less exploitation on the site and improves user experience.
 
+2.5 hours of work
+
+## 10/12/2025
+
+0:00AM - 2:35AM
+
+Finish answering the main and sub-questions in the PROJECT.MD
+
+Reasoning: A requirement for PWS
+
+2.5 hours of work
+
+# Total
+more than 81 hours of work
 
 
 
