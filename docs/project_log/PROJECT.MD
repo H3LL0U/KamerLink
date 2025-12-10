@@ -227,14 +227,14 @@ Official cloudflare website so it can be trusted
 [^2]: https://www.geeksforgeeks.org/system-design/caching-system-design-concept-for-beginners/
 Trustworthy and established educational site that focuses on software engineering. So the example can be trusted.
 
-[^3]: https://en.wikipedia.org/wiki/Port_forwarding
-Trustworthy resource because it mostly contains generic information and multiple trustworthy references.
-Also other sources explaining the concept agree with this explanation. 
+[^3]: https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding
+Trustworthy official site of ubuntu. 
 
 [^4]: https://www.cloudflare.com/nl-nl/learning/cdn/glossary/reverse-proxy/
 Trustworthy resource because cloudflare is a company that focuses on development in networking technologies and has a good reputation.
 
-[^5]: https://www.researchgate.net/figure/Remote-access-VPN-1_fig2_256843676
+[^5]: https://www.researchgate.net/publication/256843676_A_New_Virtual_Private_Networks_Access_Model 
+Yakova, Zornitsa. (2013). A New Virtual Private Networks Access Model. 
 Trustworthy the paper that used this example contains a lot of references and the source is used for general explanation.
 
 [^6]: https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/
